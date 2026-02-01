@@ -1,4 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', 'php_errors.log');
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -36,18 +40,30 @@ spl_autoload_register(function ($class_name) {
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = explode('/', $uri);
 
-$resource = isset($uri[3]) ? $uri[3] : null;
-$action = isset($uri[4]) ? $uri[4] : null;
+$resource = isset($uri[3]) ? $uri[3] : null; // pae/api/RESOURCE
+$action = isset($uri[4]) ? $uri[4] : null; // pae/api/resource/ACTION
 
 if ($resource === 'auth') {
     $controller = new \Controllers\AuthController();
     if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->login();
+    } elseif ($action === 'select_tenant' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->selectTenant(); // New Endpoint
     } elseif ($action === 'menu' && $_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->getMenu();
     } else {
         http_response_code(404);
         echo json_encode(["message" => "Auth Action Not Found"]);
+    }
+} elseif ($resource === 'tenant') {
+    $controller = new \Controllers\TenantController();
+    if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->register();
+    } elseif ($action === 'list' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getAllPrograms();
+    } else {
+        http_response_code(404);
+        echo json_encode(["message" => "Tenant Action Not Found"]);
     }
 } elseif ($resource === 'public') {
     $controller = new \Controllers\PublicController();
@@ -57,6 +73,103 @@ if ($resource === 'auth') {
         http_response_code(404);
         echo json_encode(["message" => "Public Action Not Found"]);
     }
+} elseif ($resource === 'users') {
+    $controller = new \Controllers\UserController();
+
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->create();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'roles') {
+    $controller = new \Controllers\RoleController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'permissions') {
+    require_once __DIR__ . '/controllers/PermissionController.php';
+    require_once __DIR__ . '/utils/JWT.php';
+
+    // Validate JWT for all permission endpoints
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? '';
+
+    if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Token no proporcionado']);
+        exit;
+    }
+
+    $token = $matches[1];
+    $decoded = \Utils\JWT::decode($token);
+
+    if (!$decoded) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Token inválido']);
+        exit;
+    }
+
+    $db = \Config\Database::getInstance()->getConnection();
+    $controller = new PermissionController($db);
+
+    // GET /api/permissions/roles - List all roles
+    if ($action === 'roles' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $result = $controller->getRoles($decoded);
+        echo json_encode($result);
+    }
+    // GET /api/permissions/modules - Get all modules
+    elseif ($action === 'modules' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $result = $controller->getModules();
+        echo json_encode($result);
+    }
+    // GET /api/permissions/matrix/{role_id} - Get permission matrix
+    elseif ($action === 'matrix' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $roleId = isset($uri[5]) ? $uri[5] : null;
+        if (!$roleId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'role_id requerido']);
+            exit;
+        }
+        $result = $controller->getPermissionMatrix($roleId, $decoded);
+        echo json_encode($result);
+    }
+    // PUT /api/permissions/update - Update permissions
+    elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'PUT') {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $result = $controller->updatePermissions($data, $decoded);
+        echo json_encode($result);
+    }
+    // POST /api/permissions/roles - Create role (Super Admin only)
+    elseif ($action === 'roles' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $result = $controller->createRole($data, $decoded);
+        echo json_encode($result);
+    }
+    // DELETE /api/permissions/roles/{id} - Delete role (Super Admin only)
+    elseif ($action === 'roles' && $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        $roleId = isset($uri[5]) ? $uri[5] : null;
+        if (!$roleId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'role_id requerido']);
+            exit;
+        }
+        $result = $controller->deleteRole($roleId, $decoded);
+        echo json_encode($result);
+    } else {
+        http_response_code(404);
+        echo json_encode(["message" => "Permission Action Not Found"]);
+    }
 } else {
-    echo json_encode(["message" => "PAE API v1.0 Running", "resource" => $resource]);
+    http_response_code(404);
+    echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);
 }
