@@ -67,6 +67,25 @@ Se ha implementado el **Módulo de Cocina** completo siguiendo la **Resolución 
 - Indicadores visuales de compra local
 - CRUD completo con confirmaciones
 
+#### 4. Recetario Maestro (Estandarización) ⭐ NUEVO
+
+**Base de Datos (`sql/16_recipes_schema.sql`):**
+- `recipes`: Platos maestros con totales nutricionales pre-calculados.
+- `recipe_items`: Composición detallada (ingredientes y cantidades patrón).
+- `cycle_templates`: Estructuras de ciclos de 20 días.
+- `cycle_template_days`: Mapeo de recetas a días y momentos de consumo.
+
+**Backend API (`api/controllers/RecipeController.php`):**
+- CRUD completo (`index`, `show`, `store`, `update`, `delete`).
+- **Motor de Recalculación Nutricional:** Suma automática de nutrientes (calorías, proteínas, carbohidratos, grasas) basada en ingredientes (base 100g).
+- Auto-corrección de datos "viva" al consultar la receta.
+
+**Frontend (`app/assets/js/views/recetario.js`):**
+- **Interfaz Compacta:** Grid de 4 columnas con fuentes optimizadas.
+- **Scroll Interno:** Contenedor con scroll independiente para escalar a cientos de recetas.
+- **Modales Dinámicos:** Creación y edición con carga automática de ingredientes.
+- **Visualización Rápida:** 3 indicadores nutricionales clave en la tarjeta del plato.
+
 ### 🎯 Cumplimiento Normativo
 
 #### Resolución 0003 de 2026
@@ -114,6 +133,9 @@ Productor: Avícola Santa Marta SAS
    - Cantidad bruta vs neta
    - Requerimientos por número de beneficiarios
    - Costos totales
+
+4. **Ciclos de Menú** - Integración del recetario con el calendario de 20 días.
+5. **Novedades y Entregas** - Registro de asistencia y consumo.
 
 ### 📁 Archivos Creados
 

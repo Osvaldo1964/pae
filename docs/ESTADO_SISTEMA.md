@@ -11,42 +11,33 @@
 - ✅ Sedes Educativas (Colegios y Sedes con códigos DANE)
 - ✅ Proveedores (Directorio de proveedores)
 
-### 3. **Beneficiarios** ⭐ NUEVO
+### 3. **Cocina** ⭐ EN PROGRESO
+- ✅ Ítems (Gestión de insumos con info nutricional y alérgenos)
+- ✅ Recetario Maestro (Estandarización de platos base)
+  - Cálculo nutricional automático
+  - Grid compacto de 4 columnas
+  - CRUD completo y buscador interno
+
+### 4. **Beneficiarios**
 - ✅ Estudiantes (Gestión de matrícula con Resolución 0003)
-  - Backend: BeneficiaryController.php con CRUD completo
-  - Frontend: Formulario multi-pestaña (4 secciones)
-  - Base de datos: Tablas maestras y refinamiento de esquema
-  - Integración: Códigos DANE en Colegios y Sedes
 
 ---
 
 ## 🔧 Correcciones Recientes
 
-### Códigos DANE
-- ✅ Agregada columna dane_code a tabla schools
-- ✅ Agregada columna dane_code a tabla school_branches
-- ✅ Cada sede tiene su propio código DANE independiente
-
-### Módulo de Beneficiarios
-- ✅ Corregido error 403 (Forbidden) en autenticación JWT
-- ✅ Mejorada separación visual entre filtros y tabla
-- ✅ Ocultado buscador por defecto del DataTable
-- ✅ Implementados filtros personalizados (Documento, Colegio, Grado)
+### Recetario Maestro
+- ✅ Fix: Redirección al login al editar/eliminar (javascript:void(0))
+- ✅ Fix: Motor de cálculo nutricional basado en base 100g
+- ✅ UX: Scroll interno para escalabilidad de recetas
 
 ---
 
 ## 🎯 Próximos Pasos
 
-### Fase Actual: Pruebas de Beneficiarios
-1. ⏳ Crear estudiantes de prueba
-2. ⏳ Validar flujo completo de registro
-3. ⏳ Verificar filtros y búsquedas
-4. ⏳ Probar edición y eliminación
-
-### Siguiente Módulo: Cocina
-- 🔜 Minutas (Planeación de menús y ciclos)
-- 🔜 Almacén (Entradas, salidas e inventario)
+### Fase Actual: Cocina
+1. 🔜 Minutas (Planeación de ciclos integrando el recetario)
+2. 🔜 Almacén (Entradas, salidas e inventario)
 
 ---
 
-**Última actualización**: 01 de Febrero 2026, 11:49 AM
+**Última actualización**: 01 de Febrero 2026, 18:46 PM

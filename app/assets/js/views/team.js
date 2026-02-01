@@ -2,7 +2,8 @@
  * Team View - Mi Equipo (Team Management for PAE Administrators)
  */
 
-const TeamView = {
+// Use window.TeamView to allow re-loading the script without "already declared" errors
+window.TeamView = {
     currentMember: null,
 
     async init() {
@@ -285,7 +286,6 @@ const TeamView = {
 };
 
 // Initialize when view is loaded
-if (typeof App !== 'undefined' && !window.TeamView) {
-    window.TeamView = TeamView;
+if (typeof TeamView !== 'undefined') {
     TeamView.init();
 }

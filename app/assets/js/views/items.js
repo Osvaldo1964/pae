@@ -3,7 +3,8 @@
  * Resolution 0003 of 2026 Compliance
  */
 
-const ItemsView = {
+// Use window.ItemsView to allow re-loading the script without "already declared" errors
+window.ItemsView = {
     foodGroups: [],
     measurementUnits: [],
     currentItem: null,
@@ -377,12 +378,8 @@ const ItemsView = {
     },
 
     renderTable(items) {
-        const table = $('#items-table').DataTable({
-            destroy: true,
+        this.dataTable = Helper.initDataTable('#items-table', {
             data: items,
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
-            },
             columns: [
                 { data: 'code' },
                 {
@@ -439,17 +436,21 @@ const ItemsView = {
             order: [[1, 'asc']],
             pageLength: 25
         });
-
-        // Store table reference for filtering
-        this.dataTable = table;
     },
 
     applyFilters() {
-        const foodGroup = $('#filter-food-group').val();
+        const foodGroupId = $('#filter-food-group').val();
         const local = $('#filter-local').val();
         const status = $('#filter-status').val();
 
-        this.dataTable.columns(2).search(foodGroup).draw();
+        // Buscar por nombre del grupo, no por ID
+        let foodGroupName = '';
+        if (foodGroupId) {
+            const group = this.foodGroups.find(g => g.id == foodGroupId);
+            foodGroupName = group ? group.name : '';
+        }
+
+        this.dataTable.columns(2).search(foodGroupName).draw();
         this.dataTable.columns(7).search(local ? (local === '1' ? 'Sí' : 'No') : '').draw();
         this.dataTable.columns(8).search(status).draw();
     },
@@ -598,7 +599,6 @@ const ItemsView = {
 };
 
 // Initialize when view is loaded
-if (typeof App !== 'undefined' && !window.ItemsView) {
-    window.ItemsView = ItemsView;
+if (typeof ItemsView !== 'undefined') {
     ItemsView.init();
 }

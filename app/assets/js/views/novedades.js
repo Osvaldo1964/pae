@@ -3,7 +3,7 @@
  * STATUS: IN DEVELOPMENT
  */
 
-const NovedadesView = {
+window.NovedadesView = {
     async init() {
         console.log('Initializing Novedades Module...');
         this.render();
@@ -70,7 +70,6 @@ const NovedadesView = {
 };
 
 // Initialize when view is loaded
-if (typeof App !== 'undefined' && !window.NovedadesView) {
-    window.NovedadesView = NovedadesView;
+if (typeof NovedadesView !== 'undefined') {
     NovedadesView.init();
 }

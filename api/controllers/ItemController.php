@@ -106,27 +106,40 @@ class ItemController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
-            if (!$pae_id) {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'PAE ID no encontrado en token']);
-                return;
+
+            // Super Admin puede ver cualquier ítem
+            // PAE Admin solo ve sus propios ítems
+            if ($pae_id) {
+                $query = "SELECT 
+                            i.*,
+                            fg.name as food_group_name,
+                            mu.name as measurement_unit_name,
+                            mu.abbreviation as unit_abbr
+                          FROM items i
+                          LEFT JOIN food_groups fg ON i.food_group_id = fg.id
+                          LEFT JOIN measurement_units mu ON i.measurement_unit_id = mu.id
+                          WHERE i.id = :id AND i.pae_id = :pae_id";
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+                $stmt->bindParam(':pae_id', $pae_id, PDO::PARAM_INT);
+            } else {
+                // Super Admin: ver cualquier ítem
+                $query = "SELECT 
+                            i.*,
+                            fg.name as food_group_name,
+                            mu.name as measurement_unit_name,
+                            mu.abbreviation as unit_abbr
+                          FROM items i
+                          LEFT JOIN food_groups fg ON i.food_group_id = fg.id
+                          LEFT JOIN measurement_units mu ON i.measurement_unit_id = mu.id
+                          WHERE i.id = :id";
+
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             }
 
-            $query = "SELECT 
-                        i.*,
-                        fg.name as food_group_name,
-                        mu.name as measurement_unit_name,
-                        mu.abbreviation as unit_abbr
-                      FROM items i
-                      LEFT JOIN food_groups fg ON i.food_group_id = fg.id
-                      LEFT JOIN measurement_units mu ON i.measurement_unit_id = mu.id
-                      WHERE i.id = :id AND i.pae_id = :pae_id";
-
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':id', $id);
-            $stmt->bindParam(':pae_id', $pae_id);
             $stmt->execute();
-
             $item = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($item) {
@@ -301,11 +314,8 @@ class ItemController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
-            if (!$pae_id) {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'PAE ID no encontrado en token']);
-                return;
-            }
+            // Super Admin puede editar cualquier ítem
+            // PAE Admin solo edita sus propios ítems
 
             $data = json_decode(file_get_contents("php://input"), true);
 
@@ -350,12 +360,14 @@ class ItemController
                         shelf_life_days = :shelf_life_days,
                         unit_cost = :unit_cost,
                         status = :status
-                      WHERE id = :id AND pae_id = :pae_id";
+                      WHERE id = :id" . ($pae_id ? " AND pae_id = :pae_id" : "");
 
             $stmt = $this->conn->prepare($query);
 
-            $stmt->bindParam(':id', $id);
-            $stmt->bindParam(':pae_id', $pae_id);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            if ($pae_id) {
+                $stmt->bindParam(':pae_id', $pae_id, PDO::PARAM_INT);
+            }
             $stmt->bindParam(':name', $data['name']);
             $stmt->bindParam(':description', $data['description']);
             $stmt->bindParam(':food_group_id', $data['food_group_id']);
@@ -417,16 +429,15 @@ class ItemController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
-            if (!$pae_id) {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'PAE ID no encontrado en token']);
-                return;
-            }
+            // Super Admin puede eliminar cualquier ítem
+            // PAE Admin solo elimina sus propios ítems
 
-            $query = "DELETE FROM items WHERE id = :id AND pae_id = :pae_id";
+            $query = "DELETE FROM items WHERE id = :id" . ($pae_id ? " AND pae_id = :pae_id" : "");
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':id', $id);
-            $stmt->bindParam(':pae_id', $pae_id);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            if ($pae_id) {
+                $stmt->bindParam(':pae_id', $pae_id, PDO::PARAM_INT);
+            }
             $stmt->execute();
 
             if ($stmt->rowCount() > 0) {

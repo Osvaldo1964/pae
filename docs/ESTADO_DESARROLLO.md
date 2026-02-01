@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 01 de Febrero de 2026, 16:30  
-**Versión:** 1.4.0 (Fase 3 - Cocina: Ítems Completado)
+**Última Actualización:** 01 de Febrero de 2026, 18:45  
+**Versión:** 1.4.1 (Fase 3 - Cocina: Recetario Completado)
 
 ---
 
@@ -13,7 +13,7 @@
 | **Frontend Core** | 🟢 Funcional | 95% |
 | **Base de Datos** | 🟢 Estable | 95% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
-| **Módulos Operativos** | 🟡 En Desarrollo | 40% |
+| **Módulos Operativos** | 🟡 En Desarrollo | 55% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -90,6 +90,14 @@
 - [x] Filtros por grupo, compra local y estado
 - [x] Badges de colores por grupo de alimento
 
+### 8. Módulo de Cocina - Recetario Maestro ✅ ⭐ NUEVO
+- [x] **Backend:** `RecipeController.php` con CRUD y motor de recalculación.
+- [x] **Base de Datos:** Estructura de recetas, ingredientes patrón y plantillas de ciclo.
+- [x] **Frontend:** Diseño de tarjetas compactas (4 columnas) con indicadores nutricionales.
+- [x] **Cálculos:** Motor automático basado en 100g de ingrediente (ICBF).
+- [x] **UX:** Scroll interno y modales dinámicos para gestión a gran escala.
+- [x] **Bug Fixes:** Corrección de redirecciones y carga de ingredientes en edición.
+
 ---
 
 ## 🚧 EN DESARROLLO
@@ -104,7 +112,8 @@
 
 ### Fase 3 (Cocina) - EN CURSO
 - [x] **Ítems:** COMPLETADO ✅
-- [ ] **Minutas:** Planeación de menús y ciclos
+- [x] **Recetario:** COMPLETADO ✅
+- [ ] **Minutas:** Planeación de menús y ciclos (Integración con recetario)
 - [ ] **Almacén:** Entradas, salidas e inventario
 - [ ] **Novedades:** Reporte de ausentismos y retiros
 

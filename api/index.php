@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', 'php_errors.log');
 header("Access-Control-Allow-Origin: *");
@@ -358,6 +358,64 @@ if ($resource === 'auth') {
     } else {
         http_response_code(405);
         echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'menu-cycles') {
+    $controller = new \Controllers\MenuController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && is_numeric($action)) {
+            $controller->getCycleDays($action);
+        } else {
+            $controller->getCycles();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->storeCycle();
+    }
+} elseif ($resource === 'menus') {
+    $controller = new \Controllers\MenuController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action && is_numeric($action)) {
+        $controller->getMenuDetail($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action && is_numeric($action)) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $action && is_numeric($action) && strpos($_SERVER['REQUEST_URI'], '/items') !== false) {
+        $controller->manageItems($action);
+    }
+} elseif ($resource === 'inventory') {
+    $controller = new \Controllers\WarehouseController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getStock();
+    }
+} elseif ($resource === 'suppliers') {
+    $controller = new \Controllers\WarehouseController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getSuppliers();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->saveSupplier();
+    }
+} elseif ($resource === 'movements') {
+    $controller = new \Controllers\WarehouseController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getMovements();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->registerMovement();
+    }
+} elseif ($resource === 'recipes') {
+    $controller = new \Controllers\RecipeController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && is_numeric($action)) {
+            $controller->show($action);
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        if ($action && is_numeric($action)) {
+            $controller->update($action);
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        if ($action && is_numeric($action)) {
+            $controller->delete($action);
+        }
     }
 } else {
     http_response_code(404);

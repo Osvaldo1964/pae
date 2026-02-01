@@ -160,6 +160,8 @@ const App = {
                     'proveedores': 'suppliers',
                     'beneficiarios': 'beneficiaries',
                     'items': 'items',
+                    'almacen': 'almacen',
+                    'recetario': 'recetario',
                     'team': 'team'
                 };
 
