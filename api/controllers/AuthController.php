@@ -50,13 +50,19 @@ class AuthController
 
                 // CASE 1: GLOBAL SUPER ADMIN (pae_id IS NULL)
                 if (is_null($user['pae_id'])) {
+                    // Fetch list of programs for selection
+                    $stmtPrograms = $this->conn->prepare("SELECT id, name FROM pae_programs ORDER BY name");
+                    $stmtPrograms->execute();
+                    $programs = $stmtPrograms->fetchAll(PDO::FETCH_ASSOC);
+
                     // Do not issue token yet. Ask user to select a Tenant.
                     http_response_code(200);
                     echo json_encode([
                         "message" => "Global Admin identified",
                         "select_tenant" => true,
-                        "global_user_id" => $user['id'], // Temporary ID to use for next step (or just rely on username in next step but better use a temp session token if secure, but for MVP we send ID)
-                        "full_name" => $user['full_name']
+                        "global_user_id" => $user['id'],
+                        "full_name" => $user['full_name'],
+                        "programs" => $programs
                     ]);
                     return;
                 }
@@ -149,8 +155,8 @@ class AuthController
                 "full_name" => $user['full_name'],
                 "pae_id" => $user['pae_id'],
                 "pae_name" => $user['pae_name'] ?? 'Global',
-                "entity_logo" => $user['entity_logo_path'] ?? null,
-                "operator_logo" => $user['operator_logo_path'] ?? null
+                "entity_logo" => $this->validateLogoPath($user['entity_logo_path'] ?? null),
+                "operator_logo" => $this->validateLogoPath($user['operator_logo_path'] ?? null)
             ]
         ];
 
@@ -164,10 +170,17 @@ class AuthController
                 "full_name" => $user['full_name'],
                 "role" => $user['role_name'],
                 "pae" => $user['pae_name'] ?? 'Global',
-                "entity_logo" => $user['entity_logo_path'] ?? null,
-                "operator_logo" => $user['operator_logo_path'] ?? null
+                "entity_logo" => $this->validateLogoPath($user['entity_logo_path'] ?? null),
+                "operator_logo" => $this->validateLogoPath($user['operator_logo_path'] ?? null)
             ]
         ]);
+    }
+
+    private function validateLogoPath($path)
+    {
+        if (!$path) return null;
+        $fullPath = __DIR__ . '/../../' . $path;
+        return file_exists($fullPath) ? $path : null;
     }
 
     public function getMenu()

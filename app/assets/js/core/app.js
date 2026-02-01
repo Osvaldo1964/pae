@@ -65,19 +65,15 @@ const App = {
             let brandingHtml = '';
             brandingHtml += '<div class="d-flex align-items-center justify-content-center">';
 
-            if (entityLogo) {
-                // Limpiar la ruta: remover 'assets/' si existe
-                const cleanEntityLogo = entityLogo.replace(/^assets\//, '');
-                brandingHtml += `<img src="/pae/${cleanEntityLogo}" alt="Entidad" class="me-3" style="height: 45px; width: auto; object-fit: contain;">`;
-            }
+            // Entity Logo
+            const entityPath = entityLogo ? entityLogo.replace(/^assets\//, '') : 'app/assets/img/default_entity.png';
+            brandingHtml += `<img src="/pae/${entityPath}" alt="Entidad" class="me-3" style="height: 45px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='/pae/app/assets/img/default_entity.png'">`;
 
             brandingHtml += `<h5 class="mb-0 text-primary-custom fw-bold text-uppercase" style="letter-spacing: 0.5px;">${paeName}</h5>`;
 
-            if (operatorLogo) {
-                // Limpiar la ruta: remover 'assets/' si existe
-                const cleanOperatorLogo = operatorLogo.replace(/^assets\//, '');
-                brandingHtml += `<img src="/pae/${cleanOperatorLogo}" alt="Operador" class="ms-3 d-none d-md-block" style="height: 45px; width: auto; object-fit: contain;">`;
-            }
+            // Operator Logo
+            const operatorPath = operatorLogo ? operatorLogo.replace(/^assets\//, '') : 'app/assets/img/default_operator.png';
+            brandingHtml += `<img src="/pae/${operatorPath}" alt="Operador" class="ms-3 d-none d-md-block" style="height: 45px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='/pae/app/assets/img/default_operator.png'">`;
 
             brandingHtml += '</div>';
             headerInfo.innerHTML = brandingHtml;
@@ -142,6 +138,8 @@ const App = {
                 App.renderUsers();
             } else if (hash === 'roles' || hash === 'module/roles') {
                 App.loadView('roles');
+            } else if (hash === 'pae-programs' || hash === 'module/pae-programs') {
+                App.loadView('pae-programs');
             } else {
                 console.log("Unknown Hash:", hash);
                 appContainer.innerHTML = `<h2>Módulo: ${hash}</h2><p>En construcción... (v2)</p>`;
@@ -172,7 +170,7 @@ const App = {
 
         if (res.select_tenant) {
             // Global Admin Case - Show Selector
-            App.renderTenantSelector(res.global_user_id, res.full_name);
+            App.renderTenantSelector(res.global_user_id, res.full_name, res.programs);
         } else if (res.token) {
             // Regular Login
             App.state.token = res.token;
@@ -257,16 +255,11 @@ const App = {
         };
     },
 
-    renderTenantSelector: async (userId, fullName) => {
-        // Fetch All Programs (We need a public endpoint or use a temp token. 
-        // For MVP, we created 'tenant/list' which is currently unprotected but should be restricted.
-        // In a real flow, 'login' would return the list of allowed tenants for this user.)
-
-        // Let's assume for this MVP that the user sees ALL programs or we fetch them here.
-        const programs = await App.api('/tenant/list');
-
-        if (!Array.isArray(programs)) {
-            Swal.fire('Error', 'No se pudieron cargar los programas', 'error');
+    renderTenantSelector: async (userId, fullName, programs = []) => {
+        // We now use the programs list provided during login to avoid 401 errors
+        // since /tenant/list is now protected by JWT.
+        if (!programs || !Array.isArray(programs) || programs.length === 0) {
+            Swal.fire('Error', 'No se pudieron cargar los programas o no tiene permisos', 'error');
             return;
         }
 
@@ -585,6 +578,24 @@ const App = {
                 </div>
             `;
         });
+
+        // Inject special card for PAE Programs if it's the Configuration group and user is Super Admin
+        if (group.name === 'Configuración' && App.state.user && App.state.user.role_id === 1) {
+            cardsHtml += `
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-card border-primary">
+                        <div class="card-body text-center">
+                            <div class="icon-circle mb-3 mx-auto bg-primary-light">
+                                <i class="fas fa-building fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="card-title">Programas PAE</h5>
+                            <p class="card-text small text-muted">Gestión de entidades y operadores (Super Admin)</p>
+                            <a href="#pae-programs" class="nav-link btn btn-outline-primary btn-sm stretched-link">Ingresar</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         document.getElementById('app').innerHTML = `
             <h3 class="mb-4 text-primary-custom border-bottom pb-2">

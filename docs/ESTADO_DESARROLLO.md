@@ -1,6 +1,6 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 31 de Enero de 2026, 22:16  
+**Última Actualización:** 31 de Enero de 2026, 23:10  
 **Versión:** 1.0 (En Desarrollo)
 
 ---
@@ -12,9 +12,9 @@
 | **Backend API** | 🟢 Funcional | 70% |
 | **Frontend Core** | 🟢 Funcional | 65% |
 | **Base de Datos** | 🟢 Estable | 80% |
-| **Módulos Admin** | 🟢 Funcional | 60% |
+| **Módulos Admin** | 🟢 Funcional | 75% |
 | **Módulos Operativos** | 🔴 Pendiente | 10% |
-| **Documentación** | 🟢 Actualizada | 85% |
+| **Documentación** | 🟢 Actualizada | 90% |
 
 **Leyenda:**
 - 🟢 Completado/Funcional
@@ -117,34 +117,32 @@ DELETE /api/users/{id}
 
 ---
 
-### 4. Módulo de Gestión de PAE (Entidades) ✅
+### 4. Módulo de Gestión de Programas PAE ✅
 
 **Backend:**
-- [x] `TenantController.php` - CRUD completo
-- [x] Validación de datos del operador
-- [x] Manejo de logos (entity + operator)
-- [x] Upload de archivos
-- [x] Validación de formatos de imagen
+- [x] `TenantManagementController.php` - CRUD completo para Super Admin (role_id=1)
+- [x] Validación de datos del operador y programas
+- [x] Manejo de logos (subida y almacenamiento seguro)
+- [x] Endpoints protegidos con JWT y validación de rol
+- [x] Fix: Corrección de acceso al payload de JWT (data array)
 
 **Frontend:**
-- [x] Vista de listado
-- [x] Modal de creación/edición
-- [x] Preview de logos
-- [x] Validación de formularios
-- [x] Gestión de archivos
+- [x] Integración en el Hub de **Configuración** como tarjeta condicional (solo Super Admin)
+- [x] Vista dedicada `pae-programs.js` con listado y modal
+- [x] Solución de **Logos por Defecto**: Fallback automático a logos profesionales institucionales
+- [x] Carga de logos sin errores 404 (manejo de `onerror` robusto)
+- [x] Login mejorado para Super Admin (incluye lista de programas en la respuesta)
 
 **Base de Datos:**
-- [x] Tabla `pae_programs` completa
-- [x] Campos de operador (NIT, dirección, teléfono, email)
-- [x] Campos de logos (entity_logo_path, operator_logo_path)
+- [x] Tabla `pae_programs` ampliada con detalles del operador y rutas de logos
+- [x] Scripts SQL de migración aplicados correctamente
 
 **Endpoints API:**
 ```
-GET    /api/tenants
-GET    /api/tenants/{id}
-POST   /api/tenants
-PUT    /api/tenants/{id}
-DELETE /api/tenants/{id}
+GET    /api/tenant/list
+POST   /api/tenant/register
+PUT    /api/tenant/update/{id}
+DELETE /api/tenant/delete/{id}
 ```
 
 ---
@@ -481,11 +479,12 @@ DELETE /api/permissions/roles/{id} (Super Admin only)
 - Roles globales, permisos por PAE
 
 **Logros de la Sesión:**
-- ✅ Módulo de Permisos 100% funcional
-- ✅ Documentación completa del proyecto
-- ✅ Base de datos actualizada con soporte multitenancy
-- ✅ API REST completa para gestión de permisos
-
+- ✅ Módulo de Programas PAE (Super Admin) 100% funcional.
+- ✅ Implementación de tarjeta condicional en el Hub de Configuración.
+- ✅ Solución definitiva de Logos por Defecto (elimina errores 404).
+- ✅ Corrección de autenticación para Super Admin Global.
+- ✅ Corrección de acceso a datos de JWT en toda la API.
+- ✅ Documentación técnica actualizada.
 **Próximos Pasos:**
 1. Iniciar desarrollo del Dashboard principal
 2. Diseñar esquema de base de datos para Beneficiarios

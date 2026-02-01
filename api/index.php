@@ -60,7 +60,93 @@ if ($resource === 'auth') {
     if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->register();
     } elseif ($action === 'list' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-        $controller->getAllPrograms();
+        // Require JWT for list endpoint
+        require_once __DIR__ . '/utils/JWT.php';
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? '';
+
+        if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token no proporcionado']);
+            exit;
+        }
+
+        $token = $matches[1];
+        $decoded = \Utils\JWT::decode($token);
+
+        if (!$decoded) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token inválido']);
+            exit;
+        }
+
+        require_once __DIR__ . '/controllers/TenantManagementController.php';
+        $mgmtController = new \Controllers\TenantManagementController($db);
+        $mgmtController->listAll($decoded['data']);
+    } elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Update PAE program (Changed from PUT to POST to support multipart/form-data in PHP)
+        require_once __DIR__ . '/utils/JWT.php';
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? '';
+
+        if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token no proporcionado']);
+            exit;
+        }
+
+        $token = $matches[1];
+        $decoded = \Utils\JWT::decode($token);
+
+        if (!$decoded) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token inválido']);
+            exit;
+        }
+
+        $paeId = isset($uri[5]) ? $uri[5] : null;
+        if (!$paeId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'ID de programa requerido']);
+            exit;
+        }
+
+        require_once __DIR__ . '/controllers/TenantManagementController.php';
+        $db = \Config\Database::getInstance()->getConnection();
+        $mgmtController = new \Controllers\TenantManagementController($db);
+        $mgmtController->update($paeId, $decoded['data']);
+    } elseif ($action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        // Delete PAE program
+        require_once __DIR__ . '/utils/JWT.php';
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? '';
+
+        if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token no proporcionado']);
+            exit;
+        }
+
+        $token = $matches[1];
+        $decoded = \Utils\JWT::decode($token);
+
+        if (!$decoded) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Token inválido']);
+            exit;
+        }
+
+        $paeId = isset($uri[5]) ? $uri[5] : null;
+        if (!$paeId) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'ID de programa requerido']);
+            exit;
+        }
+
+        require_once __DIR__ . '/controllers/TenantManagementController.php';
+        $db = \Config\Database::getInstance()->getConnection();
+        $mgmtController = new \Controllers\TenantManagementController($db);
+        $mgmtController->delete($paeId, $decoded['data']);
     } else {
         http_response_code(404);
         echo json_encode(["message" => "Tenant Action Not Found"]);
@@ -124,7 +210,7 @@ if ($resource === 'auth') {
 
     // GET /api/permissions/roles - List all roles
     if ($action === 'roles' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-        $result = $controller->getRoles($decoded);
+        $result = $controller->getRoles($decoded['data']);
         echo json_encode($result);
     }
     // GET /api/permissions/modules - Get all modules
@@ -140,19 +226,19 @@ if ($resource === 'auth') {
             echo json_encode(['success' => false, 'message' => 'role_id requerido']);
             exit;
         }
-        $result = $controller->getPermissionMatrix($roleId, $decoded);
+        $result = $controller->getPermissionMatrix($roleId, $decoded['data']);
         echo json_encode($result);
     }
     // PUT /api/permissions/update - Update permissions
     elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'PUT') {
         $data = json_decode(file_get_contents("php://input"), true);
-        $result = $controller->updatePermissions($data, $decoded);
+        $result = $controller->updatePermissions($data, $decoded['data']);
         echo json_encode($result);
     }
     // POST /api/permissions/roles - Create role (Super Admin only)
     elseif ($action === 'roles' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = json_decode(file_get_contents("php://input"), true);
-        $result = $controller->createRole($data, $decoded);
+        $result = $controller->createRole($data, $decoded['data']);
         echo json_encode($result);
     }
     // DELETE /api/permissions/roles/{id} - Delete role (Super Admin only)
@@ -163,7 +249,7 @@ if ($resource === 'auth') {
             echo json_encode(['success' => false, 'message' => 'role_id requerido']);
             exit;
         }
-        $result = $controller->deleteRole($roleId, $decoded);
+        $result = $controller->deleteRole($roleId, $decoded['data']);
         echo json_encode($result);
     } else {
         http_response_code(404);
