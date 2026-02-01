@@ -51,6 +51,10 @@ var UsersView = {
 
     async loadUsers() {
         try {
+            if ($.fn.DataTable.isDataTable('#usersTable')) {
+                $('#usersTable').DataTable().destroy();
+            }
+
             const users = await Helper.fetchAPI('/users');
             const tbody = document.getElementById('users-table-body');
             if (!tbody) return;
@@ -90,16 +94,13 @@ var UsersView = {
                 `;
             });
 
-            if ($.fn.DataTable.isDataTable('#usersTable')) {
-                $('#usersTable').DataTable().destroy();
-            }
             Helper.initDataTable('#usersTable');
         } catch (e) {
             console.error(e);
         }
     },
 
-    openUserModal: async function(user = null) {
+    openUserModal: async function (user = null) {
         let rolesHtml = '';
         try {
             const roles = await Helper.fetchAPI('/roles');

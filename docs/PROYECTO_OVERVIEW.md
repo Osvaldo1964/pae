@@ -3,7 +3,7 @@
 ## 📋 Información del Proyecto
 
 **Nombre:** Sistema de Información para la Gestión del Programa de Alimentación Escolar (PAE)  
-**Versión:** 1.2.1  
+**Versión:** 1.3.0  
 **Desarrollador por:** OVCSYSTEMS S.A.S.  
 **Estado Actual:** Fase 1 Completada (Cimentación y Administración)
 
@@ -31,7 +31,7 @@ Para garantizar la calidad de la información, el sistema aplica reglas automát
 ## 📂 Módulos Listos para Operar
 
 - **Usuarios:** Gestión de acceso del personal.
-- **Entorno:** Catálogo de Colegios y Sedes educativas.
+- **Entorno:** Catálogo de Colegios, Sedes y Proveedores.
 - **Roles:** Matriz de permisos granular (Leer, Crear, Editar, Borrar).
 - **Configuración PAE:** (Solo Super Admin) Gestión de operadores y logos.
 

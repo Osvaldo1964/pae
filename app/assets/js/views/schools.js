@@ -85,11 +85,15 @@ var SchoolsView = {
                             <form id="formSchool">
                                 <input type="hidden" id="school-id">
                                 <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Código DANE *</label>
+                                        <input type="text" class="form-control" id="school-dane" required placeholder="Ej: 14700... ">
+                                    </div>
                                     <div class="col-md-8">
                                         <label class="form-label">Nombre del Colegio *</label>
                                         <input type="text" class="form-control" id="school-name" required>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Tipo *</label>
                                         <select class="form-select" id="school-type" required>
                                             <option value="PUBLICO">Público</option>
@@ -172,6 +176,10 @@ var SchoolsView = {
                             <form id="formBranch">
                                 <input type="hidden" id="branch-id">
                                 <div class="mb-3">
+                                    <label class="form-label">Código DANE *</label>
+                                    <input type="text" class="form-control" id="branch-dane" required>
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label">Nombre de la Sede *</label>
                                     <input type="text" class="form-control" id="branch-name" required>
                                 </div>
@@ -231,7 +239,7 @@ var SchoolsView = {
         }
     },
 
-        renderSchoolsTable() {
+    renderSchoolsTable() {
         if ($.fn.DataTable.isDataTable('#schoolsTable')) {
             $('#schoolsTable').DataTable().destroy();
         }
@@ -249,6 +257,7 @@ var SchoolsView = {
                             <img src="${logo}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;" onerror="this.src='${Config.BASE_URL}assets/img/logos/logo_ovc.png'">
                             <div>
                                 <h6 class="mb-0">${s.name}</h6>
+                                <small class="text-primary fw-bold" style="font-size: 0.75rem;">DANE: ${s.dane_code || '-'}</small> | 
                                 <small class="badge bg-secondary">${s.school_type}</small>
                             </div>
                         </div>
@@ -277,7 +286,7 @@ var SchoolsView = {
         console.log("Selecting School ID:", id);
         this.selectedSchoolId = id;
         const school = this.schools.find(s => s.id == id);
-        
+
         if (!school) {
             console.warn("School not found in local list for ID:", id);
             return;
@@ -285,7 +294,7 @@ var SchoolsView = {
 
         const titleEl = document.getElementById('branches-title');
         if (titleEl) titleEl.innerText = `Sedes: ${school.name}`;
-        
+
         const btnNew = document.getElementById('btn-new-branch');
         if (btnNew) btnNew.style.display = 'block';
 
@@ -326,6 +335,7 @@ var SchoolsView = {
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">${b.name} ${b.name === 'PRINCIPAL' ? '<span class="badge bg-info text-white ms-2" style="font-size:0.7em">MATRIZ</span>' : ''}</h6>
+                            <small class="text-primary d-block fw-bold mb-1" style="font-size: 0.8rem;">DANE: ${b.dane_code || '-'}</small>
                             <small class="text-muted"><i class="fas fa-user me-1"></i>${b.manager_name || '-'}</small><br>
                             <small class="text-muted"><i class="fas fa-phone me-1"></i>${b.phone || '-'}</small>
                         </div>
@@ -350,7 +360,7 @@ var SchoolsView = {
         const placeholder = document.getElementById('school-logo-placeholder');
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 previewImg.src = e.target.result;
                 previewImg.style.display = 'block';
                 placeholder.style.display = 'none';
@@ -361,14 +371,14 @@ var SchoolsView = {
     },
 
     openSchoolModal(schoolOrId = null) {
-        let school = (typeof schoolOrId === 'number' || (typeof schoolOrId === 'string' && schoolOrId !== '')) 
-            ? this.schools.find(s => s.id == schoolOrId) 
+        let school = (typeof schoolOrId === 'number' || (typeof schoolOrId === 'string' && schoolOrId !== ''))
+            ? this.schools.find(s => s.id == schoolOrId)
             : schoolOrId;
         const isEdit = !!school;
         document.getElementById('formSchool').reset();
         document.getElementById('school-id').value = isEdit ? school.id : '';
         document.getElementById('modalSchoolTitle').innerText = isEdit ? 'Editar Colegio' : 'Nuevo Colegio';
-        
+
         if (!isEdit) {
             document.getElementById('school-logo-preview').style.display = 'none';
             document.getElementById('school-logo-placeholder').style.display = 'block';
@@ -376,6 +386,7 @@ var SchoolsView = {
         }
 
         if (isEdit) {
+            document.getElementById('school-dane').value = school.dane_code || '';
             document.getElementById('school-name').value = school.name;
             document.getElementById('school-type').value = school.school_type;
             document.getElementById('school-rector').value = school.rector || '';
@@ -385,7 +396,7 @@ var SchoolsView = {
             document.getElementById('school-address').value = school.address || '';
             document.getElementById('school-phone').value = school.phone || '';
             document.getElementById('school-area').value = school.area_type;
-            
+
             const previewImg = document.getElementById('school-logo-preview');
             const placeholder = document.getElementById('school-logo-placeholder');
             if (school.logo_path) {
@@ -406,6 +417,7 @@ var SchoolsView = {
     async saveSchool() {
         const id = document.getElementById('school-id').value;
         const formData = new FormData();
+        formData.append('dane_code', document.getElementById('school-dane').value.toUpperCase());
         formData.append('name', document.getElementById('school-name').value.toUpperCase());
         formData.append('school_type', document.getElementById('school-type').value);
         formData.append('rector', document.getElementById('school-rector').value.toUpperCase());
@@ -434,7 +446,6 @@ var SchoolsView = {
                 if (id) {
                     this.selectSchool(id);
                 } else if (this.schools.length > 0) {
-                    // If new, select the first one (usually the one just added if sorted by ID desc, but it's ASC. Maybe select by max ID)
                     const maxId = Math.max(...this.schools.map(s => s.id));
                     this.selectSchool(maxId);
                 }
@@ -453,13 +464,6 @@ var SchoolsView = {
             if (res.message) {
                 Helper.alert('success', res.message);
                 await this.loadSchools();
-                if (id) {
-                    this.selectSchool(id);
-                } else if (this.schools.length > 0) {
-                    // If new, select the first one (usually the one just added if sorted by ID desc, but it's ASC. Maybe select by max ID)
-                    const maxId = Math.max(...this.schools.map(s => s.id));
-                    this.selectSchool(maxId);
-                }
                 if (this.selectedSchoolId == id) {
                     this.selectedSchoolId = null;
                     document.getElementById('branches-container').innerHTML = '<p class="text-center text-muted py-5">Seleccione un colegio para ver sus sedes</p>';
@@ -472,8 +476,8 @@ var SchoolsView = {
     },
 
     openBranchModal(branchOrId = null) {
-        let branch = (typeof branchOrId === 'number' || (typeof branchOrId === 'string' && branchOrId !== '')) 
-            ? this.branches.find(b => b.id == branchOrId) 
+        let branch = (typeof branchOrId === 'number' || (typeof branchOrId === 'string' && branchOrId !== ''))
+            ? this.branches.find(b => b.id == branchOrId)
             : branchOrId;
         const isEdit = !!branch;
         document.getElementById('formBranch').reset();
@@ -481,6 +485,7 @@ var SchoolsView = {
         document.getElementById('modalBranchTitle').innerText = isEdit ? 'Editar Sede' : 'Nueva Sede';
 
         if (isEdit) {
+            document.getElementById('branch-dane').value = branch.dane_code || '';
             document.getElementById('branch-name').value = branch.name;
             document.getElementById('branch-manager').value = branch.manager_name || '';
             document.getElementById('branch-address').value = branch.address || '';
@@ -501,6 +506,7 @@ var SchoolsView = {
         const id = document.getElementById('branch-id').value;
         const data = {
             school_id: this.selectedSchoolId,
+            dane_code: document.getElementById('branch-dane').value.toUpperCase(),
             name: document.getElementById('branch-name').value.toUpperCase(),
             manager_name: document.getElementById('branch-manager').value.toUpperCase(),
             address: document.getElementById('branch-address').value,

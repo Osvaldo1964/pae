@@ -99,11 +99,12 @@ class SchoolController
 
         try {
             $query = "INSERT INTO " . $this->table_name . " 
-                      (pae_id, name, rector, address, phone, email, logo_path, department, municipality, school_type, area_type) 
-                      VALUES (:pae_id, :name, :rector, :address, :phone, :email, :logo_path, :department, :municipality, :school_type, :area_type)";
+                      (pae_id, dane_code, name, rector, address, phone, email, logo_path, department, municipality, school_type, area_type) 
+                      VALUES (:pae_id, :dane_code, :name, :rector, :address, :phone, :email, :logo_path, :department, :municipality, :school_type, :area_type)";
 
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":pae_id", $pae_id);
+            $stmt->bindParam(":dane_code", $data['dane_code']);
             $stmt->bindParam(":name", $data['name']);
             $stmt->bindParam(":rector", $data['rector']);
             $stmt->bindParam(":address", $data['address']);
@@ -120,12 +121,13 @@ class SchoolController
 
                 // AUTOMATICALLY CREATE PRINCIPAL BRANCH
                 $queryBranch = "INSERT INTO school_branches 
-                                (school_id, pae_id, name, address, phone, manager_name, area_type) 
-                                VALUES (:school_id, :pae_id, 'PRINCIPAL', :address, :phone, :rector, :area_type)";
+                                (school_id, pae_id, dane_code, name, address, phone, manager_name, area_type) 
+                                VALUES (:school_id, :pae_id, :dane_code, 'PRINCIPAL', :address, :phone, :rector, :area_type)";
 
                 $stmtBranch = $this->conn->prepare($queryBranch);
                 $stmtBranch->bindParam(":school_id", $school_id);
                 $stmtBranch->bindParam(":pae_id", $pae_id);
+                $stmtBranch->bindParam(":dane_code", $data['dane_code']);
                 $stmtBranch->bindParam(":address", $data['address']);
                 $stmtBranch->bindParam(":phone", $data['phone']);
                 $stmtBranch->bindParam(":rector", $data['rector']);
@@ -174,7 +176,7 @@ class SchoolController
         }
 
         $query = "UPDATE " . $this->table_name . " 
-                  SET name = :name, rector = :rector, address = :address, phone = :phone, 
+                  SET dane_code = :dane_code, name = :name, rector = :rector, address = :address, phone = :phone, 
                       email = :email, department = :department, municipality = :municipality, 
                       school_type = :school_type, area_type = :area_type";
 
@@ -186,6 +188,7 @@ class SchoolController
         $query .= " WHERE id = :id AND pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":dane_code", $data['dane_code']);
         $stmt->bindParam(":name", $data['name']);
         $stmt->bindParam(":rector", $data['rector']);
         $stmt->bindParam(":address", $data['address']);

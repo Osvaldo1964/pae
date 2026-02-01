@@ -7,10 +7,10 @@ use Utils\JWT;
 use PDO;
 use Exception;
 
-class BranchController
+class SupplierController
 {
     private $conn;
-    private $table_name = "school_branches";
+    private $table_name = "suppliers";
 
     public function __construct()
     {
@@ -48,7 +48,7 @@ class BranchController
         return null;
     }
 
-    public function index($school_id = null)
+    public function index()
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
@@ -57,26 +57,13 @@ class BranchController
             return;
         }
 
-        $query = "SELECT b.*, s.name as school_name 
-                  FROM " . $this->table_name . " b
-                  JOIN schools s ON b.school_id = s.id
-                  WHERE b.pae_id = :pae_id";
-
-        if ($school_id) {
-            $query .= " AND b.school_id = :school_id";
-        }
-
-        $query .= " ORDER BY b.name ASC";
-
+        $query = "SELECT * FROM " . $this->table_name . " WHERE pae_id = :pae_id ORDER BY name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":pae_id", $pae_id);
-        if ($school_id) {
-            $stmt->bindParam(":school_id", $school_id);
-        }
         $stmt->execute();
 
-        $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($branches);
+        $suppliers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($suppliers);
     }
 
     public function create()
@@ -89,46 +76,49 @@ class BranchController
         }
 
         $data = json_decode(file_get_contents("php://input"));
+
         // Enforce casing
         if (isset($data->name)) $data->name = mb_strtoupper($data->name, 'UTF-8');
-        if (isset($data->manager_name)) $data->manager_name = mb_strtoupper($data->manager_name, 'UTF-8');
+        if (isset($data->contact_person)) $data->contact_person = mb_strtoupper($data->contact_person, 'UTF-8');
+        if (isset($data->city)) $data->city = mb_strtoupper($data->city, 'UTF-8');
+        if (isset($data->email)) $data->email = strtolower($data->email);
 
-
-        if (empty($data->school_id) || empty($data->name)) {
+        if (empty($data->nit) || empty($data->name)) {
             http_response_code(400);
-            echo json_encode(["message" => "ID de colegio y nombre de sede son requeridos."]);
+            echo json_encode(["message" => "NIT y Nombre son obligatorios."]);
             return;
         }
 
-        // Verify school ownership
-        $check = $this->conn->prepare("SELECT id FROM schools WHERE id = :id AND pae_id = :pae_id");
-        $check->execute(['id' => $data->school_id, 'pae_id' => $pae_id]);
-        if ($check->rowCount() == 0) {
-            http_response_code(404);
-            echo json_encode(["message" => "Colegio no encontrado."]);
+        // Check if NIT exists for this PAE
+        $check = $this->conn->prepare("SELECT id FROM suppliers WHERE nit = :nit AND pae_id = :pae_id");
+        $check->execute(['nit' => $data->nit, 'pae_id' => $pae_id]);
+        if ($check->rowCount() > 0) {
+            http_response_code(400);
+            echo json_encode(["message" => "Ya existe un proveedor con este NIT en su programa."]);
             return;
         }
 
         $query = "INSERT INTO " . $this->table_name . " 
-                  (school_id, pae_id, dane_code, name, address, phone, manager_name, area_type) 
-                  VALUES (:school_id, :pae_id, :dane_code, :name, :address, :phone, :manager_name, :area_type)";
+                  (pae_id, nit, name, contact_person, phone, email, address, city, type) 
+                  VALUES (:pae_id, :nit, :name, :contact_person, :phone, :email, :address, :city, :type)";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":school_id", $data->school_id);
         $stmt->bindParam(":pae_id", $pae_id);
-        $stmt->bindParam(":dane_code", $data->dane_code);
+        $stmt->bindParam(":nit", $data->nit);
         $stmt->bindParam(":name", $data->name);
-        $stmt->bindParam(":address", $data->address);
+        $stmt->bindParam(":contact_person", $data->contact_person);
         $stmt->bindParam(":phone", $data->phone);
-        $stmt->bindParam(":manager_name", $data->manager_name);
-        $stmt->bindParam(":area_type", $data->area_type);
+        $stmt->bindParam(":email", $data->email);
+        $stmt->bindParam(":address", $data->address);
+        $stmt->bindParam(":city", $data->city);
+        $stmt->bindParam(":type", $data->type);
 
         if ($stmt->execute()) {
             http_response_code(201);
-            echo json_encode(["message" => "Sede creada exitosamente.", "id" => $this->conn->lastInsertId()]);
+            echo json_encode(["message" => "Proveedor creado exitosamente.", "id" => $this->conn->lastInsertId()]);
         } else {
             http_response_code(500);
-            echo json_encode(["message" => "Error al crear sede."]);
+            echo json_encode(["message" => "Error al crear proveedor."]);
         }
     }
 
@@ -142,40 +132,46 @@ class BranchController
         }
 
         $data = json_decode(file_get_contents("php://input"));
+
         // Enforce casing
         if (isset($data->name)) $data->name = mb_strtoupper($data->name, 'UTF-8');
-        if (isset($data->manager_name)) $data->manager_name = mb_strtoupper($data->manager_name, 'UTF-8');
-
+        if (isset($data->contact_person)) $data->contact_person = mb_strtoupper($data->contact_person, 'UTF-8');
+        if (isset($data->city)) $data->city = mb_strtoupper($data->city, 'UTF-8');
+        if (isset($data->email)) $data->email = strtolower($data->email);
 
         // Verify ownership
-        $check = $this->conn->prepare("SELECT id FROM school_branches WHERE id = :id AND pae_id = :pae_id");
+        $check = $this->conn->prepare("SELECT id FROM suppliers WHERE id = :id AND pae_id = :pae_id");
         $check->execute(['id' => $id, 'pae_id' => $pae_id]);
         if ($check->rowCount() == 0) {
             http_response_code(404);
-            echo json_encode(["message" => "Sede no encontrada."]);
+            echo json_encode(["message" => "Proveedor no encontrado."]);
             return;
         }
 
         $query = "UPDATE " . $this->table_name . " 
-                  SET dane_code = :dane_code, name = :name, address = :address, phone = :phone, 
-                      manager_name = :manager_name, area_type = :area_type 
+                  SET nit = :nit, name = :name, contact_person = :contact_person, 
+                      phone = :phone, email = :email, address = :address, 
+                      city = :city, type = :type, status = :status
                   WHERE id = :id AND pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":dane_code", $data->dane_code);
+        $stmt->bindParam(":nit", $data->nit);
         $stmt->bindParam(":name", $data->name);
-        $stmt->bindParam(":address", $data->address);
+        $stmt->bindParam(":contact_person", $data->contact_person);
         $stmt->bindParam(":phone", $data->phone);
-        $stmt->bindParam(":manager_name", $data->manager_name);
-        $stmt->bindParam(":area_type", $data->area_type);
+        $stmt->bindParam(":email", $data->email);
+        $stmt->bindParam(":address", $data->address);
+        $stmt->bindParam(":city", $data->city);
+        $stmt->bindParam(":type", $data->type);
+        $stmt->bindParam(":status", $data->status);
         $stmt->bindParam(":id", $id);
         $stmt->bindParam(":pae_id", $pae_id);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Sede actualizada exitosamente."]);
+            echo json_encode(["message" => "Proveedor actualizado exitosamente."]);
         } else {
             http_response_code(500);
-            echo json_encode(["message" => "Error al actualizar sede."]);
+            echo json_encode(["message" => "Error al actualizar proveedor."]);
         }
     }
 
@@ -194,10 +190,10 @@ class BranchController
         $stmt->bindParam(":pae_id", $pae_id);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Sede eliminada exitosamente."]);
+            echo json_encode(["message" => "Proveedor eliminado exitosamente."]);
         } else {
             http_response_code(500);
-            echo json_encode(["message" => "Error al eliminar sede."]);
+            echo json_encode(["message" => "Error al eliminar proveedor."]);
         }
     }
 }

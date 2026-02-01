@@ -156,7 +156,11 @@ const App = {
                     'sedes': 'schools',
                     'sedes_educativas': 'schools',
                     'pae-programs': 'pae-programs',
-                    'roles': 'roles'
+                    'roles': 'roles',
+                    'proveedores': 'suppliers',
+                    'beneficiarios': 'beneficiaries',
+                    'items': 'items',
+                    'team': 'team'
                 };
 
                 App.loadView(viewMap[route] || route);
@@ -559,13 +563,13 @@ const App = {
             sidebarList.appendChild(li);
         });
 
-        // Add specific menu item for Users if the user has the 'admin' role
-        if (App.state.user && App.state.user.role_name === 'admin') {
+        // Add 'Usuarios' menu item ONLY for Super Admin (role_id = 1)
+        if (App.state.user && App.state.user.role_id === 1) {
             const usersLi = document.createElement('li');
             usersLi.className = 'nav-item mb-2';
             usersLi.innerHTML = `
-                <a href="#module/users" class="nav-link text-white">
-                    <i class="fas fa-users me-2"></i> Usuarios
+                <a href="#users" class="nav-link text-white">
+                    <i class="fas fa-users-cog me-2"></i> Usuarios
                 </a>
             `;
             sidebarList.appendChild(usersLi);
@@ -588,6 +592,11 @@ const App = {
 
         let cardsHtml = '';
         group.modules.forEach(mod => {
+            // SECURITY: Hide "Usuarios" module from non-Super Admin users
+            if (mod.route === 'users' && App.state.user && App.state.user.role_id !== 1) {
+                return; // Skip this module
+            }
+
             cardsHtml += `
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm hover-card">
@@ -616,6 +625,24 @@ const App = {
                             <h5 class="card-title">Programas PAE</h5>
                             <p class="card-text small text-muted">Gestión de entidades y operadores (Super Admin)</p>
                             <a href="#module/pae-programs" class="nav-link btn btn-outline-primary btn-sm stretched-link">Ingresar</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Inject special card for Mi Equipo if it's the Configuration group and user is PAE Administrator
+        if (group.name === 'Configuración' && App.state.user && App.state.user.role_id !== 1 && App.state.user.pae_id) {
+            cardsHtml += `
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-card border-success">
+                        <div class="card-body text-center">
+                            <div class="icon-circle mb-3 mx-auto" style="background-color: #d4edda;">
+                                <i class="fas fa-users fa-2x text-success"></i>
+                            </div>
+                            <h5 class="card-title">Mi Equipo</h5>
+                            <p class="card-text small text-muted">Gestión de miembros del equipo de trabajo</p>
+                            <a href="#module/team" class="btn btn-outline-success btn-sm stretched-link">Ingresar</a>
                         </div>
                     </div>
                 </div>

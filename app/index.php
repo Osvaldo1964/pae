@@ -165,7 +165,7 @@
     <script src="/pae/app/assets/plugins/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- App Logic -->
-    <?php $version = "1.2.1"; ?>
+    <?php $version = "1.3.0"; ?>
     <script src="/pae/app/assets/js/core/config.js?v=<?= $version ?>"></script>
     <script src="/pae/app/assets/js/core/helper.js?v=<?= $version ?>"></script>
     <script src="/pae/app/assets/js/core/app.js?v=<?= $version ?>"></script>

@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS schools (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pae_id INT NOT NULL,
+    dane_code VARCHAR(50), 
     name VARCHAR(255) NOT NULL,
     rector VARCHAR(255),
     address VARCHAR(255),
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS school_branches (
     id INT AUTO_INCREMENT PRIMARY KEY,
     school_id INT NOT NULL,
     pae_id INT NOT NULL,
+    dane_code VARCHAR(50),
     name VARCHAR(255) NOT NULL,
     address VARCHAR(255),
     phone VARCHAR(50),

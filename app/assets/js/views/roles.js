@@ -116,7 +116,7 @@ var RolesPermissionsView = {
             if (res.success) {
                 this.roles = res.data;
                 this.canModifyRoles = res.can_modify_roles;
-                
+
                 if (this.canModifyRoles) {
                     document.getElementById('role-actions-top').style.display = 'block';
                 }
@@ -140,6 +140,10 @@ var RolesPermissionsView = {
     },
 
     renderRolesTable() {
+        if ($.fn.DataTable.isDataTable('#rolesTable')) {
+            $('#rolesTable').DataTable().destroy();
+        }
+
         const tbody = document.getElementById('roles-table-body');
         if (!tbody) return;
         tbody.innerHTML = '';
@@ -170,9 +174,6 @@ var RolesPermissionsView = {
             `;
         });
 
-        if ($.fn.DataTable.isDataTable('#rolesTable')) {
-            $('#rolesTable').DataTable().destroy();
-        }
         Helper.initDataTable('#rolesTable');
     },
 
@@ -182,7 +183,7 @@ var RolesPermissionsView = {
         document.getElementById('role-name-input').value = role ? role.name : '';
         document.getElementById('role-description-input').value = role ? role.description : '';
         document.getElementById('modalRoleTitle').innerText = role ? 'Editar Rol' : 'Nuevo Rol';
-        
+
         new bootstrap.Modal(document.getElementById('modalRole')).show();
     },
 
@@ -217,10 +218,10 @@ var RolesPermissionsView = {
     async openPermissionsModal(roleId) {
         this.selectedRoleId = roleId;
         const role = this.roles.find(r => r.id == roleId);
-        
+
         // Show loading state or clear
         document.getElementById('permissions-modal-body').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
-        
+
         const modal = new bootstrap.Modal(document.getElementById('modalPermissions'));
         modal.show();
 
@@ -299,7 +300,7 @@ var RolesPermissionsView = {
         });
 
         container.innerHTML = html;
-        
+
         // Casing trick for small text
         const style = document.createElement('style');
         style.innerHTML = '.x-small { font-size: 0.75rem; }';
@@ -320,7 +321,7 @@ var RolesPermissionsView = {
         // The current backend updatePermissions expects one module at a time.
         // I will Loop through and save all changed ones, or better, implement a bulk save on backend later.
         // For now, I'll stick to the current backend API but optimize by only sending what changed or just batch calls.
-        
+
         Helper.alert('info', 'Procesando cambios...', '', false);
 
         try {

@@ -176,6 +176,22 @@ if ($resource === 'auth') {
         http_response_code(405);
         echo json_encode(["message" => "Method Not Allowed"]);
     }
+} elseif ($resource === 'team') {
+    require_once __DIR__ . '/utils/JWT.php';
+    $controller = new \Controllers\TeamController();
+
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->create();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
 } elseif ($resource === 'roles') {
     $controller = new \Controllers\RoleController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -283,6 +299,62 @@ if ($resource === 'auth') {
         $controller->update($action);
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
         $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'proveedores') {
+    $controller = new \Controllers\SupplierController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->create();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'beneficiarios') {
+    $controller = new \Controllers\BeneficiaryController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action === 'document_types') {
+            $controller->getDocumentTypes();
+        } elseif ($action === 'ethnic_groups') {
+            $controller->getEthnicGroups();
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->create();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'items') {
+    $controller = new \Controllers\ItemController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action === 'food-groups') {
+            $controller->getFoodGroups();
+        } elseif ($action === 'measurement-units') {
+            $controller->getMeasurementUnits();
+        } elseif ($action && is_numeric($action)) {
+            $controller->show($action);
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->destroy($action);
     } else {
         http_response_code(405);
         echo json_encode(["message" => "Method Not Allowed"]);
