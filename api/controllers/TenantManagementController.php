@@ -2,6 +2,8 @@
 
 namespace Controllers;
 
+use Config\Config;
+
 class TenantManagementController
 {
     private $db;
@@ -167,7 +169,7 @@ class TenantManagementController
      */
     private function uploadLogo($file, $prefix)
     {
-        $uploadDir = __DIR__ . '/../../uploads/logos/';
+        $uploadDir = Config::getUploadDir();
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -177,7 +179,7 @@ class TenantManagementController
         $filepath = $uploadDir . $filename;
 
         if (move_uploaded_file($file['tmp_name'], $filepath)) {
-            return 'uploads/logos/' . $filename;
+            return 'assets/img/logos/' . $filename;
         }
 
         return null;
@@ -186,7 +188,19 @@ class TenantManagementController
     private function validateLogoPath($path)
     {
         if (!$path) return null;
-        $fullPath = __DIR__ . '/../../' . $path;
-        return file_exists($fullPath) ? $path : null;
+
+        // If it starts with assets/, it's already in the new format or a default
+        $fullPath = __DIR__ . '/../../app/' . $path;
+
+        // Check if file exists, if not, it might be in the old uploads/ directory (for migration)
+        if (!file_exists($fullPath)) {
+            $oldPath = __DIR__ . '/../../' . $path;
+            if (file_exists($oldPath)) {
+                return $path;
+            }
+            return null;
+        }
+
+        return $path;
     }
 }

@@ -1,10 +1,5 @@
-/**
- * PAE Programs Management View
- * Allows Super Admin to manage PAE programs (CRUD)
- * Including logo uploads and program details
- */
-
-const PaeProgramsView = {
+// Use var or global assignment to avoid "already declared" errors on SPA navigation
+var PaeProgramsView = {
     programs: [],
 
     /**
@@ -180,27 +175,18 @@ const PaeProgramsView = {
     async loadPrograms() {
         console.log("PaeProgramsView: Loading programs...");
         try {
-            const response = await fetch(`${Config.API_URL}/tenant/list`, {
-                headers: Config.getHeaders()
-            });
-
-            if (!response.ok) {
-                console.error("PaeProgramsView: Server error", response.status);
-                throw new Error(`Server returned ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await Helper.fetchAPI('/tenant/list');
             console.log("PaeProgramsView: Programs loaded", data);
 
             if (Array.isArray(data)) {
                 this.programs = data;
                 this.renderTable();
             } else {
-                Swal.fire('Error', 'Error al cargar programas', 'error');
+                Helper.alert('error', data.message || 'Error al cargar programas');
             }
         } catch (error) {
             console.error('Error loading programs:', error);
-            Swal.fire('Error', 'Error al cargar programas', 'error');
+            Helper.alert('error', 'Error al cargar programas');
         }
     },
 
@@ -219,11 +205,15 @@ const PaeProgramsView = {
         }
 
         this.programs.forEach(pae => {
-            const entityUrl = pae.entity_logo_path ? `/pae/${pae.entity_logo_path.replace(/^assets\//, '')}` : '/pae/app/assets/img/default_entity.png';
-            const entityLogo = `<img src="${entityUrl}" alt="Entidad" style="height: 30px;" onerror="this.onerror=null; this.src='/pae/app/assets/img/default_entity.png'">`;
+            const defaultEntity = `${Config.BASE_URL}assets/img/logos/default_entity.png`;
+            const defaultOperator = `${Config.BASE_URL}assets/img/logos/default_operator.png`;
 
-            const operatorUrl = pae.operator_logo_path ? `/pae/${pae.operator_logo_path.replace(/^assets\//, '')}` : '/pae/app/assets/img/default_operator.png';
-            const operatorLogo = `<img src="${operatorUrl}" alt="Operador" style="height: 30px;" onerror="this.onerror=null; this.src='/pae/app/assets/img/default_operator.png'">`;
+            // If path starts with assets/, it's relative to app/
+            const entityUrl = pae.entity_logo_path ? `${Config.BASE_URL}${pae.entity_logo_path}` : defaultEntity;
+            const operatorUrl = pae.operator_logo_path ? `${Config.BASE_URL}${pae.operator_logo_path}` : defaultOperator;
+
+            const entityLogo = `<img src="${entityUrl}" alt="Entidad" style="height: 30px;" onerror="this.onerror=null; this.src='${defaultEntity}'">`;
+            const operatorLogo = `<img src="${operatorUrl}" alt="Operador" style="height: 30px;" onerror="this.onerror=null; this.src='${defaultOperator}'">`;
 
             tbody.innerHTML += `
                 <tr>
@@ -315,13 +305,12 @@ const PaeProgramsView = {
         const paeId = document.getElementById('pae-id').value;
         const isEdit = !!paeId;
 
-        // Validation
         if (!document.getElementById('pae-name').value ||
             !document.getElementById('entity-name').value ||
             !document.getElementById('entity-nit').value ||
             !document.getElementById('operator-name').value ||
             !document.getElementById('operator-nit').value) {
-            Swal.fire('Error', 'Complete los campos obligatorios', 'warning');
+            Helper.alert('warning', 'Complete los campos obligatorios');
             return;
         }
 
@@ -347,29 +336,23 @@ const PaeProgramsView = {
         if (operatorLogo) formData.append('operator_logo', operatorLogo);
 
         try {
-            const url = isEdit ? `${Config.API_URL}/tenant/update/${paeId}` : `${Config.API_URL}/tenant/register`;
-            const method = 'POST'; // Use POST for both create and update to support FormData/Files in PHP
-
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Authorization': `Bearer ${Config.getToken()}`
-                },
-                body: formData
+            const endpoint = isEdit ? `/tenant/update/${paeId}` : '/tenant/register';
+            const data = await Helper.fetchAPI(endpoint, {
+                method: 'POST',
+                body: formData,
+                headers: {} // Let fetch set Content-Type for FormData
             });
 
-            const data = await response.json();
-
-            if (data.success || response.ok) {
-                Swal.fire('Éxito', isEdit ? 'Programa actualizado' : 'Programa creado', 'success');
+            if (data.success) {
+                Helper.alert('success', isEdit ? 'Programa actualizado' : 'Programa creado');
                 bootstrap.Modal.getInstance(document.getElementById('modalPae')).hide();
                 await this.loadPrograms();
             } else {
-                Swal.fire('Error', data.message || 'Error al guardar', 'error');
+                Helper.alert('error', data.message || 'Error al guardar');
             }
         } catch (error) {
             console.error('Error saving PAE:', error);
-            Swal.fire('Error', 'Error al guardar programa', 'error');
+            Helper.alert('error', 'Error al guardar programa');
         }
     },
 
@@ -377,36 +360,22 @@ const PaeProgramsView = {
      * Delete PAE program
      */
     async delete(id) {
-        const result = await Swal.fire({
-            title: '¿Eliminar programa?',
-            text: 'Esta acción no se puede deshacer',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        });
-
-        if (!result.isConfirmed) return;
+        if (!await Helper.confirm('Esta acción no se puede deshacer', '¿Eliminar programa?')) return;
 
         try {
-            const response = await fetch(`${Config.API_URL}/tenant/delete/${id}`, {
-                method: 'DELETE',
-                headers: Config.getHeaders()
+            const data = await Helper.fetchAPI(`/tenant/delete/${id}`, {
+                method: 'DELETE'
             });
 
-            const data = await response.json();
-
-            if (data.success || response.ok) {
-                Swal.fire('Eliminado', 'Programa eliminado exitosamente', 'success');
+            if (data.success) {
+                Helper.alert('success', 'Programa eliminado exitosamente');
                 await this.loadPrograms();
             } else {
-                Swal.fire('Error', data.message || 'Error al eliminar', 'error');
+                Helper.alert('error', data.message || 'Error al eliminar');
             }
         } catch (error) {
             console.error('Error deleting PAE:', error);
-            Swal.fire('Error', 'Error al eliminar programa', 'error');
+            Helper.alert('error', 'Error al eliminar programa');
         }
     }
 };

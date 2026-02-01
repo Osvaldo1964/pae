@@ -4,8 +4,9 @@
  */
 
 const Config = {
-    // Base URL for the application
-    BASE_URL: '/pae',
+    VERSION: '1.2.1', // Bump this to clear cache
+    // Base URL for the application (relative to root or full domain)
+    BASE_URL: '/pae/app/',
 
     // API Base URL
     API_URL: '/pae/api',

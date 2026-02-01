@@ -94,5 +94,86 @@ const Helper = {
     parseMoney: (str) => {
         if (!str) return 0;
         return parseFloat(str.replace(/[^0-9,-]/g, '').replace(',', '.'));
+    },
+
+    /**
+     * Centralized fetch wrapper
+     */
+    fetchAPI: async (endpoint, options = {}) => {
+        const url = endpoint.startsWith('http') ? endpoint : `${Config.API_URL}${endpoint}`;
+
+        const defaultHeaders = Config.getHeaders();
+        const settings = {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...(options.headers || {})
+            }
+        };
+
+        // If body is FormData, do NOT set Content-Type (let the browser do it with boundary)
+        if (options.body instanceof FormData) {
+            delete settings.headers['Content-Type'];
+        }
+
+        try {
+            const response = await fetch(url, settings);
+
+            // Handle Global Session Expiry (401/403)
+            if (response.status === 401 || response.status === 403) {
+                const data = await response.json();
+                if (data.message && (data.message.includes('Token') || data.message.includes('No autorizado'))) {
+                    console.warn("Session expired or unauthorized. Redirecting to login...");
+                    if (typeof App !== 'undefined' && App.logout) {
+                        App.logout();
+                    } else {
+                        localStorage.removeItem('pae_token');
+                        window.location.hash = '#login';
+                    }
+                }
+                return data;
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Fetch API Error (${endpoint}):`, error);
+            throw error;
+        }
+    },
+
+    /**
+     * Standardized Alert
+     */
+    alert: (type, message, title = '') => {
+        const titles = {
+            success: '¡Éxito!',
+            error: 'Error',
+            warning: 'Atención',
+            info: 'Información'
+        };
+
+        return Swal.fire({
+            title: title || titles[type] || '',
+            text: message,
+            icon: type,
+            confirmButtonColor: '#1B4F72'
+        });
+    },
+
+    /**
+     * Standardized Confirmation
+     */
+    confirm: async (message, title = '¿Estás seguro?') => {
+        const result = await Swal.fire({
+            title: title,
+            text: message,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+        });
+        return result.isConfirmed;
     }
 };

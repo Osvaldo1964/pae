@@ -165,9 +165,10 @@
     <script src="/pae/app/assets/plugins/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- App Logic -->
-    <script src="/pae/app/assets/js/core/config.js?v=<?= time() ?>"></script>
-    <script src="/pae/app/assets/js/core/helper.js?v=<?= time() ?>"></script>
-    <script src="/pae/app/assets/js/core/app.js?v=<?= time() ?>"></script>
+    <?php $version = "1.2.1"; ?>
+    <script src="/pae/app/assets/js/core/config.js?v=<?= $version ?>"></script>
+    <script src="/pae/app/assets/js/core/helper.js?v=<?= $version ?>"></script>
+    <script src="/pae/app/assets/js/core/app.js?v=<?= $version ?>"></script>
     <script src="/pae/app/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/pae/app/assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 </body>

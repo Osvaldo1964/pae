@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Config\Database;
+use Config\Config;
 use Utils\JWT;
 use PDO;
 
@@ -143,10 +144,10 @@ class AuthController
     private function issueToken($user)
     {
         $payload = [
-            "iss" => "http://localhost/pae",
-            "aud" => "http://localhost/pae",
+            "iss" => Config::BASE_URL,
+            "aud" => Config::BASE_URL,
             "iat" => time(),
-            "exp" => time() + (60 * 60 * 24),
+            "exp" => time() + (60 * 60), // 1 hour expiration
             "data" => [
                 "id" => $user['id'],
                 "username" => $user['username'],
@@ -179,8 +180,21 @@ class AuthController
     private function validateLogoPath($path)
     {
         if (!$path) return null;
-        $fullPath = __DIR__ . '/../../' . $path;
-        return file_exists($fullPath) ? $path : null;
+
+        // Check relative to app/ directory where logos live
+        $fullPath = __DIR__ . '/../../app/' . $path;
+
+        if (file_exists($fullPath)) {
+            return $path;
+        }
+
+        // Fallback check for old paths (relative to root)
+        $oldPath = __DIR__ . '/../../' . $path;
+        if (file_exists($oldPath)) {
+            return $path;
+        }
+
+        return null;
     }
 
     public function getMenu()

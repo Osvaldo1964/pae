@@ -37,7 +37,15 @@ class JWT
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
 
         if ($base64UrlSignature === $signature_provided) {
-            return json_decode($payload, true);
+            $payload_decoded = json_decode($payload, true);
+
+            // Check expiration if present
+            if (isset($payload_decoded['exp']) && $payload_decoded['exp'] < time()) {
+                error_log("JWT Expired: " . $token);
+                return null;
+            }
+
+            return $payload_decoded;
         }
         return null;
     }

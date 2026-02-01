@@ -81,6 +81,7 @@ if ($resource === 'auth') {
         }
 
         require_once __DIR__ . '/controllers/TenantManagementController.php';
+        $db = \Config\Database::getInstance()->getConnection();
         $mgmtController = new \Controllers\TenantManagementController($db);
         $mgmtController->listAll($decoded['data']);
     } elseif ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -160,6 +161,7 @@ if ($resource === 'auth') {
         echo json_encode(["message" => "Public Action Not Found"]);
     }
 } elseif ($resource === 'users') {
+    require_once __DIR__ . '/utils/JWT.php';
     $controller = new \Controllers\UserController();
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -254,6 +256,36 @@ if ($resource === 'auth') {
     } else {
         http_response_code(404);
         echo json_encode(["message" => "Permission Action Not Found"]);
+    }
+} elseif ($resource === 'schools') {
+    $controller = new \Controllers\SchoolController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && (!$action || $action === '')) {
+        $controller->create();
+    } elseif ($action === 'update' || $_SERVER['REQUEST_METHOD'] === 'PUT' || ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['_method'] === 'PUT')) {
+        $id = ($action === 'update') ? ($uri[5] ?? null) : ($action ?: ($_POST['id'] ?? null));
+        $controller->update($id);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'branches') {
+    $controller = new \Controllers\BranchController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $school_id = isset($uri[4]) ? $uri[4] : ($_GET['school_id'] ?? null);
+        $controller->index($school_id);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->create();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
     }
 } else {
     http_response_code(404);

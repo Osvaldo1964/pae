@@ -71,7 +71,7 @@ class UserController
         // Actually, if the Super Admin is masquerading, they ARE user ID 1.
         // We should exclude ID 1 specifically to be safe, or role_id 1.
 
-        $query = "SELECT u.id, u.username, u.full_name, u.role_id, r.name as role_name, u.created_at 
+        $query = "SELECT u.id, u.username, u.full_name, u.address, u.phone, u.role_id, r.name as role_name, u.created_at 
                   FROM " . $this->table_name . " u
                   LEFT JOIN roles r ON u.role_id = r.id
                   WHERE u.pae_id = :pae_id AND u.role_id != 1
@@ -95,6 +95,10 @@ class UserController
         }
 
         $data = json_decode(file_get_contents("php://input"));
+        // Enforce casing
+        if (isset($data->full_name)) $data->full_name = mb_strtoupper($data->full_name, 'UTF-8');
+        if (isset($data->username)) $data->username = strtolower($data->username);
+
 
         if (!empty($data->username) && !empty($data->password) && !empty($data->full_name) && !empty($data->role_id)) {
 
@@ -117,8 +121,8 @@ class UserController
             }
 
             $query = "INSERT INTO " . $this->table_name . " 
-                      (username, password, full_name, role_id, pae_id) 
-                      VALUES (:username, :password, :full_name, :role_id, :pae_id)";
+                      (username, password_hash, full_name, address, phone, role_id, pae_id) 
+                      VALUES (:username, :password, :full_name, :address, :phone, :role_id, :pae_id)";
 
             $stmt = $this->conn->prepare($query);
 
@@ -127,6 +131,8 @@ class UserController
             $stmt->bindParam(":username", $data->username);
             $stmt->bindParam(":password", $password_hash);
             $stmt->bindParam(":full_name", $data->full_name);
+            $stmt->bindParam(":address", $data->address);
+            $stmt->bindParam(":phone", $data->phone);
             $stmt->bindParam(":role_id", $data->role_id);
             $stmt->bindParam(":pae_id", $pae_id);
 
@@ -153,6 +159,10 @@ class UserController
         }
 
         $data = json_decode(file_get_contents("php://input"));
+        // Enforce casing
+        if (isset($data->full_name)) $data->full_name = mb_strtoupper($data->full_name, 'UTF-8');
+        if (isset($data->username)) $data->username = strtolower($data->username);
+
 
         // Verify User Ownership & Existence
         $checkQuery = "SELECT id FROM " . $this->table_name . " WHERE id = :id AND pae_id = :pae_id AND role_id != 1";
@@ -174,11 +184,11 @@ class UserController
             return;
         }
 
-        $query = "UPDATE " . $this->table_name . " SET full_name = :full_name, role_id = :role_id";
+        $query = "UPDATE " . $this->table_name . " SET full_name = :full_name, address = :address, phone = :phone, role_id = :role_id";
 
         // Only update password if provided
         if (!empty($data->password)) {
-            $query .= ", password = :password";
+            $query .= ", password_hash = :password";
         }
 
         $query .= " WHERE id = :id AND pae_id = :pae_id";
@@ -186,6 +196,8 @@ class UserController
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(":full_name", $data->full_name);
+        $stmt->bindParam(":address", $data->address);
+        $stmt->bindParam(":phone", $data->phone);
         $stmt->bindParam(":role_id", $data->role_id);
         $stmt->bindParam(":id", $id);
         $stmt->bindParam(":pae_id", $pae_id);

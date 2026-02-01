@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Config\Database;
+use Config\Config;
 use PDO;
 
 class TenantController
@@ -26,7 +27,7 @@ class TenantController
                 $this->conn->beginTransaction();
 
                 // Handle File Uploads
-                $uploadDir = __DIR__ . '/../../assets/uploads/logos/';
+                $uploadDir = Config::getUploadDir();
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
@@ -38,7 +39,7 @@ class TenantController
                     $ext = pathinfo($_FILES['entity_logo']['name'], PATHINFO_EXTENSION);
                     $filename = 'entity_' . time() . '.' . $ext;
                     if (move_uploaded_file($_FILES['entity_logo']['tmp_name'], $uploadDir . $filename)) {
-                        $entityLogoPath = 'assets/uploads/logos/' . $filename;
+                        $entityLogoPath = 'assets/img/logos/' . $filename;
                     }
                 }
 
@@ -46,7 +47,7 @@ class TenantController
                     $ext = pathinfo($_FILES['operator_logo']['name'], PATHINFO_EXTENSION);
                     $filename = 'operator_' . time() . '.' . $ext;
                     if (move_uploaded_file($_FILES['operator_logo']['tmp_name'], $uploadDir . $filename)) {
-                        $operatorLogoPath = 'assets/uploads/logos/' . $filename;
+                        $operatorLogoPath = 'assets/img/logos/' . $filename;
                     }
                 }
 

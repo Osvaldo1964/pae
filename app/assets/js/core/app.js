@@ -1,5 +1,5 @@
 const App = {
-    apiBase: '/pae/api',
+    apiBase: Config.API_URL,
     state: {
         user: null,
         token: localStorage.getItem('pae_token') || null,
@@ -16,6 +16,15 @@ const App = {
             }).join(''));
 
             const payload = JSON.parse(jsonPayload);
+
+            // Client-side expiration check
+            if (payload.exp && payload.exp < (Date.now() / 1000)) {
+                console.warn("Client-side: Token expired");
+                localStorage.removeItem('pae_token');
+                App.state.token = null;
+                return;
+            }
+
             if (payload.data) {
                 App.state.user = {
                     ...payload.data,
@@ -65,15 +74,19 @@ const App = {
             let brandingHtml = '';
             brandingHtml += '<div class="d-flex align-items-center justify-content-center">';
 
+            // Use Config for base paths
+            const defaultEntity = `${Config.BASE_URL}assets/img/logos/default_entity.png`;
+            const defaultOperator = `${Config.BASE_URL}assets/img/logos/default_operator.png`;
+
             // Entity Logo
-            const entityPath = entityLogo ? entityLogo.replace(/^assets\//, '') : 'app/assets/img/default_entity.png';
-            brandingHtml += `<img src="/pae/${entityPath}" alt="Entidad" class="me-3" style="height: 45px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='/pae/app/assets/img/default_entity.png'">`;
+            const entityUrl = entityLogo ? `${Config.BASE_URL}${entityLogo}` : `${Config.BASE_URL}assets/img/logos/default_entity.png`;
+            brandingHtml += `<img src="${entityUrl}" alt="Entidad" class="me-3" style="height: 45px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='${Config.BASE_URL}assets/img/logos/default_entity.png'">`;
 
             brandingHtml += `<h5 class="mb-0 text-primary-custom fw-bold text-uppercase" style="letter-spacing: 0.5px;">${paeName}</h5>`;
 
             // Operator Logo
-            const operatorPath = operatorLogo ? operatorLogo.replace(/^assets\//, '') : 'app/assets/img/default_operator.png';
-            brandingHtml += `<img src="/pae/${operatorPath}" alt="Operador" class="ms-3 d-none d-md-block" style="height: 45px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='/pae/app/assets/img/default_operator.png'">`;
+            const operatorUrl = operatorLogo ? `${Config.BASE_URL}${operatorLogo}` : `${Config.BASE_URL}assets/img/logos/default_operator.png`;
+            brandingHtml += `<img src="${operatorUrl}" alt="Operador" class="ms-3 d-none d-md-block" style="height: 45px; width: auto; object-fit: contain;" onerror="this.onerror=null; this.src='${Config.BASE_URL}assets/img/logos/default_operator.png'">`;
 
             brandingHtml += '</div>';
             headerInfo.innerHTML = brandingHtml;
@@ -134,31 +147,43 @@ const App = {
             } else if (hash.startsWith('group/')) {
                 const groupId = hash.split('/')[1];
                 App.renderGroupHub(groupId);
-            } else if (hash === 'users' || hash === 'module/users') {
+            } else if (hash.startsWith('module/')) {
+                const route = hash.split('/')[1];
+                console.log("Loading Module:", route);
+
+                // Map specific routes to view files if name differs
+                const viewMap = {
+                    'sedes': 'schools',
+                    'sedes_educativas': 'schools',
+                    'pae-programs': 'pae-programs',
+                    'roles': 'roles'
+                };
+
+                App.loadView(viewMap[route] || route);
+            } else if (hash === 'users') {
                 App.renderUsers();
-            } else if (hash === 'roles' || hash === 'module/roles') {
-                App.loadView('roles');
-            } else if (hash === 'pae-programs' || hash === 'module/pae-programs') {
-                App.loadView('pae-programs');
             } else {
-                console.log("Unknown Hash:", hash);
-                appContainer.innerHTML = `<h2>Módulo: ${hash}</h2><p>En construcción... (v2)</p>`;
+                console.warn("Unknown Hash:", hash);
+                appContainer.innerHTML = `
+                    <div class="text-center mt-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h2>Módulo no encontrado</h2>
+                        <p class="text-muted">El recurso "${hash}" no está disponible o sigue en construcción.</p>
+                        <a href="#dashboard" class="btn btn-primary mt-3">Volver al Dashboard</a>
+                    </div>
+                `;
             }
         }
     },
 
     api: async (endpoint, method = 'GET', body = null) => {
-        const headers = { 'Content-Type': 'application/json' };
-        if (App.state.token) {
-            headers['Authorization'] = `Bearer ${App.state.token}`;
+        const options = { method };
+        if (body) {
+            options.body = typeof body === 'string' ? body : JSON.stringify(body);
         }
 
-        const options = { method, headers };
-        if (body) options.body = JSON.stringify(body);
-
         try {
-            const res = await fetch(`${App.apiBase}${endpoint}`, options);
-            return await res.json();
+            return await Helper.fetchAPI(endpoint, options);
         } catch (err) {
             console.error(err);
             return { error: true, message: 'Network Error' };
@@ -223,7 +248,7 @@ const App = {
                     <div class="card shadow">
                         <div class="card-header bg-white text-center py-3 border-bottom-0">
                             <h4 class="text-primary-custom mb-3"><i class="fas fa-lock me-2"></i>Acceso Seguro</h4>
-                            <img src="/pae/app/assets/img/logo_ovc.png" alt="OVCSYSTEMS" class="img-fluid mb-2" style="max-height: 120px;">
+                            <img src="${Config.BASE_URL}assets/img/logos/logo_ovc.png" alt="OVCSYSTEMS" class="img-fluid mb-2" style="max-height: 120px;">
                         </div>
                         <div class="card-body p-4">
                             <form id="loginForm">
@@ -539,7 +564,7 @@ const App = {
             const usersLi = document.createElement('li');
             usersLi.className = 'nav-item mb-2';
             usersLi.innerHTML = `
-                <a href="#users" class="nav-link text-white">
+                <a href="#module/users" class="nav-link text-white">
                     <i class="fas fa-users me-2"></i> Usuarios
                 </a>
             `;
@@ -590,7 +615,7 @@ const App = {
                             </div>
                             <h5 class="card-title">Programas PAE</h5>
                             <p class="card-text small text-muted">Gestión de entidades y operadores (Super Admin)</p>
-                            <a href="#pae-programs" class="nav-link btn btn-outline-primary btn-sm stretched-link">Ingresar</a>
+                            <a href="#module/pae-programs" class="nav-link btn btn-outline-primary btn-sm stretched-link">Ingresar</a>
                         </div>
                     </div>
                 </div>
@@ -616,9 +641,16 @@ const App = {
         // Create container for the view
         appContainer.innerHTML = '<div id="app-container"></div>';
 
-        // Load the view script
+        // Remove previous script instances for this view to avoid accumulation (optional but cleaner)
+        const oldScript = document.getElementById(`script-view-${viewName}`);
+        if (oldScript) oldScript.remove();
+
+        // Cache busting for view scripts using global version
+        const version = Config.VERSION || new Date().getTime();
         const script = document.createElement('script');
-        script.src = `/pae/app/assets/js/views/${viewName}.js?v=${Date.now()}`;
+        script.id = `script-view-${viewName}`;
+        script.src = `${Config.BASE_URL}assets/js/views/${viewName}.js?v=${version}`;
+
         script.onerror = () => {
             appContainer.innerHTML = `
                 <div class="alert alert-danger">
