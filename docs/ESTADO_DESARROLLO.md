@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 01 de Febrero de 2026, 18:45  
-**Versión:** 1.4.1 (Fase 3 - Cocina: Recetario Completado)
+**Última Actualización:** 01 de Febrero de 2026, 21:45  
+**Versión:** 1.5.0 (Fase 3 - Cocina: Minutas y Ciclos Completados)
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Categoría | Estado | Progreso |
 |-----------|--------|----------|
-| **Backend API** | 🟢 Funcional | 95% |
-| **Frontend Core** | 🟢 Funcional | 95% |
-| **Base de Datos** | 🟢 Estable | 95% |
+| **Backend API** | 🟢 Funcional | 98% |
+| **Frontend Core** | 🟢 Funcional | 98% |
+| **Base de Datos** | 🟢 Estable | 98% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
-| **Módulos Operativos** | 🟡 En Desarrollo | 55% |
+| **Módulos Operativos** | 🟡 En Desarrollo | 70% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -98,6 +98,14 @@
 - [x] **UX:** Scroll interno y modales dinámicos para gestión a gran escala.
 - [x] **Bug Fixes:** Corrección de redirecciones y carga de ingredientes en edición.
 
+### 9. Módulo de Minutas y Ciclos ✅ ⭐ NUEVO
+- [x] **Backend:** `CycleTemplateController.php` y `MenuCycleController.php`.
+- [x] **Plantillas Maestras:** Estructura de 20 días con platos base vinculados al recetario.
+- [x] **Generador de Ciclos:** Motor de calendario automático que omite sábados y domingos.
+- [x] **Frontend:** Interfaz de doble pestaña (Ciclos Activos vs Plantillas Standard).
+- [x] **Aplicación Rápida:** Funcionalidad de clonación de plantilla a calendario mensual.
+- [x] **Validaciones:** Restricción de eliminación para ciclos activos o validados nutricionalmente.
+
 ---
 
 ## 🚧 EN DESARROLLO
@@ -113,7 +121,7 @@
 ### Fase 3 (Cocina) - EN CURSO
 - [x] **Ítems:** COMPLETADO ✅
 - [x] **Recetario:** COMPLETADO ✅
-- [ ] **Minutas:** Planeación de menús y ciclos (Integración con recetario)
+- [x] **Minutas:** COMPLETADO ✅
 - [ ] **Almacén:** Entradas, salidas e inventario
 - [ ] **Novedades:** Reporte de ausentismos y retiros
 
@@ -124,65 +132,46 @@
 
 ---
 
-## 🔧 CORRECCIONES RECIENTES (v1.3.4)
+## 🔧 CORRECCIONES RECIENTES (v1.5.0)
 
-### Códigos DANE
-- ✅ Agregada columna `dane_code` a tabla `schools`
-- ✅ Agregada columna `dane_code` a tabla `school_branches`
-- ✅ Cada sede tiene su propio código DANE independiente
+### Módulo de Minutas
+- ✅ Implementada lógica de cálculo de fechas para ciclos de 20 días.
+- ✅ Corregida la carga dinámica de ingredientes al editar plantillas.
+- ✅ Mejorada la UI de tarjetas de ciclos con estados de color (Borrador/Activo/Finalizado).
 
 ### Módulo de Beneficiarios
-- ✅ Corregido error 403 (Forbidden) en autenticación JWT
-  - Agregado fallback `apache_request_headers()` en `getPaeIdFromToken()`
-- ✅ Mejorada separación visual entre filtros y tabla
-- ✅ Ocultado buscador por defecto del DataTable
-- ✅ Implementados filtros personalizados
+- ✅ Corregido error 403 (Forbidden) en autenticación JWT.
+- ✅ Mejorada separación visual entre filtros y tabla.
 
 ---
 
-## 📝 NOTAS TÉCNICAS (v1.3.4)
+## 📝 NOTAS TÉCNICAS (v1.5.0)
 
 ### Seguridad
 - **JWT:** Todas las peticiones validan el `pae_id` del token para evitar filtraciones entre programas.
 - **Multitenancy:** Aislamiento estricto por programa PAE.
-- **Validaciones:** Duplicados, campos obligatorios, normalización de datos.
 
 ### Frontend
-- **DataTables:** Configuración personalizada con filtros avanzados.
-- **SweetAlert2:** Experiencia de usuario mejorada.
-- **Bootstrap 5:** Diseño responsivo y moderno.
-- **Versionado:** Cache-busting automático con `Config.VERSION`.
-
-### Backend
-- **PDO:** Prepared statements para prevenir SQL injection.
-- **Controladores:** Estandarizados para extracción de tokens en diversos entornos Apache/XAMPP.
-- **Normalización:** Nombres en MAYÚSCULAS, emails en minúsculas.
-
-### Base de Datos
-- **Motor:** MySQL/MariaDB
-- **Charset:** utf8mb4_unicode_ci
-- **Integridad:** Foreign keys y unique constraints
-- **Índices:** Optimizados para búsquedas frecuentes
+- **Vista Minutas:** Usa `Helper.fetchAPI` para llamadas asíncronas concurrentes (Templates, Cycles, Recipes).
+- **SweetAlert2:** Integrado para confirmaciones de borrado y alertas de validación.
 
 ---
 
-## 📂 Archivos Clave - Beneficiarios
+## 📂 Archivos Clave - Minutas y Ciclos
 
 ### Backend
-- `api/controllers/BeneficiaryController.php` - Controlador principal
-- `api/index.php` - Rutas registradas (líneas 304-328)
+- `api/controllers/CycleTemplateController.php` - Plantillas maestras
+- `api/controllers/MenuCycleController.php` - Generación de ciclos
+- `api/index.php` - Rutas de minutas (líneas 315-333 approx)
 
 ### Frontend
-- `app/assets/js/views/beneficiaries.js` - Vista principal (652 líneas)
-- `app/assets/js/core/app.js` - Router (mapeo: `beneficiarios` → `beneficiaries`)
+- `app/assets/js/views/minutas.js` - Vista completa de gestión
+- `app/assets/js/core/app.js` - Router (ruta: `minutas`)
 
 ### Base de Datos
-- `sql/07_beneficiaries_schema.sql` - Esquema inicial
-- `sql/07b_master_data.sql` - Datos maestros (tipos de documento, etnias)
-- `sql/07c_refine_beneficiaries.sql` - Refinamiento de estructura
-- `sql/fix_dane_schools.sql` - Código DANE en schools
-- `sql/fix_dane_branches.sql` - Código DANE en branches
+- `sql/16_recipes_schema.sql` - Estructura de recetas y plantillas
+- `sql/09_kitchen_schema.sql` - Estructura de ciclos y menús
 
 ---
 
-**Documentación adicional:** Ver `docs/ESTADO_SISTEMA.md` para detalles de implementación.
+**Documentación adicional:** Ver `docs/ESTADO_SISTEMA.md` para resumen ejecutivo de módulos.

@@ -1,517 +1,432 @@
 /**
- * Minutas View - Menu Planning Module
- * Resolution 0003 of 2026 Compliance
+ * Minutas View - Menu Cycles & Templates Module
  */
 
 window.MinutasView = {
+    templates: [],
     cycles: [],
-    selectedCycle: null,
-    days: [],
-    allItems: [], // Lista completa de ítems para el selector
+    recipes: [],
 
     async init() {
         console.log('Initializing Minutas Module...');
-        await this.loadCycles();
-        await this.loadItems();
+        await this.loadData();
         this.render();
-        this.attachEvents();
     },
 
-    async loadItems() {
+    async loadData() {
         try {
-            const response = await Helper.fetchAPI('/items');
-            if (response.success) {
-                this.allItems = response.data;
-            }
+            const [tempRes, cycleRes, recipeRes] = await Promise.all([
+                Helper.fetchAPI('/cycle-templates'),
+                Helper.fetchAPI('/menu-cycles'),
+                Helper.fetchAPI('/recipes')
+            ]);
+            this.templates = tempRes.success ? tempRes.data : [];
+            this.cycles = cycleRes.success ? cycleRes.data : [];
+            this.recipes = recipeRes.success ? recipeRes.data : [];
         } catch (error) {
-            console.error('Error loading items:', error);
-        }
-    },
-
-    async loadCycles() {
-        try {
-            const response = await Helper.fetchAPI('/menu-cycles');
-            if (response.success) {
-                this.cycles = response.data;
-                if (this.cycles.length > 0) {
-                    this.selectedCycle = this.cycles[0];
-                    await this.loadCycleDays(this.selectedCycle.id);
-                }
-            }
-        } catch (error) {
-            console.error('Error loading cycles:', error);
-        }
-    },
-
-    async loadCycleDays(cycleId) {
-        console.log('Loading days for cycle:', cycleId);
-        try {
-            const response = await Helper.fetchAPI(`/menu-cycles/${cycleId}`);
-            console.log('Cycle days response:', response);
-            if (response.success) {
-                this.days = response.data || [];
-            } else {
-                this.days = [];
-                Helper.alert('warning', 'No se pudieron cargar los días: ' + (response.message || 'Error desconocido'));
-            }
-        } catch (error) {
-            console.error('Error loading cycle days:', error);
-            this.days = [];
+            console.error('Error loading minutas data:', error);
         }
     },
 
     render() {
         const html = `
-            <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="container-fluid py-4 text-dark">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <div>
-                        <h2 class="mb-1"><i class="fas fa-calendar-alt me-2 text-primary"></i>Planeación de Minutas</h2>
-                        <p class="text-muted mb-0">Gestión de ciclos de menús y derivación etárea</p>
+                        <h2 class="mb-1 text-primary-custom fw-bold"><i class="fas fa-calendar-alt me-2"></i>Gestión de Minutas</h2>
+                        <p class="text-muted mb-0">Planeación de ciclos de 20 días y plantillas reutilizables</p>
                     </div>
-                    <div class="d-flex gap-2">
-                        <select class="form-select" id="cycle-selector" style="min-width: 250px;">
-                            ${this.cycles.map(c => `
-                                <option value="${c.id}" ${this.selectedCycle?.id == c.id ? 'selected' : ''}>
-                                    ${c.name} (${c.status})
-                                </option>
-                            `).join('')}
-                        </select>
-                        <button class="btn btn-primary" onclick="MinutasView.openNewCycleModal()">
-                            <i class="fas fa-plus me-2"></i>Nuevo Ciclo
+                </div>
+
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-pills mb-4 bg-white p-2 rounded shadow-sm d-inline-flex border" id="minutasTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active px-4 py-2 fw-bold" id="active-cycles-tab" data-bs-toggle="pill" data-bs-target="#active-cycles" type="button">
+                            <i class="fas fa-calendar-check me-2"></i>Ciclos de Menú
                         </button>
-                    </div>
-                </div>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-4 py-2 fw-bold" id="templates-tab" data-bs-toggle="pill" data-bs-target="#templates" type="button">
+                            <i class="fas fa-layer-group me-2"></i>Plantillas Maestras
+                        </button>
+                    </li>
+                </ul>
 
-                <div class="row g-4" id="cycle-grid-container">
-                    ${this.renderCycleGrid()}
+                <!-- Tabs Content -->
+                <div class="tab-content" id="minutasTabsContent">
+                    <!-- Tab 1: Active Cycles -->
+                    <div class="tab-pane fade show active" id="active-cycles">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Ciclos Programados</h5>
+                            <button class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm" onclick="MinutasView.openNewCycleModal()">
+                                <i class="fas fa-plus me-1"></i> Nuevo Ciclo
+                            </button>
+                        </div>
+                        <div class="row g-4" id="cycles-list-container">
+                            ${this.renderCycles()}
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Master Templates -->
+                    <div class="tab-pane fade" id="templates">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Catálogo de Plantillas Standard</h5>
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-4" onclick="MinutasView.openNewTemplateModal()">
+                                <i class="fas fa-plus me-1"></i> Crear Plantilla 20 Días
+                            </button>
+                        </div>
+                        <div class="row g-4" id="templates-list-container">
+                            ${this.renderTemplates()}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Modal Detalle Menú -->
-            <div class="modal fade" id="menuDetailModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content border-0 shadow-lg">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title"><i class="fas fa-utensils me-2"></i>Detalle de Minuta</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body p-0" id="menu-detail-content">
-                            <!-- Loading spinner -->
-                            <div class="text-center p-5">
-                                <div class="spinner-border text-primary" role="status"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <style>
+                .nav-pills .nav-link { color: #5D6D7E; transition: all 0.3s ease; }
+                .nav-pills .nav-link.active { background-color: var(--primary-custom); color: white; box-shadow: 0 4px 10px rgba(27, 79, 114, 0.2); }
+                .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; transition: all 0.3s; }
+                .badge-status { font-size: 0.65rem; padding: 4px 10px; border-radius: 50px; text-transform: uppercase; }
+            </style>
         `;
+
         document.getElementById('app').innerHTML = html;
     },
 
-    renderCycleGrid() {
-        if (this.days.length === 0) {
+    renderCycles() {
+        if (this.cycles.length === 0) {
             return `
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
-                    <h4>No hay días programados para este ciclo</h4>
+                <div class="col-12">
+                    <div class="text-center p-5 bg-white rounded shadow-sm border border-dashed">
+                        <i class="fas fa-calendar-day fa-3x text-muted opacity-25 mb-3"></i>
+                        <h6 class="text-muted fw-bold">No hay ciclos activos para el periodo actual</h6>
+                        <button class="btn btn-sm btn-link text-primary mt-2" onclick="MinutasView.openNewCycleModal()">Generar mi primer ciclo ahora</button>
+                    </div>
                 </div>
             `;
         }
-
-        return this.days.map(day => `
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 shadow-sm border-0 hover-lift">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
-                        <span class="fw-bold">Día ${day.day}</span>
-                        <span class="badge bg-secondary">Ciclo 20 Días</span>
-                    </div>
-                    <div class="card-body p-3">
-                        ${day.meals.map(meal => `
-                            <div class="meal-item p-2 mb-2 rounded border-start border-4 ${meal.meal_type === 'DESAYUNO' ? 'border-warning' : 'border-success'}" 
-                                 role="button" onclick="MinutasView.showMenuDetail(${meal.id})">
-                                <div class="d-flex justify-content-between">
-                                    <small class="text-muted fw-bold">${meal.meal_type}</small>
-                                    <i class="fas fa-chevron-right text-muted x-small"></i>
-                                </div>
-                                <div class="text-truncate" title="${meal.name}">${meal.name}</div>
+        return this.cycles.map(c => `
+            <div class="col-md-4">
+                <div class="card card-hover h-100 border-0 shadow-sm border-start border-primary border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge-status ${this.getStatusClass(c.status)}">${c.status}</span>
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>${c.total_days} días</small>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">${c.name}</h6>
+                        <div class="text-xs text-muted mb-3">
+                            <i class="fas fa-calendar me-1"></i> ${c.start_date} al ${c.end_date}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                            <span class="text-success small fw-bold">
+                                <i class="fas fa-check-circle me-1"></i> Nutrición Validada
+                            </span>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary btn-xs px-2" onclick="MinutasView.viewCycle(${c.id})"><i class="fas fa-eye"></i></button>
+                                <button class="btn btn-outline-secondary btn-xs px-2"><i class="fas fa-print"></i></button>
+                                <button class="btn btn-outline-danger btn-xs px-2" 
+                                        onclick="MinutasView.deleteCycle(${c.id}, '${c.status}', ${c.is_validated})"
+                                        title="${c.status !== 'BORRADOR' || c.is_validated ? 'No se puede eliminar (Ya activo o validado)' : 'Eliminar Ciclo'}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
-                        `).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
         `).join('');
     },
 
-    async showMenuDetail(menuId) {
-        const modal = new bootstrap.Modal(document.getElementById('menuDetailModal'));
-        modal.show();
+    async deleteCycle(id, status, isValidated) {
+        if (status !== 'BORRADOR' || isValidated) {
+            Helper.alert('error', 'No se puede eliminar un ciclo que ya está activo o validado.');
+            return;
+        }
 
-        try {
-            const response = await Helper.fetchAPI(`/menus/${menuId}`);
-            if (response.success) {
-                this.renderMenuDetail(response.data);
+        const confirm = await Swal.fire({
+            title: '¿Eliminar ciclo?',
+            text: "Se borrarán todos los días y entregas programadas de este ciclo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                const res = await Helper.fetchAPI(`/menu-cycles/${id}`, { method: 'DELETE' });
+                if (res.success) {
+                    Helper.alert('success', 'Ciclo eliminado correctamente');
+                    this.init();
+                } else {
+                    Helper.alert('error', res.message);
+                }
+            } catch (error) {
+                Helper.alert('error', 'Error al eliminar el ciclo');
             }
-        } catch (error) {
-            Helper.alert('error', 'No se pudo cargar el detalle del menú');
         }
     },
 
-    renderMenuDetail(menu) {
-        const content = `
-            <div class="p-4">
-                <div class="row mb-4">
-                    <div class="col-md-8">
-                        <h3 class="text-primary mb-1">${menu.name}</h3>
-                        <p class="text-muted"><i class="fas fa-calendar-day me-2"></i>Día ${menu.day_number} | ${menu.meal_type}</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <span class="badge bg-info text-dark p-2">
-                            ${menu.age_group || 'TODOS'}
-                        </span>
+    renderTemplates() {
+        if (this.templates.length === 0) {
+            return `
+                <div class="col-12">
+                    <div class="text-center p-4 bg-light rounded border border-dashed">
+                        <p class="text-muted small mb-0">Diseña plantillas estándar para no tener que elegir las recetas cada mes.</p>
                     </div>
                 </div>
+            `;
+        }
+        return this.templates.map(t => `
+            <div class="col-md-4">
+                <div class="card card-hover h-100 border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">${t.name}</h6>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v fa-xs"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="MinutasView.editTemplate(${t.id})"><i class="fas fa-edit me-2"></i>Editar</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-1 small text-danger" href="javascript:void(0)" onclick="MinutasView.deleteTemplate(${t.id})"><i class="fas fa-trash me-2"></i>Eliminar</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-3">Plantilla estándar de 20 días para regímenes regulares.</p>
+                        <button class="btn btn-primary btn-xs w-100 fw-bold shadow-sm" onclick="MinutasView.applyTemplate(${t.id})">
+                            <i class="fas fa-magic me-1"></i> Aplicar a Nuevo Ciclo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
 
-                <div class="card bg-light border-0 mb-4">
-                    <div class="card-body py-3">
-                        <h6 class="card-title text-muted text-uppercase small fw-bold mb-3">Composición de Insumos (Explosión de Víveres)</h6>
+    getStatusClass(status) {
+        const maps = { 'BORRADOR': 'bg-secondary', 'ACTIVO': 'bg-success', 'FINALIZADO': 'bg-dark' };
+        return maps[status] || 'bg-light';
+    },
+
+    async editTemplate(id) {
+        try {
+            const res = await Helper.fetchAPI(`/cycle-templates/${id}`);
+            if (res.success) {
+                this.openTemplateModal(res.data);
+            }
+        } catch (error) {
+            Helper.alert('error', 'No se pudieron cargar los datos de la plantilla');
+        }
+    },
+
+    openNewTemplateModal() {
+        this.openTemplateModal();
+    },
+
+    openTemplateModal(template = null) {
+        const isEdit = !!template;
+        const modalId = 'templateEditorModal';
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal fade';
+        modalDiv.id = modalId;
+
+        const breakfasts = this.recipes.filter(r => r.meal_type === 'DESAYUNO');
+        const lunches = this.recipes.filter(r => r.meal_type === 'ALMUERZO');
+
+        let daysHtml = '';
+        for (let i = 1; i <= 20; i++) {
+            let bId = '', lId = '';
+            if (isEdit && template.days) {
+                const b = template.days.find(d => d.day_number == i && d.meal_type === 'DESAYUNO');
+                const l = template.days.find(d => d.day_number == i && d.meal_type === 'ALMUERZO');
+                if (b) bId = b.recipe_id;
+                if (l) lId = l.recipe_id;
+            }
+
+            daysHtml += `
+                <tr class="align-middle">
+                    <td class="text-center fw-bold text-muted bg-light" style="width: 80px;">Día ${i}</td>
+                    <td>
+                        <select class="form-select form-select-sm border-0 border-bottom bg-transparent" data-day="${i}" data-type="DESAYUNO">
+                            <option value="">-- Seleccionar Desayuno --</option>
+                            ${breakfasts.map(r => `<option value="${r.id}" ${r.id == bId ? 'selected' : ''}>${r.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm border-0 border-bottom bg-transparent" data-day="${i}" data-type="ALMUERZO">
+                            <option value="">-- Seleccionar Almuerzo --</option>
+                            ${lunches.map(r => `<option value="${r.id}" ${r.id == lId ? 'selected' : ''}>${r.name}</option>`).join('')}
+                        </select>
+                    </td>
+                </tr>
+            `;
+        }
+
+        modalDiv.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white py-3">
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0">
+                                <i class="fas ${isEdit ? 'fa-edit' : 'fa-layer-group'} me-2"></i>
+                                ${isEdit ? 'Editar Plantilla: ' + template.name : 'Nueva Plantilla de Ciclo (20 Días)'}
+                            </h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="p-4 border-bottom bg-light sticky-top" style="z-index: 10;">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Nombre de la Plantilla</label>
+                            <input type="text" id="template-name" class="form-control form-control-lg border-2 shadow-sm" 
+                                   value="${isEdit ? template.name : ''}"
+                                   placeholder="Ej: Ciclo Regular - 2026" required data-id="${isEdit ? template.id : ''}">
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-sm table-borderless mb-0">
-                                <thead class="border-bottom">
-                                    <tr>
-                                        <th>Ingrediente</th>
-                                        <th class="text-center">Cant. Patrón</th>
-                                        <th>Observaciones</th>
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-white sticky-top shadow-sm" style="top: 0; z-index: 5;">
+                                    <tr class="small text-uppercase text-muted fw-bold">
+                                        <th class="ps-3 border-0">Jornada</th>
+                                        <th class="border-0">Receta Desayuno</th>
+                                        <th class="border-0 text-primary"><i class="fas fa-utensils me-1"></i>Receta Almuerzo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${menu.items.map(i => `
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold">${i.item_name}</div>
-                                                <small class="text-muted">${i.food_group}</small>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-white text-dark border">${i.standard_quantity} ${i.unit}</span>
-                                            </td>
-                                            <td class="small text-muted">${i.preparation_method || '-'}</td>
-                                        </tr>
-                                    `).join('')}
+                                    ${daysHtml}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded h-100">
-                            <h6 class="small text-muted text-uppercase fw-bold mb-2">Información Nutricional</h6>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span>Calorías:</span>
-                                <strong>${parseFloat(menu.total_calories || 0).toFixed(2)} kcal</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Proteínas:</span>
-                                <strong>${parseFloat(menu.total_proteins || 0).toFixed(2)} g</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded h-100">
-                            <h6 class="small text-muted text-uppercase fw-bold mb-2">Validación Resolución 0003</h6>
-                            ${(() => {
-                const hasProtein = menu.items.some(i => i.food_group.toLowerCase().includes('proteic'));
-                const hasCereal = menu.items.some(i => i.food_group.toLowerCase().includes('cereal') || i.food_group.toLowerCase().includes('tubérculo'));
-                const hasDairy = menu.items.some(i => i.food_group.toLowerCase().includes('lácteo') || i.food_group.toLowerCase().includes('lacteo'));
-
-                return `
-                                    <div class="${hasProtein ? 'text-success' : 'text-danger'} small mb-1">
-                                        <i class="fas ${hasProtein ? 'fa-check-circle' : 'fa-times-circle'} me-1"></i> 
-                                        ${hasProtein ? 'Contiene Proteína' : 'Falta Proteína'}
-                                    </div>
-                                    <div class="${hasCereal ? 'text-success' : 'text-danger'} small mb-1">
-                                        <i class="fas ${hasCereal ? 'fa-check-circle' : 'fa-times-circle'} me-1"></i> 
-                                        ${hasCereal ? 'Contiene Cereal/Tubérculo' : 'Falta Cereal/Tubérculo'}
-                                    </div>
-                                    <div class="${hasDairy ? 'text-success' : 'text-danger'} small">
-                                        <i class="fas ${hasDairy ? 'fa-check-circle' : 'fa-times-circle'} me-1"></i> 
-                                        ${hasDairy ? 'Contiene Lácteo' : 'Falta Lácteo'}
-                                    </div>
-                                `;
-            })()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer bg-light">
-                <button class="btn btn-outline-primary" onclick="MinutasView.editMenu(${menu.id})">
-                    <i class="fas fa-edit me-1"></i> Editar Planeación
-                </button>
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        `;
-        document.getElementById('menu-detail-content').innerHTML = content;
-    },
-
-    attachEvents() {
-        // Usar delegación de eventos en el contenedor principal para que no se pierdan al renderizar
-        $(document).off('change', '#cycle-selector').on('change', '#cycle-selector', async (e) => {
-            const cycleId = e.target.value;
-            this.selectedCycle = this.cycles.find(c => c.id == cycleId);
-
-            // Mostrar loading en el grid
-            document.getElementById('cycle-grid-container').innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">Cargando días del ciclo...</p>
-                </div>
-            `;
-
-            await this.loadCycleDays(cycleId);
-            document.getElementById('cycle-grid-container').innerHTML = this.renderCycleGrid();
-        });
-    },
-
-    editMenu(id) {
-        // Cerrar el modal de detalle primero
-        bootstrap.Modal.getInstance(document.getElementById('menuDetailModal')).hide();
-
-        // Cargar datos actuales
-        Helper.fetchAPI(`/menus/${id}`).then(response => {
-            if (response.success) {
-                this.renderEditModal(response.data);
-            }
-        });
-    },
-
-    renderEditModal(menu) {
-        const modalDiv = document.createElement('div');
-        modalDiv.className = 'modal fade';
-        modalDiv.id = 'editMenuModal';
-        modalDiv.innerHTML = `
-            <div class="modal-dialog modal-xl">
-                <div class="modal-content border-0 shadow-lg">
-                    <div class="modal-header bg-dark text-white">
-                        <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Planeación - Día ${menu.day_number}</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <form id="edit-menu-form">
-                            <input type="hidden" name="id" value="${menu.id}">
-                            <input type="hidden" name="day_number" value="${menu.day_number}">
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold small">Nombre del Plato</label>
-                                    <input type="text" class="form-control" name="name" value="${menu.name}" required>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-bold small">Tipo de Comida</label>
-                                    <select class="form-select" name="meal_type">
-                                        <option value="DESAYUNO" ${menu.meal_type === 'DESAYUNO' ? 'selected' : ''}>DESAYUNO</option>
-                                        <option value="ALMUERZO" ${menu.meal_type === 'ALMUERZO' ? 'selected' : ''}>ALMUERZO</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label fw-bold small">Grupo de Edad</label>
-                                    <select class="form-select" name="age_group">
-                                        <option value="PREESCOLAR" ${menu.age_group === 'PREESCOLAR' ? 'selected' : ''}>PREESCOLAR</option>
-                                        <option value="PRIMARIA" ${menu.age_group === 'PRIMARIA' ? 'selected' : ''}>PRIMARIA</option>
-                                        <option value="BACHILLERATO" ${menu.age_group === 'BACHILLERATO' ? 'selected' : ''}>BACHILLERATO</option>
-                                        <option value="TODOS" ${menu.age_group === 'TODOS' || !menu.age_group ? 'selected' : ''}>TODOS</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="card border">
-                                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
-                                    <h6 class="mb-0 fw-bold small text-uppercase">Ingredientes e Insumos</h6>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="MinutasView.addIngredientRow()">
-                                        <i class="fas fa-plus me-1"></i>Añadir Ingrediente
-                                    </button>
-                                </div>
-                                <div class="card-body p-0">
-                                    <table class="table table-sm table-hover mb-0" id="edit-ingredients-table">
-                                        <thead class="bg-light small">
-                                            <tr>
-                                                <th class="ps-3" style="width: 40%;">Ítem / Ingrediente</th>
-                                                <th class="text-center">Cant. Patrón</th>
-                                                <th>Unidad</th>
-                                                <th>Observaciones Preparación</th>
-                                                <th class="text-center">Eliminar</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="ingredients-tbody">
-                                            ${menu.items.map((i, index) => this.renderIngredientRow(i, index)).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
                     <div class="modal-footer bg-light">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button class="btn btn-primary px-4" onclick="MinutasView.saveMenuChanges(${menu.id})">
-                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary px-5 fw-bold shadow" onclick="MinutasView.saveTemplate()">
+                            <i class="fas fa-save me-2"></i>${isEdit ? 'Actualizar Plantilla' : 'Guardar Plantilla'}
                         </button>
                     </div>
                 </div>
             </div>
         `;
-
         document.body.appendChild(modalDiv);
         const modal = new bootstrap.Modal(modalDiv);
-        modalDiv.addEventListener('hidden.bs.modal', function () {
-            modalDiv.remove();
-        });
         modal.show();
+        modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
     },
 
-    renderIngredientRow(item = null, index = 0) {
-        const id = index || Date.now();
-        return `
-            <tr id="row-${id}">
-                <td class="ps-3">
-                    <select class="form-select form-select-sm select-item" name="item_id" onchange="MinutasView.updateUnitLabel(this, ${id})">
-                        <option value="">Seleccione un ítem...</option>
-                        ${this.allItems.map(ai => `
-                            <option value="${ai.id}" 
-                                    data-unit="${ai.unit_abbr}"
-                                    ${item?.item_id == ai.id ? 'selected' : ''}>
-                                ${ai.name} (${ai.code})
-                            </option>
-                        `).join('')}
-                    </select>
-                </td>
-                <td class="text-center" style="width: 15%;">
-                    <input type="number" step="0.01" class="form-control form-control-sm text-center" name="quantity" value="${item?.standard_quantity || 0}">
-                </td>
-                <td class="align-middle border-start border-end">
-                    <span class="badge bg-light text-dark unit-label">${item?.unit || '-'}</span>
-                </td>
-                <td>
-                    <input type="text" class="form-control form-control-sm" name="preparation" value="${item?.preparation_method || ''}" placeholder="Ej: Cocido, Salteado...">
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-sm text-danger" onclick="this.closest('tr').remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    },
+    async saveTemplate() {
+        const nameInput = document.getElementById('template-name');
+        const templateId = nameInput.dataset.id;
+        if (!nameInput.value.trim()) {
+            Helper.alert('warning', 'Por favor asigne un nombre a la plantilla');
+            nameInput.focus();
+            return;
+        }
 
-    addIngredientRow() {
-        const tbody = document.getElementById('ingredients-tbody');
-        const tempId = Date.now();
-        const rowHtml = this.renderIngredientRow(null, tempId);
-        tbody.insertAdjacentHTML('beforeend', rowHtml);
-    },
-
-    updateUnitLabel(select, rowId) {
-        const option = select.options[select.selectedIndex];
-        const unit = option.dataset.unit || '-';
-        document.querySelector(`#row-${rowId} .unit-label`).textContent = unit;
-    },
-
-    async saveMenuChanges(menuId) {
-        const form = document.getElementById('edit-menu-form');
-        const formData = new FormData(form);
-
-        const basicData = {
-            name: formData.get('name'),
-            meal_type: formData.get('meal_type'),
-            age_group: formData.get('age_group'),
-            day_number: formData.get('day_number') || 1
-        };
-
-        const ingredientsRows = document.querySelectorAll('#ingredients-tbody tr');
-        const ingredients = [];
-        ingredientsRows.forEach(row => {
-            const itemId = row.querySelector('[name="item_id"]').value;
-            const quantity = row.querySelector('[name="quantity"]').value;
-            const preparation = row.querySelector('[name="preparation"]').value;
-
-            if (itemId && quantity > 0) {
-                ingredients.push({
-                    item_id: itemId,
-                    quantity: quantity,
-                    preparation: preparation
+        const days = [];
+        document.querySelectorAll('#templateEditorModal select').forEach(select => {
+            if (select.value) {
+                days.push({
+                    day_number: select.dataset.day,
+                    meal_type: select.dataset.type,
+                    recipe_id: select.value
                 });
             }
         });
 
+        if (days.length === 0) {
+            Helper.alert('warning', 'Añada al menos una receta a la plantilla');
+            return;
+        }
+
+        const data = {
+            name: nameInput.value.trim(),
+            days: days
+        };
+
         try {
-            // 1. Guardar datos básicos
-            const basicResponse = await Helper.fetchAPI(`/menus/${menuId}`, {
-                method: 'PUT',
-                body: JSON.stringify(basicData)
-            });
+            const method = templateId ? 'PUT' : 'POST';
+            const url = templateId ? `/cycle-templates/${templateId}` : '/cycle-templates';
+            const res = await Helper.fetchAPI(url, { method, body: JSON.stringify(data) });
 
-            // 2. Guardar ingredientes
-            const itemsResponse = await Helper.fetchAPI(`/menus/${menuId}/items`, {
-                method: 'POST',
-                body: JSON.stringify({ items: ingredients })
-            });
-
-            if (basicResponse.success && itemsResponse.success) {
-                bootstrap.Modal.getInstance(document.getElementById('editMenuModal')).hide();
-                Helper.alert('success', 'Minuta actualizada correctamente');
-
-                // Recargar datos
-                await this.loadCycleDays(this.selectedCycle.id);
-                const gridContainer = document.getElementById('cycle-grid-container');
-                if (gridContainer) {
-                    gridContainer.innerHTML = this.renderCycleGrid();
-                }
+            if (res.success) {
+                bootstrap.Modal.getInstance(document.getElementById('templateEditorModal')).hide();
+                Helper.alert('success', templateId ? 'Plantilla actualizada' : 'Plantilla guardada');
+                this.init();
             } else {
-                Helper.alert('error', 'Error al actualizar algunos datos');
+                Helper.alert('error', res.message);
             }
         } catch (error) {
-            console.error('Error saving menu:', error);
-            Helper.alert('error', 'Error al guardar los cambios');
+            Helper.alert('error', 'Error al guardar la plantilla');
+        }
+    },
+
+    async deleteTemplate(id) {
+        const confirm = await Swal.fire({
+            title: '¿Eliminar plantilla?',
+            text: "Esta acción no afectará a los ciclos ya generados con ella.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                const res = await Helper.fetchAPI(`/cycle-templates/${id}`, { method: 'DELETE' });
+                if (res.success) {
+                    Helper.alert('success', 'Plantilla eliminada');
+                    this.init();
+                } else {
+                    Helper.alert('error', res.message);
+                }
+            } catch (error) {
+                Helper.alert('error', 'Error al eliminar la plantilla');
+            }
         }
     },
 
     openNewCycleModal() {
+        const modalId = 'newCycleModal';
         const modalDiv = document.createElement('div');
         modalDiv.className = 'modal fade';
-        modalDiv.id = 'newCycleModal';
+        modalDiv.id = modalId;
+
         modalDiv.innerHTML = `
             <div class="modal-dialog">
                 <div class="modal-content border-0 shadow-lg">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Crear Nuevo Ciclo</h5>
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-calendar-plus me-2"></i>Programar Nuevo Ciclo</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
                         <form id="new-cycle-form">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Nombre del Ciclo</label>
-                                <input type="text" class="form-control" name="name" placeholder="Ej: CICLO 2 - MARZO 2026" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Descripción</label>
-                                <textarea class="form-control" name="description" rows="2" placeholder="Opcional..."></textarea>
+                                <label class="form-label small fw-bold text-muted">NOMBRE DEL CICLO / PERIODO</label>
+                                <input type="text" name="name" class="form-control" placeholder="Ej: Ciclo Febrero Primaria - 2026" required>
                             </div>
                             <div class="row g-3 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label fw-bold small">Fecha Inicio</label>
-                                    <input type="date" class="form-control" name="start_date" required>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">FECHA DE INICIO</label>
+                                    <input type="date" name="start_date" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label fw-bold small">Fecha Fin</label>
-                                    <input type="date" class="form-control" name="end_date" required>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-muted">PLANTILLA BASE</label>
+                                    <select name="template_id" class="form-select" required>
+                                        <option value="">-- Seleccionar --</option>
+                                        ${this.templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                                    </select>
                                 </div>
                             </div>
-                            <div class="alert alert-info small py-2 mb-0">
-                                <i class="fas fa-magic me-1"></i> Se generarán automáticamente 20 días con Desayuno y Almuerzo.
+                            <div class="bg-light p-3 rounded border">
+                                <small class="text-muted d-block mb-1"><i class="fas fa-info-circle me-1"></i> El sistema generará automáticamente 20 días hábiles omitiendo fines de semana.</small>
                             </div>
                         </form>
                     </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" onclick="MinutasView.saveNewCycle()">
-                            <i class="fas fa-save me-1"></i> Crear Ciclo
+                    <div class="modal-footer bg-light border-top-0">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success px-4 fw-bold shadow-sm" onclick="MinutasView.generateCycle()">
+                            <i class="fas fa-magic me-1"></i> Generar Ciclo Completo
                         </button>
                     </div>
                 </div>
@@ -520,55 +435,41 @@ window.MinutasView = {
         document.body.appendChild(modalDiv);
         const modal = new bootstrap.Modal(modalDiv);
         modal.show();
-
-        modalDiv.addEventListener('hidden.bs.modal', function () {
-            modalDiv.remove();
-        });
+        modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
     },
 
-    async saveNewCycle() {
-        const form = document.getElementById('new-cycle-form');
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+    async generateCycle() {
+        const form = document.querySelector('#new-cycle-form');
+        if (!form.checkValidity()) { form.reportValidity(); return; }
 
         const formData = new FormData(form);
         const data = {
             name: formData.get('name'),
-            description: formData.get('description'),
             start_date: formData.get('start_date'),
-            end_date: formData.get('end_date')
+            template_id: formData.get('template_id')
         };
 
         try {
-            const response = await Helper.fetchAPI('/menu-cycles', {
+            Helper.alert('info', 'Generando programación de 20 días...');
+            const res = await Helper.fetchAPI('/menu-cycles/generate', {
                 method: 'POST',
                 body: JSON.stringify(data)
             });
 
-            if (response.success) {
+            if (res.success) {
                 bootstrap.Modal.getInstance(document.getElementById('newCycleModal')).hide();
-                Helper.alert('success', 'Ciclo creado y 20 días generados correctamente');
-
-                // Recargar ciclos y seleccionar el nuevo
-                await this.loadCycles();
-                if (response.data && response.data.id) {
-                    this.selectedCycle = this.cycles.find(c => c.id == response.data.id);
-                    await this.loadCycleDays(this.selectedCycle.id);
-                }
-                this.render();
+                Helper.alert('success', 'Ciclo generado exitosamente');
+                this.init();
             } else {
-                Helper.alert('error', response.message);
+                Helper.alert('error', res.message);
             }
         } catch (error) {
-            console.error('Error creating cycle:', error);
-            Helper.alert('error', 'No se pudo crear el ciclo');
+            Helper.alert('error', 'Error al generar el ciclo');
         }
     }
 };
 
-// Initialize when view is loaded
+// Initialize
 if (typeof MinutasView !== 'undefined') {
     MinutasView.init();
 }

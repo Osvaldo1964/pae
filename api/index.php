@@ -417,6 +417,40 @@ if ($resource === 'auth') {
             $controller->delete($action);
         }
     }
+} elseif ($resource === 'cycle-templates') {
+    $controller = new \Controllers\CycleTemplateController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && is_numeric($action)) {
+            $controller->show($action);
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        if ($action && is_numeric($action)) {
+            $controller->update($action);
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        if ($action && is_numeric($action)) {
+            $controller->delete($action);
+        }
+    }
+} elseif ($resource === 'menu-cycles') {
+    $controller = new \Controllers\MenuCycleController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($action === 'generate') {
+            $controller->generate();
+        } else {
+            $controller->store();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        if ($action && is_numeric($action)) {
+            $controller->delete($action);
+        }
+    }
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);

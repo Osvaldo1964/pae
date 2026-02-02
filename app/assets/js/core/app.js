@@ -162,6 +162,7 @@ const App = {
                     'items': 'items',
                     'almacen': 'almacen',
                     'recetario': 'recetario',
+                    'minutas': 'minutas',
                     'team': 'team'
                 };
 

@@ -13,8 +13,12 @@
 2. [Usuarios](#usuarios)
 3. [Roles](#roles)
 4. [PAE (Entidades)](#pae-entidades)
-5. [Códigos de Estado](#códigos-de-estado)
-6. [Manejo de Errores](#manejo-de-errores)
+5. [Beneficiarios](#beneficiarios-1)
+6. [Cocina - Ítems](#cocina-ítems)
+7. [Cocina - Recetas](#cocina-recetas)
+8. [Minutas y Ciclos](#minutas-y-ciclos)
+9. [Códigos de Estado](#códigos-de-estado)
+10. [Manejo de Errores](#manejo-de-errores)
 
 ---
 
@@ -332,16 +336,6 @@ Authorization: Bearer {token}
       "id": 2,
       "name": "Admin",
       "description": "Administrador de PAE"
-    },
-    {
-      "id": 3,
-      "name": "Operador",
-      "description": "Operador de campo"
-    },
-    {
-      "id": 4,
-      "name": "Consulta",
-      "description": "Solo lectura"
     }
   ]
 }
@@ -370,15 +364,7 @@ Authorization: Bearer {token}
       "name": "PAE Bogotá",
       "entity_name": "Secretaría de Educación Distrital",
       "operator_name": "Operador ABC S.A.S.",
-      "operator_nit": "900123456-7",
-      "operator_address": "Calle 100 #10-20",
-      "operator_phone": "6012345678",
-      "operator_email": "contacto@operadorabc.com",
-      "logo_path": null,
-      "entity_logo_path": "/uploads/logos/entity_logo_1.png",
-      "operator_logo_path": "/uploads/logos/operator_logo_1.png",
-      "is_active": 1,
-      "created_at": "2026-01-20 14:30:00"
+      "is_active": 1
     }
   ]
 }
@@ -386,143 +372,106 @@ Authorization: Bearer {token}
 
 ---
 
-### GET /tenants/{id}
+## 👶 Beneficiarios
 
-Obtener un PAE específico.
+### GET /beneficiarios
 
-**Headers:**
-```http
-Authorization: Bearer {token}
-```
+Listar todos los beneficiarios del programa actual.
 
-**Response (200 OK):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 1,
-    "name": "PAE Bogotá",
-    "entity_name": "Secretaría de Educación Distrital",
-    "operator_name": "Operador ABC S.A.S.",
-    "operator_nit": "900123456-7",
-    "operator_address": "Calle 100 #10-20",
-    "operator_phone": "6012345678",
-    "operator_email": "contacto@operadorabc.com",
-    "entity_logo_path": "/uploads/logos/entity_logo_1.png",
-    "operator_logo_path": "/uploads/logos/operator_logo_1.png",
-    "is_active": 1
-  }
-}
-```
-
----
-
-### POST /tenants
-
-Crear un nuevo PAE.
-
-**Headers:**
-```http
-Authorization: Bearer {token}
-Content-Type: multipart/form-data
-```
-
-**Form Data:**
-```
-name: "PAE Medellín"
-entity_name: "Secretaría de Educación Municipal"
-operator_name: "Operador XYZ Ltda"
-operator_nit: "800987654-3"
-operator_address: "Carrera 50 #30-40"
-operator_phone: "6047654321"
-operator_email: "info@operadorxyz.com"
-is_active: 1
-entity_logo: [archivo]
-operator_logo: [archivo]
-```
-
-**Campos Requeridos:**
-- `name` (string)
-- `entity_name` (string)
-- `operator_name` (string)
-
-**Campos Opcionales:**
-- `operator_nit` (string)
-- `operator_address` (string)
-- `operator_phone` (string)
-- `operator_email` (string, formato email)
-- `is_active` (boolean, default: 1)
-- `entity_logo` (file, image/jpeg|png|gif, max 2MB)
-- `operator_logo` (file, image/jpeg|png|gif, max 2MB)
-
-**Response (201 Created):**
-```json
-{
-  "success": true,
-  "message": "PAE creado exitosamente",
-  "data": {
-    "id": 3,
-    "name": "PAE Medellín"
-  }
-}
-```
-
----
-
-### PUT /tenants/{id}
-
-Actualizar un PAE existente.
-
-**Headers:**
-```http
-Authorization: Bearer {token}
-Content-Type: multipart/form-data
-```
-
-**Form Data:** (todos opcionales)
-```
-name: "PAE Medellín Actualizado"
-entity_name: "Secretaría de Educación Municipal"
-operator_name: "Operador XYZ Ltda"
-operator_nit: "800987654-3"
-operator_address: "Carrera 50 #30-40"
-operator_phone: "6047654321"
-operator_email: "info@operadorxyz.com"
-is_active: 1
-entity_logo: [archivo]
-operator_logo: [archivo]
-```
+**Query Parameters:**
+- `search` (opcional) - Buscar por nombre o documento
+- `school_id` (opcional) - Filtrar por colegio
+- `grade` (opcional) - Filtrar por grado
 
 **Response (200 OK):**
 ```json
 {
   "success": true,
-  "message": "PAE actualizado exitosamente"
+  "data": [
+    {
+      "id": 10,
+      "full_name": "PEDRO PÉREZ",
+      "document_number": "12345678",
+      "school_name": "COLEGIO DISTRITAL",
+      "grade": "5",
+      "status": "ACTIVO"
+    }
+  ]
 }
 ```
 
 ---
 
-### DELETE /tenants/{id}
+## 🍎 Cocina - Ítems
 
-Eliminar un PAE.
+### GET /items
 
-**Headers:**
-```http
-Authorization: Bearer {token}
-```
+Listar todos los insumos/ingredientes disponibles.
+
+**Query Parameters:**
+- `food_group_id` (opcional) - Filtrar por categoría
 
 **Response (200 OK):**
 ```json
 {
   "success": true,
-  "message": "PAE eliminado exitosamente"
+  "data": [
+    {
+      "id": 5,
+      "name": "ARROZ BLANCO",
+      "food_group_name": "Cereales",
+      "unit_abbreviation": "kg",
+      "calories": 350.00
+    }
+  ]
 }
 ```
 
-**Errores:**
-- `404 Not Found` - PAE no encontrado
-- `409 Conflict` - PAE tiene usuarios asociados
+---
+
+## 🍲 Cocina - Recetas
+
+### GET /recipes
+
+Listar el recetario maestro.
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "ARROZ CON POLLO TIPO A",
+      "meal_type": "ALMUERZO",
+      "total_calories": 450.50
+    }
+  ]
+}
+```
+
+---
+
+## 📅 Minutas y Ciclos
+
+### GET /cycle-templates
+
+Listar plantillas maestras de 20 días.
+
+---
+
+### POST /menu-cycles/generate
+
+Generar un ciclo completo a partir de una plantilla.
+
+**Request:**
+```json
+{
+  "name": "Ciclo Marzo 2026",
+  "start_date": "2026-03-02",
+  "template_id": 1
+}
+```
 
 ---
 
@@ -548,138 +497,10 @@ Todos los errores siguen el mismo formato:
 ```json
 {
   "success": false,
-  "message": "Descripción del error",
-  "error": "Detalles técnicos (solo en desarrollo)"
-}
-```
-
-### Ejemplos de Errores Comunes
-
-**401 - Token Inválido:**
-```json
-{
-  "success": false,
-  "message": "Token inválido o expirado"
-}
-```
-
-**400 - Datos Faltantes:**
-```json
-{
-  "success": false,
-  "message": "Campos requeridos: username, password, email"
-}
-```
-
-**409 - Conflicto:**
-```json
-{
-  "success": false,
-  "message": "El username 'admin' ya está en uso"
-}
-```
-
-**404 - No Encontrado:**
-```json
-{
-  "success": false,
-  "message": "Usuario no encontrado"
+  "message": "Descripción del error"
 }
 ```
 
 ---
 
-## 🔒 Seguridad
-
-### Headers Requeridos
-
-```http
-Authorization: Bearer {token}
-Content-Type: application/json
-```
-
-### Validación de Token
-
-El token JWT debe incluir:
-- `user_id` - ID del usuario
-- `username` - Nombre de usuario
-- `role_id` - ID del rol
-- `pae_id` - ID del PAE (null para Super Admin)
-- `exp` - Timestamp de expiración
-
-### Expiración de Token
-
-- **Duración:** 24 horas (configurable)
-- **Renovación:** Requiere nuevo login
-
-### Rate Limiting
-
-⚠️ **Pendiente de implementar**
-
----
-
-## 📝 Notas Adicionales
-
-### Paginación
-
-⚠️ **Pendiente de implementar**
-
-Formato propuesto:
-```
-GET /users?page=1&limit=10
-```
-
-### Filtros
-
-Algunos endpoints soportan filtros via query parameters:
-
-```
-GET /users?pae_id=1
-GET /users?role_id=2
-GET /users?is_active=1
-```
-
-### Ordenamiento
-
-⚠️ **Pendiente de implementar**
-
-Formato propuesto:
-```
-GET /users?sort=created_at&order=desc
-```
-
----
-
-## 🧪 Testing
-
-### Herramientas Recomendadas
-
-- **Postman** - Testing manual de API
-- **Insomnia** - Alternativa a Postman
-- **cURL** - Testing desde línea de comandos
-
-### Ejemplo con cURL
-
-**Login:**
-```bash
-curl -X POST http://localhost/pae/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin"}'
-```
-
-**Listar Usuarios:**
-```bash
-curl -X GET http://localhost/pae/api/users \
-  -H "Authorization: Bearer {token}"
-```
-
----
-
-## 📞 Soporte
-
-**Documentación:** `/docs`  
-**Desarrollador:** OVCSYSTEMS S.A.S.
-
----
-
-**Última Actualización:** 31 de Enero de 2026
+**Última Actualización:** 01 de Febrero de 2026, 22:00 PM
