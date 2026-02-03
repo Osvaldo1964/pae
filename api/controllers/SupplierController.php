@@ -32,7 +32,8 @@ class SupplierController
             }
         }
 
-        if (!$headers) return null;
+        if (!$headers)
+            return null;
 
         $arr = explode(" ", $headers);
         $jwt = isset($arr[1]) ? $arr[1] : "";
@@ -63,7 +64,7 @@ class SupplierController
         $stmt->execute();
 
         $suppliers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($suppliers);
+        echo json_encode(["success" => true, "data" => $suppliers]);
     }
 
     public function create()
@@ -78,10 +79,14 @@ class SupplierController
         $data = json_decode(file_get_contents("php://input"));
 
         // Enforce casing
-        if (isset($data->name)) $data->name = mb_strtoupper($data->name, 'UTF-8');
-        if (isset($data->contact_person)) $data->contact_person = mb_strtoupper($data->contact_person, 'UTF-8');
-        if (isset($data->city)) $data->city = mb_strtoupper($data->city, 'UTF-8');
-        if (isset($data->email)) $data->email = strtolower($data->email);
+        if (isset($data->name))
+            $data->name = mb_strtoupper($data->name, 'UTF-8');
+        if (isset($data->contact_person))
+            $data->contact_person = mb_strtoupper($data->contact_person, 'UTF-8');
+        if (isset($data->city))
+            $data->city = mb_strtoupper($data->city, 'UTF-8');
+        if (isset($data->email))
+            $data->email = strtolower($data->email);
 
         if (empty($data->nit) || empty($data->name)) {
             http_response_code(400);
@@ -134,10 +139,14 @@ class SupplierController
         $data = json_decode(file_get_contents("php://input"));
 
         // Enforce casing
-        if (isset($data->name)) $data->name = mb_strtoupper($data->name, 'UTF-8');
-        if (isset($data->contact_person)) $data->contact_person = mb_strtoupper($data->contact_person, 'UTF-8');
-        if (isset($data->city)) $data->city = mb_strtoupper($data->city, 'UTF-8');
-        if (isset($data->email)) $data->email = strtolower($data->email);
+        if (isset($data->name))
+            $data->name = mb_strtoupper($data->name, 'UTF-8');
+        if (isset($data->contact_person))
+            $data->contact_person = mb_strtoupper($data->contact_person, 'UTF-8');
+        if (isset($data->city))
+            $data->city = mb_strtoupper($data->city, 'UTF-8');
+        if (isset($data->email))
+            $data->email = strtolower($data->email);
 
         // Verify ownership
         $check = $this->conn->prepare("SELECT id FROM suppliers WHERE id = :id AND pae_id = :pae_id");
