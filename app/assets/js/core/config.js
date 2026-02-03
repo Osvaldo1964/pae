@@ -4,7 +4,7 @@
  */
 
 const Config = {
-    VERSION: '1.3.5', // Bump this to clear cache
+    VERSION: window.APP_VERSION || '1.4.0', // Unified source of truth
     // Base URL for the application (relative to root or full domain)
     BASE_URL: '/pae/app/',
 

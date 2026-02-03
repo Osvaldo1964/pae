@@ -53,7 +53,8 @@ class MenuController
             // Si es Super Admin (pae_id null), ve todos. Si es Admin PAE, solo los suyos.
             $query = "SELECT * FROM menu_cycles" . ($pae_id ? " WHERE pae_id = :pae_id" : "") . " ORDER BY start_date DESC";
             $stmt = $this->conn->prepare($query);
-            if ($pae_id) $stmt->bindParam(':pae_id', $pae_id);
+            if ($pae_id)
+                $stmt->bindParam(':pae_id', $pae_id);
             $stmt->execute();
 
             echo json_encode([
@@ -227,6 +228,11 @@ class MenuController
             }
 
             // 4. Recalcular Totales Nutricionales en la tabla menus
+            // Obtenemos el grupo etario del menú primero
+            $stmtGroup = $this->conn->prepare("SELECT age_group FROM menus WHERE id = ?");
+            $stmtGroup->execute([$menu_id]);
+            $age_group = $stmtGroup->fetchColumn();
+
             $queryTotal = "UPDATE menus m 
                            SET 
                             total_calories = (SELECT IFNULL(SUM(mi.standard_quantity * i.calories / 100), 0) FROM menu_items mi JOIN items i ON mi.item_id = i.id WHERE mi.menu_id = :m1),
@@ -234,6 +240,10 @@ class MenuController
                             total_carbohydrates = (SELECT IFNULL(SUM(mi.standard_quantity * i.carbohydrates / 100), 0) FROM menu_items mi JOIN items i ON mi.item_id = i.id WHERE mi.menu_id = :m3),
                             total_fats = (SELECT IFNULL(SUM(mi.standard_quantity * i.fats / 100), 0) FROM menu_items mi JOIN items i ON mi.item_id = i.id WHERE mi.menu_id = :m4)
                            WHERE id = :id";
+
+            // Si el menú tiene un grupo específico, podrías querer usar los gramajes de la receta para ese grupo.
+            // Pero 'menu_items' actualmente guarda 'standard_quantity'. 
+            // Si estuviéramos importando desde receta, deberíamos haber traído el gramaje correcto.
 
             $stmtTotal = $this->conn->prepare($queryTotal);
             $stmtTotal->bindValue(':m1', $menu_id, PDO::PARAM_INT);
@@ -246,7 +256,8 @@ class MenuController
             $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Ingredientes actualizados exitosamente y nutrición recalculada']);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Error al actualizar ingredientes: ' . $e->getMessage()]);
         }
@@ -264,7 +275,8 @@ class MenuController
             if (!$pae_id) {
                 // Si es SuperAdmin y no envió pae_id, error
                 $pae_id = $data['pae_id'] ?? null;
-                if (!$pae_id) throw new Exception("Debe especificar un programa PAE");
+                if (!$pae_id)
+                    throw new Exception("Debe especificar un programa PAE");
             }
 
             $this->conn->beginTransaction();
@@ -313,7 +325,8 @@ class MenuController
                 'data' => ['id' => $cycle_id]
             ]);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

@@ -162,7 +162,12 @@ window.AlmacenView = {
             </div>
         `;
 
-        document.getElementById('app').innerHTML = html;
+        const container = document.getElementById('app-container');
+        if (container) {
+            container.innerHTML = html;
+        } else {
+            console.error('App container not found');
+        }
         this.initDataTable();
     },
 

@@ -33,7 +33,8 @@ class BeneficiaryController
             }
         }
 
-        if (!$headers) return null;
+        if (!$headers)
+            return null;
 
         $arr = explode(" ", $headers);
         $jwt = isset($arr[1]) ? $arr[1] : "";
@@ -61,7 +62,7 @@ class BeneficiaryController
             return;
         }
 
-        $query = "SELECT b.*, br.name as branch_name, s.name as school_name, 
+        $query = "SELECT b.*, br.name as branch_name, s.name as school_name, br.school_id as school_id, 
                          dt.name as document_type_name, eg.name as ethnic_group_name
                   FROM " . $this->table_name . " b
                   LEFT JOIN school_branches br ON b.branch_id = br.id
@@ -124,13 +125,13 @@ class BeneficiaryController
                    birth_date, gender, ethnic_group_id, sisben_category, disability_type, is_victim, is_migrant, 
                    address, phone, email, guardian_name, guardian_phone, guardian_relationship, 
                    simat_id, shift, grade, group_name, status, enrollment_date, modality, ration_type, 
-                   medical_restrictions, observations, data_authorization) 
+                   medical_restrictions, observations, data_authorization, is_overage) 
                   VALUES 
                   (:pae_id, :branch_id, :document_type_id, :document_number, :first_name, :second_name, :last_name1, :last_name2, 
                    :birth_date, :gender, :ethnic_group_id, :sisben_category, :disability_type, :is_victim, :is_migrant, 
                    :address, :phone, :email, :guardian_name, :guardian_phone, :guardian_relationship, 
                    :simat_id, :shift, :grade, :group_name, :status, :enrollment_date, :modality, :ration_type, 
-                   :medical_restrictions, :observations, :data_authorization)";
+                   :medical_restrictions, :observations, :data_authorization, :is_overage)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -167,6 +168,7 @@ class BeneficiaryController
         $stmt->bindParam(":medical_restrictions", $data['medical_restrictions']);
         $stmt->bindParam(":observations", $data['observations']);
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
+        $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             echo json_encode(["message" => "Beneficiario registrado exitosamente.", "id" => $this->conn->lastInsertId()]);
@@ -203,12 +205,18 @@ class BeneficiaryController
         }
 
         // Process data
-        if (isset($data['first_name'])) $data['first_name'] = mb_strtoupper($data['first_name'], 'UTF-8');
-        if (isset($data['second_name'])) $data['second_name'] = mb_strtoupper($data['second_name'], 'UTF-8');
-        if (isset($data['last_name1'])) $data['last_name1'] = mb_strtoupper($data['last_name1'], 'UTF-8');
-        if (isset($data['last_name2'])) $data['last_name2'] = mb_strtoupper($data['last_name2'], 'UTF-8');
-        if (isset($data['email'])) $data['email'] = strtolower($data['email']);
-        if (isset($data['guardian_name'])) $data['guardian_name'] = mb_strtoupper($data['guardian_name'], 'UTF-8');
+        if (isset($data['first_name']))
+            $data['first_name'] = mb_strtoupper($data['first_name'], 'UTF-8');
+        if (isset($data['second_name']))
+            $data['second_name'] = mb_strtoupper($data['second_name'], 'UTF-8');
+        if (isset($data['last_name1']))
+            $data['last_name1'] = mb_strtoupper($data['last_name1'], 'UTF-8');
+        if (isset($data['last_name2']))
+            $data['last_name2'] = mb_strtoupper($data['last_name2'], 'UTF-8');
+        if (isset($data['email']))
+            $data['email'] = strtolower($data['email']);
+        if (isset($data['guardian_name']))
+            $data['guardian_name'] = mb_strtoupper($data['guardian_name'], 'UTF-8');
 
         $query = "UPDATE " . $this->table_name . " SET 
                   branch_id = :branch_id, 
@@ -241,7 +249,8 @@ class BeneficiaryController
                   ration_type = :ration_type, 
                   medical_restrictions = :medical_restrictions, 
                   observations = :observations, 
-                  data_authorization = :data_authorization
+                  data_authorization = :data_authorization,
+                  is_overage = :is_overage
                   WHERE id = :id AND pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);
@@ -280,6 +289,7 @@ class BeneficiaryController
         $stmt->bindParam(":medical_restrictions", $data['medical_restrictions']);
         $stmt->bindParam(":observations", $data['observations']);
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
+        $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             echo json_encode(["message" => "Beneficiario actualizado exitosamente."]);

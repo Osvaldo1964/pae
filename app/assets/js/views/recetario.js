@@ -137,24 +137,32 @@ window.RecetarioView = {
                                     <div><small class="text-muted d-block">Proteínas</small><strong>${r.total_proteins}g</strong></div>
                                     <div><small class="text-muted d-block">Carbohidratos</small><strong>${r.total_carbohydrates}g</strong></div>
                                 </div>
-                                <table class="table table-hover mb-0">
-                                    <thead class="bg-light small fw-bold text-muted">
-                                        <tr>
-                                            <th class="ps-3 text-uppercase">Ingrediente</th>
-                                            <th class="text-center text-uppercase">Cantidad</th>
-                                            <th class="pe-3 text-uppercase">Notas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${r.items.map(i => `
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" style="font-size: 0.85rem;">
+                                        <thead class="bg-light small fw-bold text-muted">
                                             <tr>
-                                                <td class="ps-3 fw-medium">${i.item_name}</td>
-                                                <td class="text-center"><span class="badge bg-secondary-light text-primary">${i.quantity} ${i.unit}</span></td>
-                                                <td class="pe-3 small text-muted">${i.preparation_method || '-'}</td>
+                                                <th class="ps-3 text-uppercase">Ingrediente</th>
+                                                <th class="text-center text-uppercase">Prees.</th>
+                                                <th class="text-center text-uppercase">Pri A</th>
+                                                <th class="text-center text-uppercase">Pri B</th>
+                                                <th class="text-center text-uppercase">Secu.</th>
+                                                <th class="pe-3 text-uppercase">Notas</th>
                                             </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            ${r.items.map(i => `
+                                                <tr>
+                                                    <td class="ps-3 fw-medium">${i.item_name}</td>
+                                                    <td class="text-center"><span class="badge bg-light text-dark border">${i.quantities.PREESCOLAR}</span></td>
+                                                    <td class="text-center"><span class="badge bg-light text-dark border">${i.quantities.PRIMARIA_A}</span></td>
+                                                    <td class="text-center"><span class="badge bg-light text-dark border">${i.quantities.PRIMARIA_B}</span></td>
+                                                    <td class="text-center"><span class="badge bg-primary-light text-primary border">${i.quantities.SECUNDARIA}</span></td>
+                                                    <td class="pe-3 small text-muted">${i.preparation || '-'}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -263,11 +271,14 @@ window.RecetarioView = {
                             </div>
                             <div class="table-responsive border rounded bg-light">
                                 <table class="table table-sm align-middle mb-0">
-                                    <thead class="bg-white">
+                                    <thead class="bg-white small text-muted text-uppercase">
                                         <tr>
-                                            <th class="ps-3">Ingrediente</th>
-                                            <th style="width: 20%">Cant. Patrón (g/ml)</th>
-                                            <th style="width: 25%">Prep. / Notas</th>
+                                            <th class="ps-3" style="width: 30%">Ingrediente</th>
+                                            <th class="text-center" style="width: 12%">Preesc.</th>
+                                            <th class="text-center" style="width: 12%">Prim. A</th>
+                                            <th class="text-center" style="width: 12%">Prim. B</th>
+                                            <th class="text-center" style="width: 12%">Secund.</th>
+                                            <th>Preparación</th>
                                             <th style="width: 5%"></th>
                                         </tr>
                                     </thead>
@@ -309,15 +320,21 @@ window.RecetarioView = {
         const tbody = document.getElementById('recipe-items-body');
         const tr = document.createElement('tr');
         tr.className = 'ingredient-row bg-white';
+
+        const q = data ? data.quantities : { PREESCOLAR: '', PRIMARIA_A: '', PRIMARIA_B: '', SECUNDARIA: '' };
+
         tr.innerHTML = `
             <td class="ps-2">
-                <select class="form-select form-select-sm border-0" name="item_id" required>
-                    <option value="">Buscar ingrediente...</option>
-                    ${this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.code})</option>`).join('')}
+                <select class="form-select form-select-sm border-0 bg-transparent" name="item_id" required>
+                    <option value="">Ingrediente...</option>
+                    ${this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name}</option>`).join('')}
                 </select>
             </td>
-            <td><input type="number" step="0.01" class="form-control form-control-sm text-end border-0" name="quantity" value="${data ? data.quantity : ''}" placeholder="0.00" required></td>
-            <td><input type="text" class="form-control form-control-sm border-0" name="preparation" value="${data ? data.preparation_method || '' : ''}" placeholder="Ej: Crudo"></td>
+            <td><input type="number" step="0.01" class="form-control form-control-sm text-center border-0 bg-transparent" name="qty_pre" value="${q.PREESCOLAR}" placeholder="0" required title="Preescolar"></td>
+            <td><input type="number" step="0.01" class="form-control form-control-sm text-center border-0 bg-transparent" name="qty_pria" value="${q.PRIMARIA_A}" placeholder="0" required title="Primaria A"></td>
+            <td><input type="number" step="0.01" class="form-control form-control-sm text-center border-0 bg-transparent" name="qty_prib" value="${q.PRIMARIA_B}" placeholder="0" required title="Primaria B"></td>
+            <td><input type="number" step="0.01" class="form-control form-control-sm text-center border-0 bg-transparent fw-bold text-primary" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" required title="Secundaria"></td>
+            <td><input type="text" class="form-control form-control-sm border-0 bg-transparent" name="preparation" value="${data ? data.preparation || '' : ''}" placeholder="Picar..."></td>
             <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="fas fa-minus-circle"></i></button></td>
         `;
         tbody.appendChild(tr);
@@ -332,12 +349,18 @@ window.RecetarioView = {
         const items = [];
         document.querySelectorAll('.ingredient-row').forEach(row => {
             const id = row.querySelector('[name="item_id"]').value;
-            const qty = row.querySelector('[name="quantity"]').value;
-            if (id && qty > 0) items.push({
-                item_id: id,
-                quantity: qty,
-                preparation: row.querySelector('[name="preparation"]').value
-            });
+            if (id) {
+                items.push({
+                    item_id: id,
+                    quantities: {
+                        PREESCOLAR: row.querySelector('[name="qty_pre"]').value || 0,
+                        PRIMARIA_A: row.querySelector('[name="qty_pria"]').value || 0,
+                        PRIMARIA_B: row.querySelector('[name="qty_prib"]').value || 0,
+                        SECUNDARIA: row.querySelector('[name="qty_sec"]').value || 0
+                    },
+                    preparation: row.querySelector('[name="preparation"]').value
+                });
+            }
         });
 
         if (items.length === 0) { Helper.alert('warning', 'Debe añadir al menos un ingrediente'); return; }

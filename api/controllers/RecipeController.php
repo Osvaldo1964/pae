@@ -22,8 +22,10 @@ class RecipeController
         if (preg_match('/Bearer\s(\S+)/', $auth, $matches)) {
             try {
                 $decoded = \Utils\JWT::decode($matches[1]);
-                if (is_object($decoded)) return $decoded->data->pae_id ?? null;
-                if (is_array($decoded)) return $decoded['data']['pae_id'] ?? null;
+                if (is_object($decoded))
+                    return $decoded->data->pae_id ?? null;
+                if (is_array($decoded))
+                    return $decoded['data']['pae_id'] ?? null;
             } catch (Exception $e) {
                 return null;
             }
@@ -72,18 +74,48 @@ class RecipeController
             $stmt->execute();
             $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$recipe) throw new Exception("Receta no encontrada");
+            if (!$recipe)
+                throw new Exception("Receta no encontrada");
 
-            // Ingredientes
+            // Ingredientes organizados por grupo
             $queryItems = "SELECT ri.*, i.name as item_name, i.code as item_code, mu.abbreviation as unit 
                            FROM recipe_items ri 
                            JOIN items i ON ri.item_id = i.id 
                            JOIN measurement_units mu ON i.measurement_unit_id = mu.id
-                           WHERE ri.recipe_id = :id";
+                           WHERE ri.recipe_id = :id
+                           ORDER BY ri.age_group, i.name";
             $stmtItems = $this->conn->prepare($queryItems);
             $stmtItems->bindValue(':id', $id);
             $stmtItems->execute();
-            $recipe['items'] = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+            $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+            // Organizar para el frontend: un registro por item_id con sus 4 gramajes
+            $groupedItems = [];
+            foreach ($items as $it) {
+                $iid = $it['item_id'];
+                if (!isset($groupedItems[$iid])) {
+                    $groupedItems[$iid] = [
+                        'item_id' => $iid,
+                        'item_name' => $it['item_name'],
+                        'item_code' => $it['item_code'],
+                        'unit' => $it['unit'],
+                        'preparation' => $it['preparation_method'],
+                        'quantities' => [
+                            'PREESCOLAR' => 0,
+                            'PRIMARIA_A' => 0,
+                            'PRIMARIA_B' => 0,
+                            'SECUNDARIA' => 0
+                        ]
+                    ];
+                }
+                $groupedItems[$iid]['quantities'][$it['age_group']] = $it['quantity'];
+            }
+            $recipe['items'] = array_values($groupedItems);
+
+            // Nutrición por grupo
+            $stmtNut = $this->conn->prepare("SELECT * FROM recipe_nutrition WHERE recipe_id = ?");
+            $stmtNut->execute([$id]);
+            $recipe['nutrition'] = $stmtNut->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode(['success' => true, 'data' => $recipe]);
         } catch (Exception $e) {
@@ -114,15 +146,19 @@ class RecipeController
             $recipe_id = $this->conn->lastInsertId();
 
             if (isset($data['items']) && is_array($data['items'])) {
-                $queryItem = "INSERT INTO recipe_items (recipe_id, item_id, quantity, preparation_method) VALUES (:rid, :iid, :qty, :prep)";
+                $queryItem = "INSERT INTO recipe_items (recipe_id, item_id, age_group, quantity, preparation_method) VALUES (:rid, :iid, :group, :qty, :prep)";
                 $stmtItem = $this->conn->prepare($queryItem);
                 foreach ($data['items'] as $item) {
-                    $stmtItem->execute([
-                        ':rid' => $recipe_id,
-                        ':iid' => $item['item_id'],
-                        ':qty' => $item['quantity'],
-                        ':prep' => $item['preparation'] ?? ''
-                    ]);
+                    // El frontend enviará 'quantities' como un objeto {PREESCOLAR: X, ...}
+                    foreach ($item['quantities'] as $group => $qty) {
+                        $stmtItem->execute([
+                            ':rid' => $recipe_id,
+                            ':iid' => $item['item_id'],
+                            ':group' => $group,
+                            ':qty' => $qty,
+                            ':prep' => $item['preparation'] ?? ''
+                        ]);
+                    }
                 }
             }
 
@@ -133,7 +169,8 @@ class RecipeController
 
             echo json_encode(['success' => true, 'message' => 'Receta creada exitosamente', 'id' => $recipe_id]);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -141,36 +178,50 @@ class RecipeController
 
     private function recalculateNutrition($recipe_id)
     {
-        // Calcular los totales de una vez uniendo recipe_items con items
-        $query = "SELECT 
-                    SUM(ri.quantity * i.calories / 100) as calories,
-                    SUM(ri.quantity * i.proteins / 100) as proteins,
-                    SUM(ri.quantity * i.carbohydrates / 100) as carbohydrates,
-                    SUM(ri.quantity * i.fats / 100) as fats
-                  FROM recipe_items ri
-                  JOIN items i ON ri.item_id = i.id
-                  WHERE ri.recipe_id = :id";
+        $groups = ['PREESCOLAR', 'PRIMARIA_A', 'PRIMARIA_B', 'SECUNDARIA'];
 
-        $stmtCalc = $this->conn->prepare($query);
-        $stmtCalc->execute([':id' => $recipe_id]);
-        $totals = $stmtCalc->fetch(PDO::FETCH_ASSOC);
+        foreach ($groups as $group) {
+            $query = "SELECT 
+                        SUM(ri.quantity * i.calories / 100) as calories,
+                        SUM(ri.quantity * i.proteins / 100) as proteins,
+                        SUM(ri.quantity * i.carbohydrates / 100) as carbohydrates,
+                        SUM(ri.quantity * i.fats / 100) as fats
+                      FROM recipe_items ri
+                      JOIN items i ON ri.item_id = i.id
+                      WHERE ri.recipe_id = :id AND ri.age_group = :group";
 
-        if ($totals) {
-            $queryUpd = "UPDATE recipes SET 
-                         total_calories = :cal, 
-                         total_proteins = :pro, 
-                         total_carbohydrates = :car, 
-                         total_fats = :fat 
-                         WHERE id = :id";
-            $stmtUpd = $this->conn->prepare($queryUpd);
-            $stmtUpd->execute([
-                ':cal' => $totals['calories'] ?? 0,
-                ':pro' => $totals['proteins'] ?? 0,
-                ':car' => $totals['carbohydrates'] ?? 0,
-                ':fat' => $totals['fats'] ?? 0,
-                ':id' => $recipe_id
-            ]);
+            $stmtCalc = $this->conn->prepare($query);
+            $stmtCalc->execute([':id' => $recipe_id, ':group' => $group]);
+            $totals = $stmtCalc->fetch(PDO::FETCH_ASSOC);
+
+            if ($totals) {
+                $queryUpd = "INSERT INTO recipe_nutrition (recipe_id, age_group, total_calories, total_proteins, total_carbohydrates, total_fats)
+                             VALUES (:id, :group, :cal, :pro, :car, :fat)
+                             ON DUPLICATE KEY UPDATE 
+                             total_calories = :cal2, total_proteins = :pro2, total_carbohydrates = :car2, total_fats = :fat2";
+                $stmtUpd = $this->conn->prepare($queryUpd);
+                $stmtUpd->execute([
+                    ':id' => $recipe_id,
+                    ':group' => $group,
+                    ':cal' => $totals['calories'] ?? 0,
+                    ':pro' => $totals['proteins'] ?? 0,
+                    ':car' => $totals['carbohydrates'] ?? 0,
+                    ':fat' => $totals['fats'] ?? 0,
+                    ':cal2' => $totals['calories'] ?? 0,
+                    ':pro2' => $totals['proteins'] ?? 0,
+                    ':car2' => $totals['carbohydrates'] ?? 0,
+                    ':fat2' => $totals['fats'] ?? 0
+                ]);
+            }
         }
+
+        // Mantener compatibilidad con tabla principal para visualización general (Promedio o Secundaria)
+        $this->conn->prepare("UPDATE recipes r 
+                             SET total_calories = (SELECT total_calories FROM recipe_nutrition WHERE recipe_id = r.id AND age_group = 'SECUNDARIA'),
+                                 total_proteins = (SELECT total_proteins FROM recipe_nutrition WHERE recipe_id = r.id AND age_group = 'SECUNDARIA'),
+                                 total_carbohydrates = (SELECT total_carbohydrates FROM recipe_nutrition WHERE recipe_id = r.id AND age_group = 'SECUNDARIA'),
+                                 total_fats = (SELECT total_fats FROM recipe_nutrition WHERE recipe_id = r.id AND age_group = 'SECUNDARIA')
+                             WHERE id = ?")->execute([$recipe_id]);
     }
 
     /**
@@ -196,15 +247,18 @@ class RecipeController
             $stmtDel->execute([':rid' => $id]);
 
             if (isset($data['items']) && is_array($data['items'])) {
-                $queryItem = "INSERT INTO recipe_items (recipe_id, item_id, quantity, preparation_method) VALUES (:rid, :iid, :qty, :prep)";
+                $queryItem = "INSERT INTO recipe_items (recipe_id, item_id, age_group, quantity, preparation_method) VALUES (:rid, :iid, :group, :qty, :prep)";
                 $stmtItem = $this->conn->prepare($queryItem);
                 foreach ($data['items'] as $item) {
-                    $stmtItem->execute([
-                        ':rid' => $id,
-                        ':iid' => $item['item_id'],
-                        ':qty' => $item['quantity'],
-                        ':prep' => $item['preparation'] ?? ''
-                    ]);
+                    foreach ($item['quantities'] as $group => $qty) {
+                        $stmtItem->execute([
+                            ':rid' => $id,
+                            ':iid' => $item['item_id'],
+                            ':group' => $group,
+                            ':qty' => $qty,
+                            ':prep' => $item['preparation'] ?? ''
+                        ]);
+                    }
                 }
             }
 
@@ -215,7 +269,8 @@ class RecipeController
 
             echo json_encode(['success' => true, 'message' => 'Receta actualizada exitosamente']);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

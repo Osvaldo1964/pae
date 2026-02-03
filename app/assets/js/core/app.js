@@ -93,11 +93,74 @@ const App = {
         }
     },
 
+    updateBreadcrumbs: (hash) => {
+        const container = document.getElementById('breadcrumb-container');
+        if (!container) return;
+
+        if (hash === 'login' || hash === 'dashboard') {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+        let html = '<ol class="breadcrumb mb-0">';
+        html += '<li class="breadcrumb-item"><a href="#dashboard" class="text-decoration-none text-muted"><i class="fas fa-home me-1"></i>Dashboard</a></li>';
+
+        if (hash.startsWith('group/')) {
+            const groupId = hash.split('/')[1];
+            const group = App.state.menu.find(g => g.id == groupId);
+            if (group) {
+                html += `<li class="breadcrumb-item active" aria-current="page">${group.name}</li>`;
+            }
+        } else if (hash.startsWith('module/')) {
+            const route = hash.split('/')[1];
+            let foundGroup = null;
+            let foundModule = null;
+
+            App.state.menu.forEach(group => {
+                const mod = group.modules.find(m => m.route === route);
+                if (mod) {
+                    foundGroup = group;
+                    foundModule = mod;
+                }
+            });
+
+            // Special cases for injected cards
+            if (!foundModule) {
+                if (route === 'pae-programs') {
+                    foundGroup = App.state.menu.find(g => g.name === 'Configuración');
+                    foundModule = { name: 'Programas PAE' };
+                } else if (route === 'team') {
+                    foundGroup = App.state.menu.find(g => g.name === 'Configuración');
+                    foundModule = { name: 'Mi Equipo' };
+                }
+            }
+
+            if (foundGroup) {
+                html += `<li class="breadcrumb-item"><a href="#group/${foundGroup.id}" class="text-decoration-none">${foundGroup.name}</a></li>`;
+            }
+            if (foundModule) {
+                html += `<li class="breadcrumb-item active" aria-current="page">${foundModule.name}</li>`;
+            }
+        } else if (hash === 'users') {
+            const configGroup = App.state.menu.find(g => g.name === 'Configuración');
+            if (configGroup) {
+                html += `<li class="breadcrumb-item"><a href="#group/${configGroup.id}" class="text-decoration-none">${configGroup.name}</a></li>`;
+            }
+            html += `<li class="breadcrumb-item active" aria-current="page">Usuarios</li>`;
+        }
+
+        html += '</ol>';
+        container.innerHTML = html;
+    },
+
     router: async () => {
         const hash = window.location.hash.slice(1) || 'login';
         const appContainer = document.getElementById('app');
 
-        // Layout handling
+        // Update Breadcrumbs
+        App.updateBreadcrumbs(hash);
+
         // Layout handling
         if (hash === 'login') {
             document.getElementById('sidebar').classList.add('d-none');
@@ -565,18 +628,6 @@ const App = {
             `;
             sidebarList.appendChild(li);
         });
-
-        // Add 'Usuarios' menu item ONLY for Super Admin (role_id = 1)
-        if (App.state.user && App.state.user.role_id === 1) {
-            const usersLi = document.createElement('li');
-            usersLi.className = 'nav-item mb-2';
-            usersLi.innerHTML = `
-                <a href="#users" class="nav-link text-white">
-                    <i class="fas fa-users-cog me-2"></i> Usuarios
-                </a>
-            `;
-            sidebarList.appendChild(usersLi);
-        }
 
         // Add Logout
         const logoutLi = document.createElement('li');

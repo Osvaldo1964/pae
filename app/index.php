@@ -102,15 +102,19 @@
         <!-- Main Content -->
         <div id="main-content" class="bg-light d-flex flex-column">
             <!-- Top Header -->
-            <nav class="navbar navbar-light bg-white border-bottom shadow-sm py-2 position-relative" id="top-header" style="display: none;">
+            <nav class="navbar navbar-light bg-white border-bottom shadow-sm py-2 position-relative" id="top-header"
+                style="display: none;">
                 <div class="container-fluid px-4 d-flex justify-content-between align-items-center position-relative">
                     <!-- Left: Toggle -->
                     <div class="d-flex align-items-center">
-                        <button class="btn btn-link text-secondary me-3" id="sidebar-toggle"><i class="fas fa-bars"></i></button>
+                        <button class="btn btn-link text-secondary me-3" id="sidebar-toggle"><i
+                                class="fas fa-bars"></i></button>
                     </div>
 
                     <!-- Center: Branding (Absolute - Inside Container) -->
-                    <div id="program-header-info" class="position-absolute top-50 start-50 translate-middle d-flex align-items-center" style="white-space: nowrap; pointer-events: none;">
+                    <div id="program-header-info"
+                        class="position-absolute top-50 start-50 translate-middle d-flex align-items-center"
+                        style="white-space: nowrap; pointer-events: none;">
                         <!-- Dynamic Content loads here -->
                         <h5 class="mb-0 text-primary-custom fw-bold" id="header-title">PAE Control</h5>
                     </div>
@@ -118,11 +122,15 @@
                     <!-- Right: User & Notifs -->
                     <div class="d-flex align-items-center">
                         <div class="dropdown me-3">
-                            <a href="#" class="text-secondary position-relative" id="notificationsDropdown" data-bs-toggle="dropdown">
+                            <a href="#" class="text-secondary position-relative" id="notificationsDropdown"
+                                data-bs-toggle="dropdown">
                                 <i class="fas fa-bell fa-lg"></i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">3</span>
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                    style="font-size: 0.5rem;">3</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationsDropdown">
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0"
+                                aria-labelledby="notificationsDropdown">
                                 <li>
                                     <h6 class="dropdown-header">Notificaciones</h6>
                                 </li>
@@ -131,22 +139,30 @@
                             </ul>
                         </div>
                         <div class="dropdown">
-                            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
-                                <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="User" class="rounded-circle me-2" width="32" height="32" id="header-user-avatar">
+                            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                                id="userDropdown" data-bs-toggle="dropdown">
+                                <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="User"
+                                    class="rounded-circle me-2" width="32" height="32" id="header-user-avatar">
                                 <span class="text-dark small fw-bold" id="header-user-name">Usuario</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>Perfil</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>Perfil</a>
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a>
+                                </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li><a class="dropdown-item text-danger" href="#" onclick="App.logout()"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="App.logout()"><i
+                                            class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </nav>
+
+            <!-- Breadcrumbs -->
+            <nav id="breadcrumb-container" class="px-4 mt-3" aria-label="breadcrumb" style="display: none;"></nav>
 
             <div class="container-fluid flex-grow-1 p-4" id="app">
                 <!-- Dynamic View Content (Login / Dashboard / Modules) -->
@@ -165,7 +181,11 @@
     <script src="/pae/app/assets/plugins/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- App Logic -->
-    <?php $version = "1.3.0"; ?>
+    <?php
+    require_once __DIR__ . '/../api/config/Config.php';
+    $version = \Config\Config::APP_VERSION;
+    ?>
+    <script>window.APP_VERSION = "<?= $version ?>";</script>
     <script src="/pae/app/assets/js/core/config.js?v=<?= $version ?>"></script>
     <script src="/pae/app/assets/js/core/helper.js?v=<?= $version ?>"></script>
     <script src="/pae/app/assets/js/core/app.js?v=<?= $version ?>"></script>

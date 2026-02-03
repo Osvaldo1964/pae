@@ -170,8 +170,16 @@ var BeneficiariesView = {
                                                 <label class="form-label">SISBEN (Categoría)</label>
                                                 <input type="text" class="form-control" id="sisben" placeholder="Ej: A1, B2">
                                             </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check mt-1">
+                                                    <input class="form-check-input" type="checkbox" id="is-overage">
+                                                    <label class="form-check-label fw-bold text-danger" for="is-overage">
+                                                        ¿Es Estudiante en Extraedad? (Adulto)
+                                                    </label>
+                                                </div>
+                                            </div>
                                             <div class="col-md-8">
-                                                <div class="form-check mt-4">
+                                                <div class="form-check mt-1">
                                                     <input class="form-check-input" type="checkbox" id="data-authorization" required>
                                                     <label class="form-check-label fw-bold text-primary" for="data-authorization">
                                                         Autorización de Tratamiento de Datos Personales (Habeas Data) *
@@ -253,6 +261,14 @@ var BeneficiariesView = {
                                                     <option value="DESERTADO">Desertado</option>
                                                     <option value="TRASLADADO">Trasladado</option>
                                                 </select>
+                                            </div>
+                                            <div class="col-md-12" id="age-group-suggestion-container" style="display: none;">
+                                                <div class="alert alert-info d-flex align-items-center mb-0">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    <div>
+                                                        Grupo Etario sugerido según edad: <strong id="suggested-age-group">-</strong>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -340,7 +356,39 @@ var BeneficiariesView = {
         `;
 
         document.getElementById('app-container').innerHTML = html;
+        this.addEventListeners();
         await this.init();
+    },
+
+    addEventListeners() {
+        const birthDateInput = document.getElementById('birth-date');
+        if (birthDateInput) {
+            birthDateInput.addEventListener('change', () => this.calculateSuggestedAgeGroup());
+        }
+    },
+
+    calculateSuggestedAgeGroup() {
+        const birthDate = document.getElementById('birth-date').value;
+        if (!birthDate) return;
+
+        const age = Helper.calculateAge(birthDate); // Assuming Helper has this, if not I'll add it or do it here
+        const container = document.getElementById('age-group-suggestion-container');
+        const span = document.getElementById('suggested-age-group');
+
+        let group = '';
+        if (age >= 3 && age <= 5) group = 'PREESCOLAR';
+        else if (age >= 6 && age <= 7) group = 'PRIMARIA A';
+        else if (age >= 8 && age <= 12) group = 'PRIMARIA B';
+        else if (age >= 13 && age <= 17) group = 'SECUNDARIA';
+        else if (age > 17) group = 'EXTRAEDAD / ADULTO';
+
+        if (group) {
+            span.innerText = group;
+            container.style.display = 'block';
+            if (age > 17) document.getElementById('is-overage').checked = true;
+        } else {
+            container.style.display = 'none';
+        }
     },
 
     async init() {
@@ -496,6 +544,8 @@ var BeneficiariesView = {
             document.getElementById('ethnic-group').value = b.ethnic_group_id;
             document.getElementById('sisben').value = b.sisben_category || '';
             document.getElementById('data-authorization').checked = !!b.data_authorization;
+            document.getElementById('is-overage').checked = !!b.is_overage;
+            this.calculateSuggestedAgeGroup(); // Auto-calculate on open if birth_date exists
 
             // Location
             document.getElementById('school-id').value = b.school_id || '';
@@ -515,9 +565,9 @@ var BeneficiariesView = {
             document.getElementById('address').value = b.address || '';
             document.getElementById('phone').value = b.phone || '';
             document.getElementById('email').value = b.email || '';
-            document.getElementById('guardian_name').value = b.guardian_name || '';
-            document.getElementById('guardian_relationship').value = b.guardian_relationship || '';
-            document.getElementById('guardian_phone').value = b.guardian_phone || '';
+            document.getElementById('guardian-name').value = b.guardian_name || '';
+            document.getElementById('guardian-relationship').value = b.guardian_relationship || '';
+            document.getElementById('guardian-phone').value = b.guardian_phone || '';
 
             document.getElementById('disability').value = b.disability_type || 'NINGUNA';
             document.getElementById('is-victim').checked = !!b.is_victim;
@@ -533,7 +583,24 @@ var BeneficiariesView = {
         const id = document.getElementById('beneficiary-id').value;
         const form = document.getElementById('formBeneficiary');
 
-        if (!form.checkValidity()) {
+        // Custom validation to handle hidden tabs
+        const invalidField = form.querySelector(':invalid');
+        if (invalidField) {
+            // Find which tab this field belongs to
+            const tabPane = invalidField.closest('.tab-pane');
+            if (tabPane) {
+                const tabId = tabPane.id;
+                const tabTrigger = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+                if (tabTrigger) {
+                    bootstrap.Tab.getOrCreateInstance(tabTrigger).show();
+                    // Small delay to allow tab transition before reporting validity
+                    setTimeout(() => {
+                        invalidField.focus();
+                        form.reportValidity();
+                    }, 150);
+                    return;
+                }
+            }
             form.reportValidity();
             return;
         }
@@ -551,6 +618,7 @@ var BeneficiariesView = {
             ethnic_group_id: document.getElementById('ethnic-group').value,
             sisben_category: document.getElementById('sisben').value,
             data_authorization: document.getElementById('data-authorization').checked,
+            is_overage: document.getElementById('is-overage').checked ? 1 : 0,
 
             branch_id: document.getElementById('branch-id').value,
             grade: document.getElementById('grade').value,
@@ -566,7 +634,7 @@ var BeneficiariesView = {
             email: document.getElementById('email').value,
             guardian_name: document.getElementById('guardian-name').value,
             guardian_relationship: document.getElementById('guardian-relationship').value,
-            guardian_phone: document.getElementById('guardian_phone').value,
+            guardian_phone: document.getElementById('guardian-phone').value,
 
             disability_type: document.getElementById('disability').value,
             is_victim: document.getElementById('is-victim').checked,

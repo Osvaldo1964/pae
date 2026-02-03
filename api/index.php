@@ -380,23 +380,51 @@ if ($resource === 'auth') {
         $controller->manageItems($action);
     }
 } elseif ($resource === 'inventory') {
-    $controller = new \Controllers\WarehouseController();
+    $controller = new \Controllers\InventoryController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->getStock();
     }
-} elseif ($resource === 'suppliers') {
-    $controller = new \Controllers\WarehouseController();
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $controller->getSuppliers();
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->saveSupplier();
-    }
 } elseif ($resource === 'movements') {
-    $controller = new \Controllers\WarehouseController();
+    $controller = new \Controllers\InventoryController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->getMovements();
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->registerMovement();
+    }
+} elseif ($resource === 'quotes') {
+    $controller = new \Controllers\InventoryController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && strpos($_SERVER['REQUEST_URI'], '/details') !== false) {
+            $controller->getQuoteDetails($action);
+        } else {
+            $controller->getQuotes();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
+        $controller->saveQuote();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->deleteQuote($action);
+    }
+} elseif ($resource === 'purchase-orders') {
+    $controller = new \Controllers\InventoryController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && strpos($_SERVER['REQUEST_URI'], '/details') !== false) {
+            $controller->getPurchaseOrderDetails($action);
+        } else {
+            $controller->getPurchaseOrders();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
+        $controller->savePurchaseOrder();
+    }
+} elseif ($resource === 'remissions') {
+    $controller = new \Controllers\InventoryController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && strpos($_SERVER['REQUEST_URI'], '/details') !== false) {
+            $controller->getRemissionDetails($action);
+        } else {
+            $controller->getRemissions();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
+        $controller->saveRemission();
     }
 } elseif ($resource === 'recipes') {
     $controller = new \Controllers\RecipeController();
