@@ -1,4 +1,4 @@
-# Estado del Sistema PAE Control - 01 de Febrero 2026
+# Estado del Sistema PAE Control - 03 de Febrero 2026
 
 ## ✅ Módulos Completados
 
@@ -26,6 +26,10 @@
 ### 4. **Beneficiarios**
 - ✅ Estudiantes (Gestión de matrícula con Resolución 0003)
 
+### 5. **Operación** 🟡 ⭐ EN CURSO
+- ✅ Almacén (Inventario actual y movimientos de entradas/salidas)
+- 🔜 Novedades y Entregas Diarias
+
 ---
 
 ## 🔧 Correcciones Recientes
@@ -35,10 +39,14 @@
 - ✅ Fix: Motor de cálculo nutricional basado en base 100g
 - ✅ UX: Scroll interno para escalabilidad de recetas
 
+### Core & Estabilidad
+- ✅ **Ruteo Universal:** Corregida la carga de assets y ruteo de API para cualquier subcarpeta.
+- ✅ **Fix Proveedores:** Ruta `/proveedores` unificada en backend y frontend.
+
 ### Minutas y Ciclos
+- ✅ Fix: Borrado en cascada (ahora permite limpiar ciclos con programación).
+- ✅ UI: Activación de botones de acción "Ver" y "Eliminar" sin errores de consola.
 - ✅ Fix: Generación correcta de fechas de lunes a viernes.
-- ✅ UI: Tabs dinámicos para separar planeación de ejecución.
-- ✅ Seguridad: Validación de `pae_id` en todas las operaciones de ciclo.
 
 ---
 
@@ -50,4 +58,4 @@
 
 ---
 
-**Última actualización**: 01 de Febrero 2026, 21:50 PM
+**Última actualización**: 03 de Febrero 2026, 19:30 PM

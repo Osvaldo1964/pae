@@ -236,7 +236,7 @@ var SuppliersView = {
             }
         } catch (e) {
             console.error(e);
-            Helper.alert('error', 'Error al procesar la solicitud');
+            Helper.alert('error', e.message || 'Error al procesar la solicitud');
         }
     },
 

@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 01 de Febrero de 2026, 21:45  
-**Versión:** 1.5.0 (Fase 3 - Cocina: Minutas y Ciclos Completados)
+**Última Actualización:** 03 de Febrero de 2026, 19:25  
+**Versión:** 1.6.0 (Fase 3 - Cocina y Almacén: Avance en Inventario)
 
 ---
 
@@ -9,11 +9,11 @@
 
 | Categoría | Estado | Progreso |
 |-----------|--------|----------|
-| **Backend API** | 🟢 Funcional | 98% |
-| **Frontend Core** | 🟢 Funcional | 98% |
-| **Base de Datos** | 🟢 Estable | 98% |
+| **Backend API** | 🟢 Funcional | 99% |
+| **Frontend Core** | 🟢 Funcional | 99% |
+| **Base de Datos** | 🟢 Estable | 99% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
-| **Módulos Operativos** | 🟡 En Desarrollo | 70% |
+| **Módulos Operativos** | 🟡 En Desarrollo | 85% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -105,6 +105,14 @@
 - [x] **Frontend:** Interfaz de doble pestaña (Ciclos Activos vs Plantillas Standard).
 - [x] **Aplicación Rápida:** Funcionalidad de clonación de plantilla a calendario mensual.
 - [x] **Validaciones:** Restricción de eliminación para ciclos activos o validados nutricionalmente.
+- [x] **Refinamiento:** Borrado en cascada (limpia menús e ítems asociados).
+
+### 10. Módulo de Almacén (Inventario) 🟡 ⭐ EN CURSO
+- [x] **Backend:** `InventoryController.php` con gestión de stock y movimientos.
+- [x] **Stock Actual:** Listado con alertas de existencias críticas.
+- [x] **Movimientos:** Registro de entradas y salidas con trazabilidad.
+- [x] **Integración:** Vinculación con proveedores y ítems maestros.
+- [ ] **Ajustes:** Toma física y auditoría.
 
 ---
 
@@ -132,16 +140,20 @@
 
 ---
 
-## 🔧 CORRECCIONES RECIENTES (v1.5.0)
+## 🔧 CORRECCIONES RECIENTES (v1.6.0)
+
+### Módulo de Almacén
+- ✅ Corregida ruta de API para proveedores (`/proveedores`).
+- ✅ Ajustado mapeo de datos para peticiones concurrentes (Inventory, Movements, Suppliers).
 
 ### Módulo de Minutas
-- ✅ Implementada lógica de cálculo de fechas para ciclos de 20 días.
-- ✅ Corregida la carga dinámica de ingredientes al editar plantillas.
-- ✅ Mejorada la UI de tarjetas de ciclos con estados de color (Borrador/Activo/Finalizado).
+- ✅ Implementado borrado funcional de ciclos (eliminación en cascada).
+- ✅ Activada vista de detalle de ciclo con alertas informativas.
+- ✅ Corregida inconsistencia de carga de recetas en el listado.
 
-### Módulo de Beneficiarios
-- ✅ Corregido error 403 (Forbidden) en autenticación JWT.
-- ✅ Mejorada separación visual entre filtros y tabla.
+### General
+- ✅ **Ruteo Dinámico:** El sistema ahora es agnóstico a la subcarpeta de instalación (localhost/pae/ vs dominio.com/).
+- ✅ **Estabilidad:** Mejorado el manejo de respuestas JSON vacías o malformadas.
 
 ---
 

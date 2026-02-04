@@ -268,7 +268,7 @@ window.ComprasView = {
                 </select>
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_ordered || data.quantity) : '1'}" min="0.01" step="0.01" required oninput="ComprasView.calculateRow(this)">
+                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_ordered || data.quantity) : '1'}" min="0.001" step="0.001" required oninput="ComprasView.calculateRow(this)">
             </td>
             <td>
                 <div class="input-group input-group-sm">

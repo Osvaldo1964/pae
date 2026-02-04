@@ -20,12 +20,12 @@ window.AlmacenView = {
             const [invRes, movRes, supRes] = await Promise.all([
                 Helper.fetchAPI('/inventory'),
                 Helper.fetchAPI('/movements'),
-                Helper.fetchAPI('/suppliers')
+                Helper.fetchAPI('/proveedores')
             ]);
 
-            this.inventory = invRes.success ? invRes.data : [];
-            this.movements = movRes.success ? movRes.data : [];
-            this.suppliers = supRes.success ? supRes.data : [];
+            this.inventory = invRes.success ? (invRes.data || []) : [];
+            this.movements = movRes.success ? (movRes.data || []) : [];
+            this.suppliers = supRes || []; // Suppliers returns array directly
         } catch (error) {
             console.error('Error loading warehouse data:', error);
         }
@@ -181,9 +181,9 @@ window.AlmacenView = {
                         <small class="text-muted">${item.code}</small>
                     </td>
                     <td><span class="badge bg-light text-dark border">${item.food_group}</span></td>
-                    <td class="text-center fw-bold fs-5">${item.stock}</td>
+                    <td class="text-center fw-bold fs-5">${Helper.formatNumber(item.stock, 3)}</td>
                     <td>${item.unit}</td>
-                    <td class="text-muted">${item.minimum_stock}</td>
+                    <td class="text-muted">${Helper.formatNumber(item.minimum_stock, 3)}</td>
                     <td>
                         <span class="badge ${isLow ? 'bg-danger' : 'bg-success'} rounded-pill">
                             ${isLow ? 'ALERTA STOCK' : 'OK'}
@@ -336,7 +336,7 @@ window.AlmacenView = {
                 </select>
             </td>
             <td>
-                <input type="number" step="0.01" class="form-control form-control-sm text-end" name="quantity" required>
+                <input type="number" step="0.001" class="form-control form-control-sm text-end" name="quantity" required>
             </td>
             <td>
                 <input type="text" class="form-control form-control-sm" name="batch" placeholder="Lote/Venc">

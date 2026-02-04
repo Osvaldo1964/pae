@@ -275,7 +275,7 @@ window.RemisionesView = {
                 <input type="text" class="form-control border-0 bg-transparent row-batch" value="${data ? (data.batch_number || '') : ''}" placeholder="Ej: L-1002">
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_sent || data.quantity) : '1'}" min="0.01" step="0.01" required>
+                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_sent || data.quantity) : '1'}" min="0.001" step="0.001" required>
             </td>
             <td class="text-end pe-4">
                 <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()">

@@ -37,11 +37,23 @@ spl_autoload_register(function ($class_name) {
     }
 });
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$uri = explode('/', $uri);
+$full_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$script_name = dirname($_SERVER['SCRIPT_NAME']);
+// Normalize script name to ensure it ends with / for relative calculation
+$base_path = rtrim($script_name, '/') . '/';
 
-$resource = isset($uri[3]) ? $uri[3] : null; // pae/api/RESOURCE
-$action = isset($uri[4]) ? $uri[4] : null; // pae/api/resource/ACTION
+// Remove the base path from the full URI to get the relative route
+if (strpos($full_uri, $base_path) === 0) {
+    $relative_path = substr($full_uri, strlen($base_path));
+} else {
+    $relative_path = $full_uri;
+}
+
+$uri_segments = explode('/', trim($relative_path, '/'));
+
+$resource = isset($uri_segments[0]) ? $uri_segments[0] : null;
+$action = isset($uri_segments[1]) ? $uri_segments[1] : null;
+$id_param = isset($uri_segments[2]) ? $uri_segments[2] : null; // For cases like /api/resource/action/ID
 
 if ($resource === 'auth') {
     $controller = new \Controllers\AuthController();
@@ -105,7 +117,7 @@ if ($resource === 'auth') {
             exit;
         }
 
-        $paeId = isset($uri[5]) ? $uri[5] : null;
+        $paeId = $id_param;
         if (!$paeId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'ID de programa requerido']);
@@ -137,7 +149,7 @@ if ($resource === 'auth') {
             exit;
         }
 
-        $paeId = isset($uri[5]) ? $uri[5] : null;
+        $paeId = $id_param;
         if (!$paeId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'ID de programa requerido']);
@@ -238,7 +250,7 @@ if ($resource === 'auth') {
     }
     // GET /api/permissions/matrix/{role_id} - Get permission matrix
     elseif ($action === 'matrix' && $_SERVER['REQUEST_METHOD'] === 'GET') {
-        $roleId = isset($uri[5]) ? $uri[5] : null;
+        $roleId = $id_param;
         if (!$roleId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'role_id requerido']);
@@ -261,7 +273,7 @@ if ($resource === 'auth') {
     }
     // DELETE /api/permissions/roles/{id} - Delete role (Super Admin only)
     elseif ($action === 'roles' && $_SERVER['REQUEST_METHOD'] === 'DELETE') {
-        $roleId = isset($uri[5]) ? $uri[5] : null;
+        $roleId = $id_param;
         if (!$roleId) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'role_id requerido']);
@@ -280,7 +292,7 @@ if ($resource === 'auth') {
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && (!$action || $action === '')) {
         $controller->create();
     } elseif ($action === 'update' || $_SERVER['REQUEST_METHOD'] === 'PUT' || ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['_method'] === 'PUT')) {
-        $id = ($action === 'update') ? ($uri[5] ?? null) : ($action ?: ($_POST['id'] ?? null));
+        $id = ($action === 'update') ? $id_param : ($action ?: ($_POST['id'] ?? null));
         $controller->update($id);
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
         $controller->delete($action);
@@ -291,7 +303,7 @@ if ($resource === 'auth') {
 } elseif ($resource === 'branches') {
     $controller = new \Controllers\BranchController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $school_id = isset($uri[4]) ? $uri[4] : ($_GET['school_id'] ?? null);
+        $school_id = $action ?: ($_GET['school_id'] ?? null);
         $controller->index($school_id);
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $controller->create();

@@ -140,17 +140,24 @@ class MenuCycleController
             $stmt->execute([$id]);
             $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$cycle) throw new Exception("Ciclo no encontrado");
+            $this->conn->beginTransaction();
 
-            if ($cycle['status'] !== 'BORRADOR' || $cycle['is_validated']) {
-                throw new Exception("No se puede eliminar un ciclo que ya está ACTIVO, FINALIZADO o VALIDADO.");
-            }
+            // 1. Delete menu items (explosion of items)
+            $stmt1 = $this->conn->prepare("DELETE FROM menu_items WHERE menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)");
+            $stmt1->execute([$id]);
 
+            // 2. Delete menus
+            $stmt2 = $this->conn->prepare("DELETE FROM menus WHERE cycle_id = ?");
+            $stmt2->execute([$id]);
+
+            // 3. Delete the cycle itself
             $stmtDel = $this->conn->prepare("DELETE FROM menu_cycles WHERE id = ?");
             $stmtDel->execute([$id]);
 
-            echo json_encode(['success' => true, 'message' => 'Ciclo eliminado correctamente']);
+            $this->conn->commit();
+            echo json_encode(['success' => true, 'message' => 'Ciclo y toda su programación eliminados correctamente']);
         } catch (Exception $e) {
+            if ($this->conn->inTransaction()) $this->conn->rollBack();
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

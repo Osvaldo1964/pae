@@ -5,14 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PAE Control | Admin</title>
+    <?php
+    $base_path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/';
+    $assets_path = $base_path . 'assets/';
+    ?>
     <!-- Bootstrap 5 -->
-    <link href="/pae/app/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= $assets_path ?>plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
-    <link href="/pae/app/assets/plugins/fontawesome/css/all.min.css" rel="stylesheet">
+    <link href="<?= $assets_path ?>plugins/fontawesome/css/all.min.css" rel="stylesheet">
     <!-- SweetAlert2 -->
-    <link href="/pae/app/assets/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet">
+    <link href="<?= $assets_path ?>plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet">
     <!-- DataTables Bootstrap 5 -->
-    <link href="/pae/app/assets/plugins/datatables/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="<?= $assets_path ?>plugins/datatables/dataTables.bootstrap5.min.css" rel="stylesheet">
 
     <style>
         :root {
@@ -176,21 +180,23 @@
     </div>
 
     <!-- jQuery and DataTables -->
-    <script src="/pae/app/assets/plugins/jquery/jquery.min.js"></script>
-    <script src="/pae/app/assets/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="/pae/app/assets/plugins/datatables/dataTables.bootstrap5.min.js"></script>
+    <script src="<?= $assets_path ?>plugins/jquery/jquery.min.js"></script>
+    <script src="<?= $assets_path ?>plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="<?= $assets_path ?>plugins/datatables/dataTables.bootstrap5.min.js"></script>
 
     <!-- App Logic -->
     <?php
     require_once __DIR__ . '/../api/config/Config.php';
     $version = \Config\Config::APP_VERSION;
     ?>
-    <script>window.APP_VERSION = "<?= $version ?>";</script>
-    <script src="/pae/app/assets/js/core/config.js?v=<?= $version ?>"></script>
-    <script src="/pae/app/assets/js/core/helper.js?v=<?= $version ?>"></script>
-    <script src="/pae/app/assets/js/core/app.js?v=<?= $version ?>"></script>
-    <script src="/pae/app/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/pae/app/assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <script>
+        window.APP_VERSION = "<?= $version ?>";
+    </script>
+    <script src="<?= $assets_path ?>js/core/config.js?v=<?= $version ?>"></script>
+    <script src="<?= $assets_path ?>js/core/helper.js?v=<?= $version ?>"></script>
+    <script src="<?= $assets_path ?>js/core/app.js?v=<?= $version ?>"></script>
+    <script src="<?= $assets_path ?>plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= $assets_path ?>plugins/sweetalert2/sweetalert2.all.min.js"></script>
 </body>
 
 </html>

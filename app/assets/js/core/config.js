@@ -4,15 +4,29 @@
  */
 
 const Config = {
-    VERSION: window.APP_VERSION || '1.4.0', // Unified source of truth
-    // Base URL for the application (relative to root or full domain)
-    BASE_URL: '/pae/app/',
+    // Unified source of truth
+    VERSION: window.APP_VERSION || '1.4.0',
 
-    // API Base URL
-    API_URL: '/pae/api',
+    // Dynamic Base URL detection
+    // Detects '/pae/app/' or just '/app/' automatically
+    get BASE_URL() {
+        const path = window.location.pathname;
+        const appIndex = path.indexOf('/app/');
+        if (appIndex !== -1) {
+            return path.substring(0, appIndex + 5);
+        }
+        return '/app/';
+    },
+
+    // API Base URL (replaces /app/ with /api/)
+    get API_URL() {
+        return this.BASE_URL.replace(/\/app\/$/, '/api');
+    },
 
     // Assets Base URL
-    ASSETS_URL: '/pae/app/assets',
+    get ASSETS_URL() {
+        return this.BASE_URL + 'assets';
+    },
 
     // Get full asset path
     asset(path) {

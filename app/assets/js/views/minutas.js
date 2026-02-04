@@ -22,7 +22,7 @@ window.MinutasView = {
             ]);
             this.templates = tempRes.success ? tempRes.data : [];
             this.cycles = cycleRes.success ? cycleRes.data : [];
-            this.recipes = recipeRes.success ? recipeRes.data : [];
+            this.recipes = recipeRes || []; // Recipes returns array directly
         } catch (error) {
             console.error('Error loading minutas data:', error);
         }
@@ -137,11 +137,14 @@ window.MinutasView = {
         `).join('');
     },
 
+    viewCycle(id) {
+        // Redirigir o abrir detalle del ciclo
+        console.log('Viewing cycle:', id);
+        // Por ahora abriremos una alerta o modal de detalle
+        Helper.alert('info', 'Módulo de ejecución diaria para el ciclo #' + id + ' en desarrollo.');
+    },
+
     async deleteCycle(id, status, isValidated) {
-        if (status !== 'BORRADOR' || isValidated) {
-            Helper.alert('error', 'No se puede eliminar un ciclo que ya está activo o validado.');
-            return;
-        }
 
         const confirm = await Swal.fire({
             title: '¿Eliminar ciclo?',
@@ -159,7 +162,7 @@ window.MinutasView = {
                 const res = await Helper.fetchAPI(`/menu-cycles/${id}`, { method: 'DELETE' });
                 if (res.success) {
                     Helper.alert('success', 'Ciclo eliminado correctamente');
-                    this.init();
+                    MinutasView.init();
                 } else {
                     Helper.alert('error', res.message);
                 }
@@ -350,7 +353,7 @@ window.MinutasView = {
             if (res.success) {
                 bootstrap.Modal.getInstance(document.getElementById('templateEditorModal')).hide();
                 Helper.alert('success', templateId ? 'Plantilla actualizada' : 'Plantilla guardada');
-                this.init();
+                MinutasView.init();
             } else {
                 Helper.alert('error', res.message);
             }
@@ -376,7 +379,7 @@ window.MinutasView = {
                 const res = await Helper.fetchAPI(`/cycle-templates/${id}`, { method: 'DELETE' });
                 if (res.success) {
                     Helper.alert('success', 'Plantilla eliminada');
-                    this.init();
+                    MinutasView.init();
                 } else {
                     Helper.alert('error', res.message);
                 }
@@ -459,7 +462,7 @@ window.MinutasView = {
             if (res.success) {
                 bootstrap.Modal.getInstance(document.getElementById('newCycleModal')).hide();
                 Helper.alert('success', 'Ciclo generado exitosamente');
-                this.init();
+                MinutasView.init();
             } else {
                 Helper.alert('error', res.message);
             }
