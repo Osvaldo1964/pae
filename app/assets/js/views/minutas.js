@@ -17,12 +17,12 @@ window.MinutasView = {
         try {
             const [tempRes, cycleRes, recipeRes] = await Promise.all([
                 Helper.fetchAPI('/cycle-templates'),
-                Helper.fetchAPI('/menu-cycles'),
+                Helper.fetchAPI('/menu-cycles?_=' + new Date().getTime()),
                 Helper.fetchAPI('/recipes')
             ]);
             this.templates = tempRes.success ? tempRes.data : [];
             this.cycles = cycleRes.success ? cycleRes.data : [];
-            this.recipes = recipeRes || []; // Recipes returns array directly
+            this.recipes = recipeRes.success ? recipeRes.data : [];
         } catch (error) {
             console.error('Error loading minutas data:', error);
         }
@@ -137,11 +137,167 @@ window.MinutasView = {
         `).join('');
     },
 
-    viewCycle(id) {
-        // Redirigir o abrir detalle del ciclo
-        console.log('Viewing cycle:', id);
-        // Por ahora abriremos una alerta o modal de detalle
-        Helper.alert('info', 'Módulo de ejecución diaria para el ciclo #' + id + ' en desarrollo.');
+    async viewCycle(id) {
+        try {
+            // 1. Obtener datos del ciclo y sus menús (días)
+            // Necesitamos un endpoint que retorne detalle de ciclo + todos sus días + items asignados
+            // Por ahora usaremos fetchAPI a una ruta que construiremos o asumiremos
+            // Si no existe endpoint específico, quizás debamos crearlo o usar uno genérico
+            // Supongamos GET /api/menu-cycles/{id} retorna { cycle: ..., menus: [ {date:..., items:[...]} ] }
+
+            // Nota: El endpoint show actual no parece estar definido en controller listado antes,
+            // pero podemos verificarlo o crearlo.
+            // MenuCycleController no tenía show() en el listado inicial, solo index, store, generate, delete.
+            // Asumiremos que necesitamos implementar show() en backend primero.
+
+            // Workaround temporal: Si no implementé show(), no puedo obtener los días.
+            // Voy a implementar primero el cambio en backend para devolver los datos completos.
+
+            const res = await Helper.fetchAPI(`/menu-cycles/${id}`);
+            if (!res.success) {
+                Helper.alert('error', 'No se pudo cargar el detalle del ciclo');
+                return;
+            }
+            const cycleData = res.data;
+
+            this.openCycleDetailModal(cycleData);
+
+        } catch (error) {
+            console.error(error);
+            Helper.alert('error', 'Error al cargar detalles del ciclo');
+        }
+    },
+
+    openCycleDetailModal(cycle) {
+        const modalId = 'cycleDetailModal';
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal fade';
+        modalDiv.id = modalId;
+
+        const breakfasts = this.recipes.filter(r => r.meal_type === 'DESAYUNO');
+        const lunches = this.recipes.filter(r => r.meal_type === 'ALMUERZO');
+
+        let rows = '';
+        if (cycle.menus && cycle.menus.length > 0) {
+            rows = cycle.menus.map(menu => {
+                // Encontrar items actuales
+                const bItem = menu.items.find(i => i.meal_type === 'DESAYUNO');
+                const lItem = menu.items.find(i => i.meal_type === 'ALMUERZO');
+                const bId = bItem ? bItem.recipe_id : '';
+                const lId = lItem ? lItem.recipe_id : '';
+
+                return `
+                <tr data-menu-id="${menu.id}">
+                    <td class="align-middle">
+                        <div class="fw-bold text-dark">${menu.day_number}</div>
+                    </td>
+                    <td class="align-middle">
+                        <div class="small fw-bold">${menu.day_name || ''}</div>
+                        <div class="text-xs text-muted">${menu.date}</div>
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm border-0 border-bottom bg-transparent menu-select" data-type="DESAYUNO">
+                            <option value="">-- Sin Asignar --</option>
+                            ${breakfasts.map(r => `<option value="${r.id}" ${r.id == bId ? 'selected' : ''}>${r.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm border-0 border-bottom bg-transparent menu-select" data-type="ALMUERZO">
+                            <option value="">-- Sin Asignar --</option>
+                            ${lunches.map(r => `<option value="${r.id}" ${r.id == lId ? 'selected' : ''}>${r.name}</option>`).join('')}
+                        </select>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        } else {
+            rows = '<tr><td colspan="4" class="text-center text-muted">No hay días generados</td></tr>';
+        }
+
+        modalDiv.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-primary text-white py-3">
+                        <div>
+                            <h5 class="modal-title fw-bold">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Detalle del Ciclo
+                            </h5>
+                            <small class="opacity-75">${cycle.name} (${cycle.start_date} - ${cycle.end_date})</small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                         <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light sticky-top shadow-sm" style="top: 0; z-index: 5;">
+                                    <tr class="small text-uppercase text-muted fw-bold">
+                                        <th class="ps-3 border-0" style="width: 50px;">#</th>
+                                        <th class="border-0" style="width: 150px;">Fecha</th>
+                                        <th class="border-0">Desayuno</th>
+                                        <th class="border-0">Almuerzo</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <span class="text-muted small me-auto"><i class="fas fa-info-circle me-1"></i> Los cambios se guardan globalmente al pulsar Guardar.</span>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary px-5 fw-bold shadow-sm" onclick="MinutasView.saveCycleDetails(${cycle.id})">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        const modal = new bootstrap.Modal(modalDiv);
+        modal.show();
+        modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+    },
+
+    async saveCycleDetails(cycleId) {
+        // Recolectar datos
+        const changes = [];
+        document.querySelectorAll('#cycleDetailModal tr[data-menu-id]').forEach(tr => {
+            const menuId = tr.dataset.menuId;
+            const selects = tr.querySelectorAll('select');
+            const items = [];
+            selects.forEach(sel => {
+                if (sel.value) {
+                    items.push({
+                        recipe_id: sel.value,
+                        meal_type: sel.dataset.type
+                    });
+                }
+            });
+            changes.push({
+                menu_id: menuId,
+                items: items
+            });
+        });
+
+        try {
+            const res = await Helper.fetchAPI(`/menu-cycles/${cycleId}/items`, {
+                method: 'PUT',
+                body: JSON.stringify({ days: changes })
+            });
+
+            if (res.success) {
+                Helper.alert('success', 'Programación del ciclo actualizada correctamente');
+                bootstrap.Modal.getInstance(document.getElementById('cycleDetailModal')).hide();
+                // Opcional: Recargar lista
+            } else {
+                Helper.alert('error', res.message);
+            }
+
+        } catch (error) {
+            Helper.alert('error', 'Error al guardar cambios');
+        }
     },
 
     async deleteCycle(id, status, isValidated) {
@@ -164,7 +320,7 @@ window.MinutasView = {
                     Helper.alert('success', 'Ciclo eliminado correctamente');
                     MinutasView.init();
                 } else {
-                    Helper.alert('error', res.message);
+                    Helper.alert('error', res.message || 'Error desconocido al eliminar ciclo');
                 }
             } catch (error) {
                 Helper.alert('error', 'Error al eliminar el ciclo');
@@ -396,7 +552,7 @@ window.MinutasView = {
         modalDiv.id = modalId;
 
         modalDiv.innerHTML = `
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title fw-bold"><i class="fas fa-calendar-plus me-2"></i>Programar Nuevo Ciclo</h5>
@@ -408,37 +564,91 @@ window.MinutasView = {
                                 <label class="form-label small fw-bold text-muted">NOMBRE DEL CICLO / PERIODO</label>
                                 <input type="text" name="name" class="form-control" placeholder="Ej: Ciclo Febrero Primaria - 2026" required>
                             </div>
+                            
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted">FECHA DE INICIO</label>
-                                    <input type="date" name="start_date" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
+                                    <label class="form-label small fw-bold text-muted">RANGO DE FECHAS</label>
+                                    <div class="input-group">
+                                        <input type="date" name="start_date" id="start_date" class="form-control" value="${new Date().toISOString().split('T')[0]}" required>
+                                        <span class="input-group-text">a</span>
+                                        <input type="date" name="end_date" id="end_date" class="form-control" required>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="exclude_weekends" id="exclude_weekends" checked>
+                                        <label class="form-check-label small" for="exclude_weekends">
+                                            Omitir Sábados y Domingos
+                                        </label>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted">PLANTILLA BASE</label>
-                                    <select name="template_id" class="form-select" required>
-                                        <option value="">-- Seleccionar --</option>
-                                        ${this.templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
-                                    </select>
+                                    <label class="form-label small fw-bold text-muted">MODO DE GENERACIÓN</label>
+                                    <div class="d-flex flex-column gap-2 border p-2 rounded">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="mode" id="mode_rotative" value="ROTATIVE" checked onchange="MinutasView.toggleTemplateSelect(true)">
+                                            <label class="form-check-label small" for="mode_rotative">
+                                                <strong>Rotativo (Secuencial)</strong><br>
+                                                <span class="text-muted text-xs">Asigna días de la plantilla en orden (1, 2, 3...) y repite.</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="mode" id="mode_random" value="RANDOM" onchange="MinutasView.toggleTemplateSelect(true)">
+                                            <label class="form-check-label small" for="mode_random">
+                                                <strong>Aleatorio</strong><br>
+                                                <span class="text-muted text-xs">Mezcla los menús de la plantilla para más variedad.</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="mode" id="mode_manual" value="MANUAL" onchange="MinutasView.toggleTemplateSelect(false)">
+                                            <label class="form-check-label small" for="mode_manual">
+                                                <strong>Manual (En Blanco)</strong><br>
+                                                <span class="text-muted text-xs">Genera los días vacíos para elegir plato por plato.</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="bg-light p-3 rounded border">
-                                <small class="text-muted d-block mb-1"><i class="fas fa-info-circle me-1"></i> El sistema generará automáticamente 20 días hábiles omitiendo fines de semana.</small>
+
+                            <div class="mb-3" id="template-select-container">
+                                <label class="form-label small fw-bold text-muted">PLANTILLA BASE</label>
+                                <select name="template_id" id="template_id" class="form-select" required>
+                                    <option value="">-- Seleccionar Plantilla --</option>
+                                    ${this.templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                                </select>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer bg-light border-top-0">
                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-success px-4 fw-bold shadow-sm" onclick="MinutasView.generateCycle()">
-                            <i class="fas fa-magic me-1"></i> Generar Ciclo Completo
+                            <i class="fas fa-magic me-1"></i> Generar Ciclo
                         </button>
                     </div>
                 </div>
             </div>
         `;
         document.body.appendChild(modalDiv);
+
+        // Set default end date (start date + 20 days approx)
+        const today = new Date();
+        today.setDate(today.getDate() + 28); // +4 weeks
+        document.getElementById('end_date').value = today.toISOString().split('T')[0];
+
         const modal = new bootstrap.Modal(modalDiv);
         modal.show();
         modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+    },
+
+    toggleTemplateSelect(show) {
+        const container = document.getElementById('template-select-container');
+        const select = document.getElementById('template_id');
+        if (show) {
+            container.style.display = 'block';
+            select.setAttribute('required', 'required');
+        } else {
+            container.style.display = 'none';
+            select.removeAttribute('required');
+            select.value = "";
+        }
     },
 
     async generateCycle() {
@@ -449,11 +659,14 @@ window.MinutasView = {
         const data = {
             name: formData.get('name'),
             start_date: formData.get('start_date'),
-            template_id: formData.get('template_id')
+            end_date: formData.get('end_date'),
+            mode: formData.get('mode'),
+            template_id: formData.get('template_id'),
+            exclude_weekends: formData.get('exclude_weekends') === 'on'
         };
 
         try {
-            Helper.alert('info', 'Generando programación de 20 días...');
+            Helper.alert('info', 'Generando ciclo programado...');
             const res = await Helper.fetchAPI('/menu-cycles/generate', {
                 method: 'POST',
                 body: JSON.stringify(data)

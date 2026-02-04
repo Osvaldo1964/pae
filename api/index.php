@@ -55,6 +55,13 @@ $resource = isset($uri_segments[0]) ? $uri_segments[0] : null;
 $action = isset($uri_segments[1]) ? $uri_segments[1] : null;
 $id_param = isset($uri_segments[2]) ? $uri_segments[2] : null; // For cases like /api/resource/action/ID
 
+$resource = trim($resource);
+// CLEAN IDIOTS FROM URL (Null bytes, vertical tabs, etc)
+$resource = preg_replace('/[\x00-\x1F\x7F]/u', '', $resource);
+
+// DEBUG GLOBAL
+file_put_contents(__DIR__ . '/../debug_data.php', date('Y-m-d H:i:s') . " - ROUTER: " . $_SERVER['REQUEST_METHOD'] . " $full_uri -> Res: [$resource] (" . strlen($resource) . "), Act: $action\n", FILE_APPEND);
+
 if ($resource === 'auth') {
     $controller = new \Controllers\AuthController();
     if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -66,6 +73,30 @@ if ($resource === 'auth') {
     } else {
         http_response_code(404);
         echo json_encode(["message" => "Auth Action Not Found"]);
+    }
+} elseif (trim($resource) == 'menu-cycles') {
+    file_put_contents(__DIR__ . '/../debug_data.php', "DEBUG: Entering menu-cycles block (MATCHED TOP)\n", FILE_APPEND);
+    $controller = new \Controllers\MenuCycleController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action && is_numeric($action)) {
+            $controller->show($action);
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($action === 'generate') {
+            $controller->generate();
+        } else {
+            $controller->store();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+        if ($action && is_numeric($action) && $id_param === 'items') {
+            $controller->updateItems($action);
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        if ($action && is_numeric($action)) {
+            $controller->delete($action);
+        }
     }
 } elseif ($resource === 'tenant') {
     $controller = new \Controllers\TenantController();
@@ -476,21 +507,7 @@ if ($resource === 'auth') {
             $controller->delete($action);
         }
     }
-} elseif ($resource === 'menu-cycles') {
-    $controller = new \Controllers\MenuCycleController();
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $controller->index();
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($action === 'generate') {
-            $controller->generate();
-        } else {
-            $controller->store();
-        }
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-        if ($action && is_numeric($action)) {
-            $controller->delete($action);
-        }
-    }
+
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);
