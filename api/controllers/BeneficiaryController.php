@@ -345,4 +345,68 @@ class BeneficiaryController
         $stmt->execute();
         echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
+
+    /**
+     * Fetch list for printing (Filtered by Branch/Grade)
+     */
+    public function printList()
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        if (!$pae_id) {
+            http_response_code(403);
+            echo json_encode(["message" => "Acceso denegado."]);
+            return;
+        }
+
+        $branch_id = $_GET['branch_id'] ?? null;
+        $grade = $_GET['grade'] ?? null;
+        $group_name = $_GET['group_name'] ?? null;
+
+        if (!$branch_id) {
+            http_response_code(400);
+            echo json_encode(["message" => "La sede es requerida."]);
+            return;
+        }
+
+        $query = "SELECT b.document_number, b.first_name, b.second_name, b.last_name1, b.last_name2, 
+                         b.grade, b.group_name
+                  FROM " . $this->table_name . " b
+                  WHERE b.pae_id = :pae_id AND b.branch_id = :branch_id";
+
+        $params = [
+            ":pae_id" => $pae_id,
+            ":branch_id" => $branch_id
+        ];
+
+        if ($grade) {
+            $query .= " AND b.grade = :grade";
+            $params[":grade"] = $grade;
+        }
+
+        if ($group_name) {
+            $query .= " AND b.group_name = :group_name";
+            $params[":group_name"] = $group_name;
+        }
+
+        $query .= " ORDER BY b.group_name ASC, b.last_name1 ASC, b.first_name ASC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute($params);
+
+        $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Fetch branch info for header
+        $stmtBranch = $this->conn->prepare("SELECT b.name as branch_name, s.name as school_name 
+                                            FROM school_branches b
+                                            JOIN schools s ON b.school_id = s.id 
+                                            WHERE b.id = ?");
+        $stmtBranch->execute([$branch_id]);
+        $branchInfo = $stmtBranch->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            "success" => true,
+            "branch" => $branchInfo,
+            "data" => $list
+        ]);
+    }
 }

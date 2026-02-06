@@ -195,6 +195,8 @@
     <script src="<?= $assets_path ?>js/core/config.js?v=<?= $version ?>"></script>
     <script src="<?= $assets_path ?>js/core/helper.js?v=<?= $version ?>"></script>
     <script src="<?= $assets_path ?>js/core/app.js?v=<?= $version ?>"></script>
+    <!-- Views Helpers -->
+    <script src="<?= $assets_path ?>js/views/print-list.js?v=<?= $version ?>"></script>
     <script src="<?= $assets_path ?>plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="<?= $assets_path ?>plugins/sweetalert2/sweetalert2.all.min.js"></script>
 </body>

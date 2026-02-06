@@ -25,9 +25,14 @@ var BeneficiariesView = {
                                 <h2><i class="fas fa-user-graduate me-2"></i>Beneficiarios (Estudiantes)</h2>
                                 <p class="text-muted">Gestión de matrícula y caracterización de estudiantes focalizados</p>
                             </div>
-                            <button class="btn btn-primary" onclick="BeneficiariesView.openModal()">
-                                <i class="fas fa-plus me-2"></i>Nuevo Beneficiario
-                            </button>
+                            <div>
+                                <button class="btn btn-outline-secondary me-2" onclick="PrintListView.openModal()">
+                                    <i class="fas fa-print me-2"></i>Imprimir Listas
+                                </button>
+                                <button class="btn btn-primary" onclick="BeneficiariesView.openModal()">
+                                    <i class="fas fa-plus me-2"></i>Nuevo Beneficiario
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

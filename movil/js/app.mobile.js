@@ -1,14 +1,28 @@
 /**
  * Configuración de la App Móvil
  */
-const API_BASE_URL = 'http://' + window.location.hostname + '/pae/api'; // Ajustar si es producción
-const APP_VERSION = '1.0.1';
+// Calculate API URL dynamically based on current location
+// If we are at /pae/movil/index.html, we want /pae/api
+// If we are at /movil/index.html, we want /api
+const API_BASE_URL = window.location.pathname.includes('/pae/')
+    ? window.location.origin + '/pae/api'
+    : window.location.origin + '/api';
+const APP_VERSION = '1.0.2';
 
 class MobileApp {
     constructor() {
-        this.token = localStorage.getItem('pae_token');
-        this.user = JSON.parse(localStorage.getItem('pae_user') || '{}');
-        this.selectedBranch = JSON.parse(localStorage.getItem('pae_branch') || 'null');
+        const t = localStorage.getItem('pae_token');
+        this.token = (t && t !== 'undefined' && t !== 'null') ? t : null;
+
+        try {
+            const u = localStorage.getItem('pae_user');
+            this.user = (u && u !== 'undefined') ? JSON.parse(u) : {};
+        } catch (e) { this.user = {}; }
+
+        try {
+            const b = localStorage.getItem('pae_branch');
+            this.selectedBranch = (b && b !== 'undefined') ? JSON.parse(b) : null;
+        } catch (e) { this.selectedBranch = null; }
 
         this.init();
     }
@@ -19,6 +33,7 @@ class MobileApp {
         } else {
             this.showDashboard();
             this.loadUserData();
+            this.loadStats();
         }
     }
 
@@ -49,18 +64,30 @@ class MobileApp {
             const data = await response.json();
 
             if (response.ok) {
+                if (data.select_tenant) {
+                    Swal.fire('Atención', 'Usuario Global Admin: La selección de tenant no está soportada en móvil aún. Use un usuario de PAE específico.', 'warning');
+                    return;
+                }
+
+                if (!data.token) {
+                    Swal.fire('Error', 'Respuesta del servidor inválida (Sin token).', 'error');
+                    return;
+                }
+
                 this.token = data.token;
                 this.user = data.user;
                 localStorage.setItem('pae_token', this.token);
                 localStorage.setItem('pae_user', JSON.stringify(this.user));
 
                 this.showDashboard();
+                this.loadUserData();
+                this.loadStats();
             } else {
-                alert(data.message || 'Error de autenticación');
+                Swal.fire('Error', data.message || 'Error de autenticación', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Error de conexión con el servidor');
+            Swal.fire('Error', 'Error de conexión con el servidor', 'error');
         }
     }
 
@@ -72,35 +99,55 @@ class MobileApp {
     }
 
     loadUserData() {
-        document.getElementById('user-name').innerText = this.user.first_name || 'Usuario';
+        document.getElementById('user-name').innerText = this.user.full_name?.split(' ')[0] || 'Usuario';
+    }
+
+    async loadStats() {
+        if (!this.selectedBranch) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/consumptions/stats?branch_id=${this.selectedBranch.id}`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Update specific elements if they existed, for now we update generic stats
+                const statElements = document.querySelectorAll('.action-card h2');
+                if (statElements.length >= 2) {
+                    statElements[0].innerText = data.today_count || 0;
+                    statElements[1].innerText = (data.progress || 0) + '%';
+                }
+            }
+        } catch (error) {
+            console.error("Error loading stats", error);
+        }
     }
 
     async selectBranch() {
-        // Fetch branches for this user (using the token)
         try {
-            const response = await fetch(`${API_BASE_URL}/branches?_=${new Date().getTime()}`, {
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'X-Auth-Token': this.token
-                }
+            const response = await fetch(`${API_BASE_URL}/branches`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
             });
-            const text = await response.text();
-            let branches;
-            try {
-                branches = JSON.parse(text);
-            } catch (e) {
-                console.error("Respuesta no JSON:", text);
-                throw new Error("El servidor devolvió respuesta inválida: " + text.substring(0, 50));
+
+            if (response.status === 401 || response.status === 403) {
+                this.logout();
+                return;
             }
 
-            if (!Array.isArray(branches)) {
-                console.error("Respuesta no es array:", branches);
-                const debugInfo = branches.debug ? JSON.stringify(branches.debug) : 'Sin debug info';
-                throw new Error(`${branches.message || 'Error'} | Debug: ${debugInfo}`);
+            if (!response.ok) throw new Error('Error cargando sedes');
+
+            const branches = await response.json(); // Assuming standard API wrapper
+
+            // Unwrap if needed (standard API returns {success:true, data: []} usually, OR just array)
+            const list = Array.isArray(branches) ? branches : (branches.data || []);
+
+            if (list.length === 0) {
+                Swal.fire('Error', 'No tiene sedes asignadas o disponibles.', 'error');
+                return;
             }
 
-            // Generate options HTML
-            let options = branches.map(b => `<option value='${JSON.stringify(b)}'>${b.name}</option>`).join('');
+            let options = list.map(b => `<option value='${JSON.stringify(b)}'>${b.name}</option>`).join('');
 
             Swal.fire({
                 title: 'Seleccionar Sede',
@@ -116,12 +163,13 @@ class MobileApp {
                     this.selectedBranch = result.value;
                     localStorage.setItem('pae_branch', JSON.stringify(this.selectedBranch));
                     document.getElementById('current-location').innerText = this.selectedBranch.name;
+                    this.loadStats();
                 }
             });
 
         } catch (error) {
-            console.error("Error cargando sedes", error);
-            Swal.fire('Error', 'No se pudieron cargar las sedes. Verifique su conexión o reinicie sesión. Detalles: ' + error.message, 'error');
+            console.error(error);
+            Swal.fire('Error', 'No se pudieron cargar las sedes.', 'error');
         }
     }
 
@@ -151,6 +199,22 @@ class MobileApp {
     }
 
     startScanner() {
+        // Stop any previous instance
+        if (this.html5QrCode) {
+            try { this.html5QrCode.clear(); } catch (e) { }
+        }
+
+        // Check for HTTPS/Secure Context
+        if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Requiere HTTPS',
+                html: 'El navegador bloquea la cámara en sitios no seguros (HTTP).<br><br><b>Solución:</b><br>1. Use HTTPS o localhost.<br>2. O en Chrome móvil vaya a: <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code> y agregue esta IP.',
+                confirmButtonText: 'Entendido'
+            });
+            return;
+        }
+
         this.html5QrCode = new Html5Qrcode("scanner-container");
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
@@ -158,15 +222,18 @@ class MobileApp {
             { facingMode: "environment" },
             config,
             (decodedText, decodedResult) => {
-                // Success Callback
                 this.handleScan(decodedText);
             },
             (errorMessage) => {
-                // parse error, ignore it.
+                // ignore
             }
         ).catch(err => {
             console.error("Error starting scanner", err);
-            document.getElementById('scan-result').innerText = "Error: Cámara no disponible";
+            let msg = "Error: Cámara no disponible (" + err + ")";
+            if (err.toString().includes("streaming not supported") || err.name === "NotAllowedError") {
+                msg = "<b>Permiso denegado o no seguro.</b><br>Verifique permisos de cámara y use HTTPS.";
+            }
+            document.getElementById('scan-result').innerHTML = msg;
             document.getElementById('scan-result').classList.remove('d-none');
         });
     }
@@ -175,25 +242,27 @@ class MobileApp {
         // Stop scanning temporarily
         await this.html5QrCode.pause();
 
-        // 1. Parse QR: PAE:{ID}:{DOC}
+        // Format is expected to be PAE:{ID}:{DOC}
         const parts = qrCode.split(':');
+        // Validate format
         if (parts[0] !== 'PAE' || parts.length < 3) {
-            Swal.fire('Error', 'Código QR inválido o de otro sistema', 'error')
+            // Fallback: If it's just numbers, treat as document number?
+            // For now strict QR check
+            Swal.fire('Error', 'QR inválido. Use el carnet oficial.', 'error')
                 .then(() => this.html5QrCode.resume());
             return;
         }
 
         const beneficiaryId = parts[1];
 
-        // 2. Play sound (Beep)
-        // const audio = new Audio('beep.mp3'); audio.play();
-
-        // 3. Register Delivery
         try {
             const time = new Date().getHours();
             let mealType = 'ALMUERZO';
-            if (time < 11) mealType = 'AM'; // Ajustar lógica según hora real o selector manual
-            if (time > 14) mealType = 'PM';
+            if (time < 11) mealType = 'AM'; // Complemento AM
+            if (time > 15) mealType = 'PM'; // Complemento PM / Cena logic
+
+            // Prompt for meal type override? For speed, we auto-detect
+            // Ideally we show a selector in the UI BEFORE scanning.
 
             const payload = {
                 beneficiary_id: beneficiaryId,
@@ -201,12 +270,11 @@ class MobileApp {
                 meal_type: mealType
             };
 
-            const response = await fetch(`${API_BASE_URL}/deliveries`, {
+            const response = await fetch(`${API_BASE_URL}/consumptions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.token}`,
-                    'X-Auth-Token': this.token
+                    'Authorization': `Bearer ${this.token}`
                 },
                 body: JSON.stringify(payload)
             });
@@ -216,20 +284,25 @@ class MobileApp {
             if (response.ok) {
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Entrega Exitosa!',
-                    text: `${mealType} registrado.`,
-                    timer: 1500,
+                    title: '¡Entrega Registrada!',
+                    html: `<b>${data.beneficiary_name || ''}</b><br>${mealType}`,
+                    timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    // Close modal or resume for next student
-                    bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+                    this.loadStats(); // Refresh stats
+                    // Resume scanning seamlessly
+                    this.html5QrCode.resume();
                 });
             } else {
+                // Determine if it's a duplicate or error
+                const isDuplicate = response.status === 409;
+
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'No se pudo entregar',
+                    icon: isDuplicate ? 'warning' : 'error',
+                    title: isDuplicate ? 'Ya entregado' : 'Error',
                     text: data.message,
-                    confirmButtonColor: '#d33'
+                    confirmButtonColor: '#d33',
+                    timer: 3000
                 }).then(() => this.html5QrCode.resume());
             }
 
@@ -244,28 +317,26 @@ class MobileApp {
             title: 'Búsqueda Manual',
             input: 'text',
             inputLabel: 'Documento del Estudiante',
-            inputPlaceholder: 'Ingrese número de documento',
             showCancelButton: true,
             confirmButtonText: 'Buscar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Here we would need to search by document first to get the ID
-                Swal.fire('Info', 'Funcionalidad en desarrollo: Búsqueda por documento', 'info');
+                // Implement manual lookup API here if needed
+                Swal.fire('Info', 'La búsqueda manual estará disponible próximamente.', 'info');
             }
         });
     }
 
     syncData() {
-        // En futuro: Sincronizar LocalStorage -> Base de datos
+        this.loadStats();
         Swal.fire({
             icon: 'success',
             title: 'Sincronizado',
-            text: 'Datos actualizados con el servidor',
-            timer: 1500,
+            text: 'Datos actualizados.',
+            timer: 1000,
             showConfirmButton: false
         });
     }
-
 }
 
 // Global Instance

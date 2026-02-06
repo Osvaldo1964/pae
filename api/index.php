@@ -367,6 +367,8 @@ if ($resource === 'auth') {
             $controller->getDocumentTypes();
         } elseif ($action === 'ethnic_groups') {
             $controller->getEthnicGroups();
+        } elseif ($action === 'print-list') {
+            $controller->printList();
         } else {
             $controller->index();
         }
@@ -521,6 +523,15 @@ if ($resource === 'auth') {
             $controller->delete($action);
         }
     }
+} elseif ($resource === 'consumptions') {
+    $controller = new \Controllers\ConsumptionController();
+    if ($action === 'stats') {
+        $controller->stats();
+    } else {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST')
+            $controller->store();
+    }
+    exit;
 } elseif ($resource === 'reports') {
     if ($action === 'needs' && $id_param) {
         $controller = new \Controllers\NeedsReportController();

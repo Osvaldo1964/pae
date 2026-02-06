@@ -203,5 +203,19 @@ const Helper = {
             age--;
         }
         return age;
+    },
+
+    /**
+     * Open new window to print HTML content
+     */
+    printHTML: (content) => {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(content);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     }
 };

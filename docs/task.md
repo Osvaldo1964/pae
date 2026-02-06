@@ -37,12 +37,18 @@
     - [x] Definir objetivos específicos (Generación Manual, Rotativa, Aleatoria)
     - [x] Implementar cambios Backend (Controller)
     - [x] Implementar cambios Frontend (Minutas JS)
-    - [x] **Debugging**:
-        - [x] Corregir persistencia al eliminar (Bug de enrutamiento y controlador).
-        - [x] Corregir error SQL durante generación (Faltaba columna `date` en `menus`).
-    - [ ] **Bloqueo Actual**:
-        - [ ] Schema Inconsistency: `menu_items` espera `item_id` pero el sistema intenta guardar `recipe_id`. Requiere migración.
-    - [ ] **Feature**: Explosión de Víveres (Pendiente de corrección de schema).
+- [x] Implement Mobile Consumption App
+    - [x] Analyze requirements and existing `movil` folder
+    - [x] Create `daily_consumptions` table
+    - [x] Implement `ConsumptionController` (Store & Stats)
+    - [x] Update `app.mobile.js` with real logic
+    - [x] Verify API with test script
+    - [x] Deploy to Hostinger (User Action - **VERIFIED**)
+
+- [x] Print Manual Signature Lists (Fallback)
+    - [x] Design Print View (HTML/CSS)
+    - [x] Implement Backend Endpoint (Filter by Branch/Group)
+    - [x] Add "Print" button in Beneficiaries or Reports module
 
 
 

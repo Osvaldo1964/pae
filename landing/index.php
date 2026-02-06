@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PAE Control | Alimentación Escolar</title>
     <!-- Bootstrap 5 CSS -->
-    <link href="/pae/landing/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="landing/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link href="/pae/landing/assets/plugins/fontawesome/css/all.min.css" rel="stylesheet">
+    <link href="landing/assets/plugins/fontawesome/css/all.min.css" rel="stylesheet">
     <!-- SweetAlert2 -->
-    <link href="/pae/landing/assets/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet">
+    <link href="landing/assets/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet">
 
     <style>
         :root {
@@ -98,7 +98,7 @@
                         </button>
                     </li>
                     <li class="nav-item ms-2">
-                        <a href="/pae/app/" class="btn btn-success btn-sm px-4 rounded-pill">Acceso Funcionarios</a>
+                        <a href="app/" class="btn btn-success btn-sm px-4 rounded-pill">Acceso Funcionarios</a>
                     </li>
                 </ul>
             </div>
@@ -260,11 +260,13 @@
                 <div class="modal-body">
                     <form id="paeForm" enctype="multipart/form-data">
                         <!-- Section 1: Entidad Territorial -->
-                        <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-landmark me-2"></i>Datos de la Entidad Territorial</h6>
+                        <h6 class="text-secondary border-bottom pb-2 mb-3"><i class="fas fa-landmark me-2"></i>Datos de
+                            la Entidad Territorial</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label small">Nombre del Programa</label>
-                                <input type="text" class="form-control" name="name" placeholder="Ej: PAE Magdalena 2026" required>
+                                <input type="text" class="form-control" name="name" placeholder="Ej: PAE Magdalena 2026"
+                                    required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label small">Entidad (Gobernación/Alcaldía)</label>
@@ -291,7 +293,8 @@
                         </div>
 
                         <!-- Section 2: Operador -->
-                        <h6 class="text-secondary border-bottom pb-2 mb-3 mt-4"><i class="fas fa-briefcase me-2"></i>Datos del Operador</h6>
+                        <h6 class="text-secondary border-bottom pb-2 mb-3 mt-4"><i
+                                class="fas fa-briefcase me-2"></i>Datos del Operador</h6>
                         <div class="row">
                             <div class="col-md-8 mb-3">
                                 <label class="form-label small">Razón Social Operador</label>
@@ -324,7 +327,8 @@
                         </div>
 
                         <!-- Section 3: Admin -->
-                        <h6 class="text-primary-custom border-bottom pb-2 mb-3 mt-4"><i class="fas fa-user-shield me-2"></i>Usuario Administrador</h6>
+                        <h6 class="text-primary-custom border-bottom pb-2 mb-3 mt-4"><i
+                                class="fas fa-user-shield me-2"></i>Usuario Administrador</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label small">Email Admin</label>
@@ -346,8 +350,9 @@
     </div>
 
     <!-- Scripts -->
-    <script src="/pae/landing/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/pae/landing/assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <!-- Scripts -->
+    <script src="landing/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="landing/assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <script>
         async function submitPQR() {
             // ... (keeping existing PQR logic, just showing context)
@@ -361,7 +366,7 @@
             }
 
             try {
-                const response = await fetch('/pae/api/public/pqr', {
+                const response = await fetch('api/public/pqr', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -405,7 +410,7 @@
             if (!formData.has('email')) formData.append('email', formData.get('admin_email'));
 
             try {
-                const response = await fetch('/pae/api/tenant/register', {
+                const response = await fetch('api/tenant/register', {
                     method: 'POST',
                     body: formData // No Content-Type header needed, browser adds it with boundary
                 });
@@ -419,7 +424,7 @@
                         icon: 'success',
                         confirmButtonText: 'Ir al Login'
                     }).then((result) => {
-                        window.location.href = '/pae/app/';
+                        window.location.href = 'app/';
                     });
 
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createPaeModal'));
