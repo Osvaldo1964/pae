@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 04-02-2026 a las 01:23:12
+-- Tiempo de generación: 06-02-2026 a las 04:46:50
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -111,6 +111,22 @@ INSERT INTO `beneficiaries` (`id`, `pae_id`, `branch_id`, `document_type_id`, `d
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `cycle_projections`
+--
+
+CREATE TABLE `cycle_projections` (
+  `id` int(11) NOT NULL,
+  `cycle_id` int(11) NOT NULL,
+  `branch_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `total_quantity` decimal(12,4) NOT NULL,
+  `beneficiary_count` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `cycle_templates`
 --
 
@@ -126,7 +142,8 @@ CREATE TABLE `cycle_templates` (
 --
 
 INSERT INTO `cycle_templates` (`id`, `pae_id`, `name`, `created_at`) VALUES
-(1, 3, 'ciclo regular', '2026-02-02 02:38:13');
+(1, 3, 'ciclo regular', '2026-02-02 02:38:13'),
+(2, 3, 'PLANTILLA GENERAL', '2026-02-05 23:14:49');
 
 -- --------------------------------------------------------
 
@@ -157,7 +174,47 @@ INSERT INTO `cycle_template_days` (`id`, `template_id`, `day_number`, `meal_type
 (8, 1, 4, 'ALMUERZO', 2),
 (9, 1, 5, 'DESAYUNO', 1),
 (10, 1, 6, 'DESAYUNO', 4),
-(11, 1, 7, 'DESAYUNO', 4);
+(11, 1, 7, 'DESAYUNO', 4),
+(12, 2, 1, 'DESAYUNO', 1),
+(13, 2, 1, 'ALMUERZO', 3),
+(14, 2, 2, 'DESAYUNO', 4),
+(15, 2, 2, 'ALMUERZO', 2),
+(16, 2, 3, 'DESAYUNO', 4),
+(17, 2, 3, 'ALMUERZO', 3),
+(18, 2, 4, 'DESAYUNO', 1),
+(19, 2, 4, 'ALMUERZO', 2),
+(20, 2, 5, 'DESAYUNO', 4),
+(21, 2, 5, 'ALMUERZO', 3),
+(22, 2, 6, 'DESAYUNO', 1),
+(23, 2, 6, 'ALMUERZO', 2),
+(24, 2, 7, 'DESAYUNO', 4),
+(25, 2, 7, 'ALMUERZO', 3),
+(26, 2, 8, 'DESAYUNO', 1),
+(27, 2, 8, 'ALMUERZO', 2),
+(28, 2, 9, 'DESAYUNO', 4),
+(29, 2, 9, 'ALMUERZO', 3),
+(30, 2, 10, 'DESAYUNO', 1),
+(31, 2, 10, 'ALMUERZO', 2),
+(32, 2, 11, 'DESAYUNO', 4),
+(33, 2, 11, 'ALMUERZO', 3),
+(34, 2, 12, 'DESAYUNO', 1),
+(35, 2, 12, 'ALMUERZO', 2),
+(36, 2, 13, 'DESAYUNO', 4),
+(37, 2, 13, 'ALMUERZO', 3),
+(38, 2, 14, 'DESAYUNO', 1),
+(39, 2, 14, 'ALMUERZO', 2),
+(40, 2, 15, 'DESAYUNO', 4),
+(41, 2, 15, 'ALMUERZO', 3),
+(42, 2, 16, 'DESAYUNO', 1),
+(43, 2, 16, 'ALMUERZO', 2),
+(44, 2, 17, 'DESAYUNO', 4),
+(45, 2, 17, 'ALMUERZO', 3),
+(46, 2, 18, 'DESAYUNO', 1),
+(47, 2, 18, 'ALMUERZO', 2),
+(48, 2, 19, 'DESAYUNO', 4),
+(49, 2, 19, 'ALMUERZO', 3),
+(50, 2, 20, 'DESAYUNO', 1),
+(51, 2, 20, 'ALMUERZO', 2);
 
 -- --------------------------------------------------------
 
@@ -334,8 +391,12 @@ CREATE TABLE `inventory_quote_details` (
 CREATE TABLE `inventory_remissions` (
   `id` int(11) NOT NULL,
   `pae_id` int(11) NOT NULL,
+  `type` enum('ENTRADA_OC','SALIDA_SEDE') NOT NULL DEFAULT 'SALIDA_SEDE',
+  `cycle_id` int(11) DEFAULT NULL,
+  `po_id` int(11) DEFAULT NULL,
+  `supplier_id` int(11) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
-  `branch_id` int(11) NOT NULL,
+  `branch_id` int(11) DEFAULT NULL,
   `remission_number` varchar(50) NOT NULL,
   `remission_date` date NOT NULL,
   `carrier_name` varchar(100) DEFAULT NULL,
@@ -521,6 +582,32 @@ CREATE TABLE `menus` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `menus`
+--
+
+INSERT INTO `menus` (`id`, `pae_id`, `cycle_id`, `name`, `day_number`, `meal_type`, `age_group`, `has_dairy`, `has_protein`, `has_cereal`, `has_fruit`, `has_vegetable`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `total_iron`, `total_calcium`, `total_cost`, `preparation_instructions`, `allergen_warnings`, `status`, `created_at`, `updated_at`) VALUES
+(241, 3, 104, 'Día 1 - 2026-02-02', 1, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(242, 3, 104, 'Día 2 - 2026-02-03', 2, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(243, 3, 104, 'Día 3 - 2026-02-04', 3, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(244, 3, 104, 'Día 4 - 2026-02-05', 4, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(245, 3, 104, 'Día 5 - 2026-02-06', 5, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(246, 3, 104, 'Día 6 - 2026-02-09', 6, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(247, 3, 104, 'Día 7 - 2026-02-10', 7, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(248, 3, 104, 'Día 8 - 2026-02-11', 8, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(249, 3, 104, 'Día 9 - 2026-02-12', 9, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(250, 3, 104, 'Día 10 - 2026-02-13', 10, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(251, 3, 104, 'Día 11 - 2026-02-16', 11, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(252, 3, 104, 'Día 12 - 2026-02-17', 12, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(253, 3, 104, 'Día 13 - 2026-02-18', 13, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(254, 3, 104, 'Día 14 - 2026-02-19', 14, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(255, 3, 104, 'Día 15 - 2026-02-20', 15, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(256, 3, 104, 'Día 16 - 2026-02-23', 16, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(257, 3, 104, 'Día 17 - 2026-02-24', 17, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(258, 3, 104, 'Día 18 - 2026-02-25', 18, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(259, 3, 104, 'Día 19 - 2026-02-26', 19, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
+(260, 3, 104, 'Día 20 - 2026-02-27', 20, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44');
+
 -- --------------------------------------------------------
 
 --
@@ -543,6 +630,13 @@ CREATE TABLE `menu_cycles` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `menu_cycles`
+--
+
+INSERT INTO `menu_cycles` (`id`, `pae_id`, `name`, `description`, `start_date`, `end_date`, `total_days`, `is_validated`, `validated_by`, `validated_at`, `status`, `created_at`, `updated_at`) VALUES
+(104, 3, 'CICLO 1 FEBRERO', NULL, '2026-02-01', '2026-02-28', 20, 0, NULL, NULL, 'BORRADOR', '2026-02-06 00:19:44', '2026-02-06 00:19:44');
+
 -- --------------------------------------------------------
 
 --
@@ -564,6 +658,65 @@ CREATE TABLE `menu_items` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `menu_recipes`
+--
+
+CREATE TABLE `menu_recipes` (
+  `id` int(11) NOT NULL,
+  `menu_id` int(11) NOT NULL,
+  `recipe_id` int(11) NOT NULL,
+  `meal_type` enum('DESAYUNO','MEDIA MA??ANA','ALMUERZO','ONCES','CENA') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `menu_recipes`
+--
+
+INSERT INTO `menu_recipes` (`id`, `menu_id`, `recipe_id`, `meal_type`) VALUES
+(41, 241, 1, 'DESAYUNO'),
+(42, 241, 3, 'ALMUERZO'),
+(43, 242, 4, 'DESAYUNO'),
+(44, 242, 2, 'ALMUERZO'),
+(45, 243, 3, 'ALMUERZO'),
+(46, 243, 4, 'DESAYUNO'),
+(47, 244, 1, 'DESAYUNO'),
+(48, 244, 2, 'ALMUERZO'),
+(49, 245, 4, 'DESAYUNO'),
+(50, 245, 3, 'ALMUERZO'),
+(51, 246, 2, 'ALMUERZO'),
+(52, 246, 1, 'DESAYUNO'),
+(53, 247, 4, 'DESAYUNO'),
+(54, 247, 3, 'ALMUERZO'),
+(55, 248, 1, 'DESAYUNO'),
+(56, 248, 2, 'ALMUERZO'),
+(57, 249, 3, 'ALMUERZO'),
+(58, 249, 4, 'DESAYUNO'),
+(59, 250, 1, 'DESAYUNO'),
+(60, 250, 2, 'ALMUERZO'),
+(61, 251, 3, 'ALMUERZO'),
+(62, 251, 4, 'DESAYUNO'),
+(63, 252, 1, 'DESAYUNO'),
+(64, 252, 2, 'ALMUERZO'),
+(65, 253, 4, 'DESAYUNO'),
+(66, 253, 3, 'ALMUERZO'),
+(67, 254, 2, 'ALMUERZO'),
+(68, 254, 1, 'DESAYUNO'),
+(69, 255, 4, 'DESAYUNO'),
+(70, 255, 3, 'ALMUERZO'),
+(71, 256, 2, 'ALMUERZO'),
+(72, 256, 1, 'DESAYUNO'),
+(73, 257, 4, 'DESAYUNO'),
+(74, 257, 3, 'ALMUERZO'),
+(75, 258, 1, 'DESAYUNO'),
+(76, 258, 2, 'ALMUERZO'),
+(77, 259, 4, 'DESAYUNO'),
+(78, 259, 3, 'ALMUERZO'),
+(79, 260, 1, 'DESAYUNO'),
+(80, 260, 2, 'ALMUERZO');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `modules`
 --
 
@@ -573,28 +726,30 @@ CREATE TABLE `modules` (
   `name` varchar(100) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `route_key` varchar(50) NOT NULL COMMENT 'Identificador para el router JS',
-  `icon` varchar(50) DEFAULT 'fas fa-circle'
+  `icon` varchar(50) DEFAULT 'fas fa-circle',
+  `order_index` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `modules`
 --
 
-INSERT INTO `modules` (`id`, `group_id`, `name`, `description`, `route_key`, `icon`) VALUES
-(1, 1, 'Usuarios', 'Gestión de usuarios y accesos', 'users', 'fas fa-user-cog'),
-(2, 1, 'Roles y Permisos', 'Configuración de perfiles de acceso', 'roles', 'fas fa-shield-alt'),
-(3, 2, 'Sedes Educativas', 'Gestión de instituciones y sedes', 'sedes', 'fas fa-school'),
-(4, 6, 'Proveedores', 'Directorio de proveedores', 'proveedores', 'fas fa-truck'),
-(5, 3, 'Estudiantes', 'Base de datos de titulares de derecho', 'beneficiarios', 'fas fa-child'),
-(6, 3, 'Novedades', 'Reporte de ausentismos y retiros', 'novedades', 'fas fa-exclamation-circle'),
-(9, 5, 'Dashboards', 'Tableros de control gerencial', 'dashboard_kpi', 'fas fa-tachometer-alt'),
-(18, 4, 'Ítems', 'Gestión de insumos e ingredientes', 'items', 'fas fa-apple-alt'),
-(19, 4, 'Recetario', 'Maestro de recetas y platos base', 'recetario', 'fas fa-book-medical'),
-(20, 4, 'Minutas', 'Planeación de menús y ciclos', 'minutas', 'fas fa-tasks'),
-(21, 6, 'Almacén', 'Control de stock e inventario', 'almacen', 'fas fa-warehouse'),
-(22, 6, 'Cotizaciones', 'Gestión de precios de proveedores', 'cotizaciones', 'fas fa-file-invoice-dollar'),
-(23, 6, 'Órdenes de Compra', 'Gestión de pedidos a proveedores', 'compras', 'fas fa-shopping-cart'),
-(24, 6, 'Remisiones', 'Control de entregas a sedes', 'remisiones', 'fas fa-truck-loading');
+INSERT INTO `modules` (`id`, `group_id`, `name`, `description`, `route_key`, `icon`, `order_index`) VALUES
+(1, 1, 'Usuarios', 'Gestión de usuarios y accesos', 'users', 'fas fa-user-cog', 0),
+(2, 1, 'Roles y Permisos', 'Configuración de perfiles de acceso', 'roles', 'fas fa-shield-alt', 0),
+(3, 2, 'Sedes Educativas', 'Gestión de instituciones y sedes', 'sedes', 'fas fa-school', 0),
+(4, 6, 'Proveedores', 'Directorio de proveedores', 'proveedores', 'fas fa-truck', 1),
+(5, 3, 'Estudiantes', 'Base de datos de titulares de derecho', 'beneficiarios', 'fas fa-child', 0),
+(6, 3, 'Novedades', 'Reporte de ausentismos y retiros', 'novedades', 'fas fa-exclamation-circle', 0),
+(9, 5, 'Dashboards', 'Tableros de control gerencial', 'dashboard_kpi', 'fas fa-tachometer-alt', 0),
+(16, 4, 'Ciclos y Minutas', 'Gesti¾n de plantillas y ciclos de men·s', 'minutas', 'fas fa-calendar-alt', 0),
+(18, 4, 'Ítems', 'Gestión de insumos e ingredientes', 'items', 'fas fa-apple-alt', 0),
+(19, 4, 'Recetario', 'Maestro de recetas y platos base', 'recetario', 'fas fa-book-medical', 0),
+(20, 6, 'Salidas de Almacén', 'Entregas a instituciones educativas (Sedes)', 'salidas', 'fas fa-truck-loading', 5),
+(21, 6, 'Almacén', 'Control de stock e inventario', 'almacen', 'fas fa-warehouse', 6),
+(22, 6, 'Cotizaciones', 'Gestión de precios de proveedores', 'cotizaciones', 'fas fa-file-invoice-dollar', 2),
+(23, 6, 'Órdenes de Compra', 'Gestión de pedidos a proveedores', 'compras', 'fas fa-shopping-cart', 3),
+(24, 6, 'Remisiones (Entradas)', 'Ingreso de mercancÝa desde proveedores (OC)', 'remisiones', 'fas fa-file-import', 4);
 
 -- --------------------------------------------------------
 
@@ -676,7 +831,17 @@ INSERT INTO `module_permissions` (`id`, `role_id`, `pae_id`, `module_id`, `can_c
 (46, 1, 3, 24, 1, 1, 1, 1),
 (47, 6, 3, 22, 1, 1, 1, 1),
 (48, 6, 3, 23, 1, 1, 1, 1),
-(49, 6, 3, 24, 1, 1, 1, 1);
+(49, 6, 3, 24, 1, 1, 1, 1),
+(50, 1, 3, 21, 1, 1, 1, 1),
+(51, 6, 3, 21, 1, 1, 1, 1),
+(52, 1, 3, 1, 0, 0, 0, 0),
+(53, 1, 3, 6, 0, 0, 0, 0),
+(54, 1, 3, 2, 0, 0, 0, 0),
+(55, 1, 3, 5, 0, 0, 0, 0),
+(56, 1, 3, 3, 0, 0, 0, 0),
+(57, 1, 3, 9, 1, 1, 1, 1),
+(60, 1, 3, 16, 1, 1, 1, 1),
+(61, 6, 3, 16, 1, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -756,6 +921,7 @@ INSERT INTO `pae_programs` (`id`, `name`, `operator_name`, `operator_nit`, `oper
 CREATE TABLE `purchase_orders` (
   `id` int(11) NOT NULL,
   `pae_id` int(11) NOT NULL,
+  `cycle_id` int(11) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
   `supplier_id` int(11) NOT NULL,
   `quote_id` int(11) DEFAULT NULL,
@@ -812,8 +978,8 @@ CREATE TABLE `recipes` (
 INSERT INTO `recipes` (`id`, `pae_id`, `name`, `meal_type`, `description`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `status`, `created_at`, `updated_at`) VALUES
 (1, 3, 'HUEVOS REVUELTOS CON TOMATE Y CEBOLLA', 'DESAYUNO', 'HUEVOS REVUELTOS CON TOMATE Y CEBOLLA - CAFE CON LECHE - FRUTA', 2.79, 0.23, 0.02, 0.20, 'ACTIVO', '2026-02-01 23:27:08', '2026-02-03 23:49:10'),
 (2, 3, 'Arroz con Pollo y Ensalada', 'ALMUERZO', 'ARROZ CON POLLO - ENSALADA - JUGO DE NARANJA', 0.72, 0.05, 0.11, 0.01, 'ACTIVO', '2026-02-02 01:00:26', '2026-02-03 23:48:36'),
-(3, 3, 'SOPA DE POLLO', 'ALMUERZO', 'SOPA DE POLLO', 0.00, 0.00, 0.00, 0.00, 'ACTIVO', '2026-02-02 01:06:00', '2026-02-02 01:06:00'),
-(4, 3, 'MOTE DE GUINEO VERDE', 'DESAYUNO', 'MOTE DE GUINEO - MANZANA - CAFE CON LECHE', 0.00, 0.00, 0.00, 0.00, 'ACTIVO', '2026-02-02 01:07:36', '2026-02-02 01:07:36');
+(3, 3, 'SOPA DE POLLO', 'ALMUERZO', 'SOPA DE POLLO', 0.33, 0.06, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:06:00', '2026-02-06 00:19:07'),
+(4, 3, 'MOTE DE GUINEO VERDE', 'DESAYUNO', 'MOTE DE GUINEO - MANZANA - CAFE CON LECHE', 0.93, 0.20, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:07:36', '2026-02-06 00:18:46');
 
 -- --------------------------------------------------------
 
@@ -846,7 +1012,15 @@ INSERT INTO `recipe_items` (`id`, `recipe_id`, `item_id`, `age_group`, `quantity
 (78, 1, 278, 'PREESCOLAR', 1.500, 'Caliente'),
 (79, 1, 278, 'PRIMARIA_A', 1.500, 'Caliente'),
 (80, 1, 278, 'PRIMARIA_B', 1.500, 'Caliente'),
-(81, 1, 278, 'SECUNDARIA', 1.800, 'Caliente');
+(81, 1, 278, 'SECUNDARIA', 1.800, 'Caliente'),
+(82, 4, 283, 'PREESCOLAR', 0.500, 'Caliente'),
+(83, 4, 283, 'PRIMARIA_A', 0.600, 'Caliente'),
+(84, 4, 283, 'PRIMARIA_B', 0.700, 'Caliente'),
+(85, 4, 283, 'SECUNDARIA', 0.800, 'Caliente'),
+(86, 3, 275, 'PREESCOLAR', 0.130, 'Caliente'),
+(87, 3, 275, 'PRIMARIA_A', 0.140, 'Caliente'),
+(88, 3, 275, 'PRIMARIA_B', 0.150, 'Caliente'),
+(89, 3, 275, 'SECUNDARIA', 0.200, 'Caliente');
 
 -- --------------------------------------------------------
 
@@ -876,14 +1050,14 @@ INSERT INTO `recipe_nutrition` (`recipe_id`, `age_group`, `total_calories`, `tot
 (2, 'PRIMARIA_A', 0.20, 0.03, 0.01, 0.00),
 (2, 'PRIMARIA_B', 0.20, 0.03, 0.01, 0.00),
 (2, 'SECUNDARIA', 0.72, 0.05, 0.11, 0.01),
-(3, 'PREESCOLAR', 0.00, 0.00, 0.00, 0.00),
-(3, 'PRIMARIA_A', 0.00, 0.00, 0.00, 0.00),
-(3, 'PRIMARIA_B', 0.00, 0.00, 0.00, 0.00),
-(3, 'SECUNDARIA', 0.00, 0.00, 0.00, 0.00),
-(4, 'PREESCOLAR', 0.00, 0.00, 0.00, 0.00),
-(4, 'PRIMARIA_A', 0.00, 0.00, 0.00, 0.00),
-(4, 'PRIMARIA_B', 0.00, 0.00, 0.00, 0.00),
-(4, 'SECUNDARIA', 0.00, 0.00, 0.00, 0.00);
+(3, 'PREESCOLAR', 0.21, 0.04, 0.00, 0.00),
+(3, 'PRIMARIA_A', 0.23, 0.04, 0.00, 0.01),
+(3, 'PRIMARIA_B', 0.25, 0.05, 0.00, 0.01),
+(3, 'SECUNDARIA', 0.33, 0.06, 0.00, 0.01),
+(4, 'PREESCOLAR', 0.58, 0.13, 0.00, 0.00),
+(4, 'PRIMARIA_A', 0.70, 0.15, 0.00, 0.00),
+(4, 'PRIMARIA_B', 0.81, 0.18, 0.00, 0.01),
+(4, 'SECUNDARIA', 0.93, 0.20, 0.00, 0.01);
 
 -- --------------------------------------------------------
 
@@ -1052,6 +1226,16 @@ ALTER TABLE `beneficiaries`
   ADD KEY `idx_beneficiaries_status` (`status`);
 
 --
+-- Indices de la tabla `cycle_projections`
+--
+ALTER TABLE `cycle_projections`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_projection` (`cycle_id`,`branch_id`,`item_id`),
+  ADD KEY `idx_proj_cycle` (`cycle_id`),
+  ADD KEY `idx_proj_branch` (`branch_id`),
+  ADD KEY `idx_proj_item` (`item_id`);
+
+--
 -- Indices de la tabla `cycle_templates`
 --
 ALTER TABLE `cycle_templates`
@@ -1136,7 +1320,10 @@ ALTER TABLE `inventory_remissions`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_remission_pae` (`pae_id`,`remission_number`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `branch_id` (`branch_id`);
+  ADD KEY `branch_id` (`branch_id`),
+  ADD KEY `fk_remission_cycle` (`cycle_id`),
+  ADD KEY `fk_remission_po` (`po_id`),
+  ADD KEY `fk_remission_supplier` (`supplier_id`);
 
 --
 -- Indices de la tabla `inventory_remission_details`
@@ -1191,6 +1378,14 @@ ALTER TABLE `menu_items`
   ADD KEY `idx_menu_items_item` (`item_id`);
 
 --
+-- Indices de la tabla `menu_recipes`
+--
+ALTER TABLE `menu_recipes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_menu_recipes_menu` (`menu_id`),
+  ADD KEY `idx_menu_recipes_recipe` (`recipe_id`);
+
+--
 -- Indices de la tabla `modules`
 --
 ALTER TABLE `modules`
@@ -1234,7 +1429,8 @@ ALTER TABLE `purchase_orders`
   ADD UNIQUE KEY `unique_po_pae` (`pae_id`,`po_number`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `supplier_id` (`supplier_id`),
-  ADD KEY `quote_id` (`quote_id`);
+  ADD KEY `quote_id` (`quote_id`),
+  ADD KEY `fk_po_cycle` (`cycle_id`);
 
 --
 -- Indices de la tabla `purchase_order_details`
@@ -1318,16 +1514,22 @@ ALTER TABLE `beneficiaries`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
+-- AUTO_INCREMENT de la tabla `cycle_projections`
+--
+ALTER TABLE `cycle_projections`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `cycle_templates`
 --
 ALTER TABLE `cycle_templates`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `cycle_template_days`
 --
 ALTER TABLE `cycle_template_days`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT de la tabla `document_types`
@@ -1405,19 +1607,25 @@ ALTER TABLE `measurement_units`
 -- AUTO_INCREMENT de la tabla `menus`
 --
 ALTER TABLE `menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=221;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=261;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_cycles`
 --
 ALTER TABLE `menu_cycles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_items`
 --
 ALTER TABLE `menu_items`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=313;
+
+--
+-- AUTO_INCREMENT de la tabla `menu_recipes`
+--
+ALTER TABLE `menu_recipes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
 -- AUTO_INCREMENT de la tabla `modules`
@@ -1435,7 +1643,7 @@ ALTER TABLE `module_groups`
 -- AUTO_INCREMENT de la tabla `module_permissions`
 --
 ALTER TABLE `module_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT de la tabla `nutritional_parameters`
@@ -1471,7 +1679,7 @@ ALTER TABLE `recipes`
 -- AUTO_INCREMENT de la tabla `recipe_items`
 --
 ALTER TABLE `recipe_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -1515,6 +1723,14 @@ ALTER TABLE `beneficiaries`
   ADD CONSTRAINT `beneficiaries_ibfk_2` FOREIGN KEY (`branch_id`) REFERENCES `school_branches` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `beneficiaries_ibfk_3` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   ADD CONSTRAINT `beneficiaries_ibfk_4` FOREIGN KEY (`ethnic_group_id`) REFERENCES `ethnic_groups` (`id`);
+
+--
+-- Filtros para la tabla `cycle_projections`
+--
+ALTER TABLE `cycle_projections`
+  ADD CONSTRAINT `cycle_projections_ibfk_1` FOREIGN KEY (`cycle_id`) REFERENCES `menu_cycles` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `cycle_projections_ibfk_2` FOREIGN KEY (`branch_id`) REFERENCES `school_branches` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `cycle_projections_ibfk_3` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `cycle_templates`
@@ -1570,6 +1786,9 @@ ALTER TABLE `inventory_quote_details`
 -- Filtros para la tabla `inventory_remissions`
 --
 ALTER TABLE `inventory_remissions`
+  ADD CONSTRAINT `fk_remission_cycle` FOREIGN KEY (`cycle_id`) REFERENCES `menu_cycles` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_remission_po` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_remission_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `inventory_remissions_ibfk_1` FOREIGN KEY (`pae_id`) REFERENCES `pae_programs` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `inventory_remissions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `inventory_remissions_ibfk_3` FOREIGN KEY (`branch_id`) REFERENCES `school_branches` (`id`);
@@ -1611,6 +1830,13 @@ ALTER TABLE `menu_items`
   ADD CONSTRAINT `menu_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `menu_recipes`
+--
+ALTER TABLE `menu_recipes`
+  ADD CONSTRAINT `menu_recipes_ibfk_1` FOREIGN KEY (`menu_id`) REFERENCES `menus` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `menu_recipes_ibfk_2` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `modules`
 --
 ALTER TABLE `modules`
@@ -1628,6 +1854,7 @@ ALTER TABLE `module_permissions`
 -- Filtros para la tabla `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
+  ADD CONSTRAINT `fk_po_cycle` FOREIGN KEY (`cycle_id`) REFERENCES `menu_cycles` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `purchase_orders_ibfk_1` FOREIGN KEY (`pae_id`) REFERENCES `pae_programs` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `purchase_orders_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `purchase_orders_ibfk_3` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`),

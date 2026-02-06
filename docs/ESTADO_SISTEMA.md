@@ -1,4 +1,4 @@
-# Estado del Sistema PAE Control - 03 de Febrero 2026
+# Estado del Sistema PAE Control - 05 de Febrero 2026
 
 ## ✅ Módulos Completados
 
@@ -15,47 +15,42 @@
 ### 3. **Cocina** ✅ ⭐ FASE COMPLETADA
 - ✅ Ítems (Gestión de insumos con info nutricional y alérgenos)
 - ✅ Recetario Maestro (Estandarización de platos base)
-  - Cálculo nutricional automático
-  - Grid compacto de 4 columnas
-  - CRUD completo y buscador interno
 - ✅ Minutas y Ciclos (Planeación automática de 20 días)
-  - Plantillas maestras reutilizables
-  - Generador de calendario (omite fines de semana)
-  - Cálculo nutricional total por menú
+  - ✅ **Reporte de Explosión de Insumos:** Cálculo de compras exactas vs censo.
 
 ### 4. **Beneficiarios**
 - ✅ Estudiantes (Gestión de matrícula con Resolución 0003)
+- ✅ **Carnetización Digital:** Generación de carnet con QR (`PAE:ID:DOC`).
+  - *Refinamiento:* Layout optimizado para evitar cortes en impresión.
 
 ### 5. **Operación** 🟡 ⭐ EN CURSO
-- ✅ Almacén (Inventario actual y movimientos de entradas/salidas)
-- 🔜 Novedades y Entregas Diarias
+- ✅ **Almacén:** Inventario actual y movimientos de entradas/salidas.
+  - ✅ **Nuevo:** Reporte de Necesidades (Stock Actual vs Requerimientos de Menú).
+- 🔴 **Módulo Móvil de Entregas (PWA):** *BLOQUEADO/DEBUG*
+  - Error persistente "Acceso denegado" en selección de sedes.
+  - Implementado `X-Auth-Token` y robustez en extracción, pero sigue fallando.
 
 ---
 
 ## 🔧 Correcciones Recientes
 
-### Recetario Maestro
-- ✅ Fix: Redirección al login al editar/eliminar (javascript:void(0))
-- ✅ Fix: Motor de cálculo nutricional basado en base 100g
-- ✅ UX: Scroll interno para escalabilidad de recetas
+### App Móvil
+- ✅ **Seguridad:** Implementada compatibilidad con encabezado `X-Auth-Token` para evitar bloqueos por `Authorization` header en servidores XAMPP/CGI.
+- ✅ **Sesión:** Sincronización de credenciales `username` para coincidencia con API central.
+- ✅ **Caché:** Versionado de scripts (`v1.0.2`) para asegurar carga de actualizaciones en dispositivos móviles.
 
-### Core & Estabilidad
-- ✅ **Ruteo Universal:** Corregida la carga de assets y ruteo de API para cualquier subcarpeta.
-- ✅ **Fix Proveedores:** Ruta `/proveedores` unificada en backend y frontend.
-
-### Minutas y Ciclos
-- ✅ Fix: Borrado en cascada (ahora permite limpiar ciclos con programación).
-- ✅ UI: Activación de botones de acción "Ver" y "Eliminar" sin errores de consola.
-- ✅ Fix: Generación correcta de fechas de lunes a viernes.
+### Reportes
+- ✅ **Reporte de Necesidades:** Primer motor de inteligencia de almacén que detecta faltantes antes de la jornada.
 
 ---
 
 ## 🎯 Próximos Pasos
 
 ### Fase Actual: Operación (Fase 4)
-1. 🔜 Almacén (Entradas, salidas e inventario) - *Pre-requisito para despachos*
-2. 🔜 Novedades (Registro de ausentismos)
+1. 🔜 Sincronización Offline (Móvil).
+2. 🔜 Registro Fotográfico de Evidencia.
+3. 🔜 Generación de Planillas Firmadas (Resolución 003).
 
 ---
 
-**Última actualización**: 03 de Febrero 2026, 19:30 PM
+**Última actualización**: 05 de Febrero 2026, 22:50 PM

@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 03 de Febrero de 2026, 19:25  
-**Versión:** 1.6.0 (Fase 3 - Cocina y Almacén: Avance en Inventario)
+**Última Actualización:** 05 de Febrero de 2026, 22:45  
+**Versión:** 1.5.1 (Fase 4 - Operación: Módulo Móvil de Entregas)
 
 ---
 
@@ -11,9 +11,10 @@
 |-----------|--------|----------|
 | **Backend API** | 🟢 Funcional | 99% |
 | **Frontend Core** | 🟢 Funcional | 99% |
+| **App Móvil (PWA)** | 🔴 Bloqueado | 70% |
 | **Base de Datos** | 🟢 Estable | 99% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
-| **Módulos Operativos** | 🟡 En Desarrollo | 85% |
+| **Módulos Operativos** | 🟡 En Debug | 85% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -106,6 +107,7 @@
 - [x] **Aplicación Rápida:** Funcionalidad de clonación de plantilla a calendario mensual.
 - [x] **Validaciones:** Restricción de eliminación para ciclos activos o validados nutricionalmente.
 - [x] **Refinamiento:** Borrado en cascada (limpia menús e ítems asociados).
+- [x] **Reportes:** Explosión de insumos detallada por sede y edad (Excel/PDF).
 
 ### 10. Módulo de Almacén (Inventario) 🟡 ⭐ EN CURSO
 - [x] **Backend:** `InventoryController.php` con gestión de stock y movimientos.
@@ -113,6 +115,20 @@
 - [x] **Movimientos:** Registro de entradas y salidas con trazabilidad.
 - [x] **Integración:** Vinculación con proveedores y ítems maestros.
 - [ ] **Ajustes:** Toma física y auditoría.
+
+### 11. Módulo de Entregas (Resolución 003) - Fase 1 & 2 ✅ ⭐ NUEVO
+- [x] **Identificación Digital:** Generador de Carnet Estudiantil (PDF/Print).
+- [x] **QR Tokenizado:** Código único (`PAE:[ID]:[DOC]`) para validación de entregas.
+- [x] **Diseño:** Tarjeta estándar tipo documento de identidad (Ajustada a 560px para evitar cortes de QR).
+- [x] **App Móvil (PWA):** Interfaz optimizada para tablet/celular en `/movil/`.
+- [x] **Escáner QR:** Integración con `html5-qrcode` para lectura rápida de carnets.
+- [x] **Lógica de Entrega:** Registro automático de AM/ALMUERZO/PM según horario.
+- [x] **Validación Anti-Fraude:** Bloqueo de doble entrega del mismo complemento en el mismo día.
+
+### 12. Módulo de Almacén - Reporte de Necesidades ✅ ⭐ NUEVO
+- [x] **Comparativa Dinámica:** Reporte que cruza Inventario Actual vs Requerimientos de Menú Programado.
+- [x] **Cálculo de Déficit:** Identificación automática de insumos faltantes para la operación.
+- [x] **Filtros:** Por rango de fechas y sedes.
 
 ---
 
@@ -138,9 +154,17 @@
 - [ ] Reportes gerenciales
 - [ ] Integración con SIMAT
 
+## 🚨 BLOQUEOS PENDIENTES
+- [ ] **Autenticación Móvil:** A pesar de los bypasses (`X-Auth-Token` y `.htaccess`), el servidor sigue retornando "Acceso denegado" al intentar listar sedes desde el móvil. La decodificación del JWT o la extracción del string parece fallar en el entorno local (XAMPP).
+
 ---
 
-## 🔧 CORRECCIONES RECIENTES (v1.6.0)
+## 🔧 CORRECCIONES RECIENTES (v1.5.1)
+
+### Módulo de Reportes
+- ✅ **Explosión de Insumos:** Generación automática basada en censo real.
+- ✅ **Normalización:** Algoritmo robusto para coincidencia de grupos de edad.
+- ✅ **Exportación:** Soporte dual para Excel (.xls) y PDF (Vista Impresión).
 
 ### Módulo de Almacén
 - ✅ Corregida ruta de API para proveedores (`/proveedores`).
@@ -151,9 +175,16 @@
 - ✅ Activada vista de detalle de ciclo con alertas informativas.
 - ✅ Corregida inconsistencia de carga de recetas en el listado.
 
+### Módulo Móvil de Entregas
+- ✅ **Bypass de Apache:** Solución robusta para pérdida de header `Authorization` usando `X-Auth-Token` y reglas de `.htaccess`.
+- ✅ **Fix Login:** Sincronización de parámetros `username`/`email` entre App y API.
+- ✅ **Layout Carnet:** Incrementada altura a 560px y habilitado `overflow:visible` para garantizar legibilidad de QR.
+- ✅ **Versioning:** Implementado `?v=1.0.2` en scripts móviles para forzar limpieza de caché en despliegue.
+
 ### General
 - ✅ **Ruteo Dinámico:** El sistema ahora es agnóstico a la subcarpeta de instalación (localhost/pae/ vs dominio.com/).
 - ✅ **Estabilidad:** Mejorado el manejo de respuestas JSON vacías o malformadas.
+- ✅ **Diagnóstico:** Reforzados los logs en `BranchController` y respuestas con `debug` info para trazabilidad de errores 403.
 
 ---
 
@@ -174,6 +205,7 @@
 ### Backend
 - `api/controllers/CycleTemplateController.php` - Plantillas maestras
 - `api/controllers/MenuCycleController.php` - Generación de ciclos
+- `api/controllers/NeedsReportController.php` - Lógica de reporte de insumos
 - `api/index.php` - Rutas de minutas (líneas 315-333 approx)
 
 ### Frontend

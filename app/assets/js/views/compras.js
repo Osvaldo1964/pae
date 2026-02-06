@@ -1,6 +1,7 @@
 /**
  * Compras View - Módulo de Inventarios
  */
+console.log('compras.js loaded');
 
 window.ComprasView = {
     orders: [],
@@ -15,16 +16,20 @@ window.ComprasView = {
 
     async loadData() {
         try {
-            const [orderRes, supplierRes, itemRes] = await Promise.all([
+            const [orderRes, supplierRes, itemRes, cycleRes] = await Promise.all([
                 Helper.fetchAPI('/purchase-orders'),
                 Helper.fetchAPI('/proveedores'),
-                Helper.fetchAPI('/items')
+                Helper.fetchAPI('/items'),
+                Helper.fetchAPI('/menu-cycles')
             ]);
-            this.orders = orderRes.success ? orderRes.data : [];
-            this.suppliers = supplierRes.success ? supplierRes.data : [];
-            this.items = itemRes.success ? itemRes.data : [];
+
+            this.orders = orderRes.success ? (orderRes.data || []) : (Array.isArray(orderRes) ? orderRes : []);
+            this.suppliers = supplierRes.success ? (supplierRes.data || []) : (Array.isArray(supplierRes) ? supplierRes : []);
+            this.items = itemRes.success ? (itemRes.data || []) : (Array.isArray(itemRes) ? itemRes : []);
+            this.cycles = cycleRes.success ? (cycleRes.data || []) : (Array.isArray(cycleRes) ? cycleRes : []);
         } catch (error) {
             console.error('Error loading purchase orders data:', error);
+            Helper.alert('error', 'Error al cargar los datos de compras');
         }
     },
 
@@ -92,7 +97,10 @@ window.ComprasView = {
                     </div>
                 </td>
                 <td>${o.po_date}</td>
-                <td>${o.expected_delivery || '<span class="text-muted">-</span>'}</td>
+                <td>
+                    <div class="small fw-bold text-muted">${o.cycle_name || 'Sin Ciclo'}</div>
+                    <div class="small text-muted">${o.expected_delivery || '-'}</div>
+                </td>
                 <td class="fw-bold text-primary">${Helper.formatCurrency(o.total_amount)}</td>
                 <td>
                     <span class="badge rounded-pill ${this.getStatusBadgeClass(o.status)}">${o.status}</span>
@@ -174,15 +182,26 @@ window.ComprasView = {
                                                 ${suppliersHtml}
                                             </select>
                                         </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small fw-bold text-muted text-uppercase">No. Orden</label>
-                                            <input type="text" class="form-control form-control-lg border-2" id="msg-number" value="${order ? order.po_number : ''}" placeholder="OC-2026-XXX">
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Ciclo de Menú (Proyecciones)</label>
+                                            <select class="form-control form-select-lg border-2" id="msg-cycle" onchange="ComprasView.handleCycleChange(this.value)">
+                                                <option value="">-- Compra Manual (Sin Ciclo) --</option>
+                                                ${this.cycles.map(c => `<option value="${c.id}" ${order && order.cycle_id == c.id ? 'selected' : ''}>${c.name} (${c.status})</option>`).join('')}
+                                            </select>
                                         </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small fw-bold text-muted text-uppercase">Fecha</label>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">No. Orden</label>
+                                            <input type="text" class="form-control form-control-lg border-2" id="msg-number" value="${order ? order.po_number : ''}" placeholder="OC-2026-XXX" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Fecha Orden</label>
                                             <input type="date" class="form-control form-control-lg border-2" id="msg-date" value="${order ? order.po_date : new Date().toISOString().split('T')[0]}" required>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Fecha Entrega Esperada</label>
+                                            <input type="date" class="form-control form-control-lg border-2" id="msg-delivery" value="${order ? order.expected_delivery : ''}">
+                                        </div>
+                                        <div class="col-md-4">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Estado</label>
                                             <select class="form-control form-select-lg border-2" id="msg-status">
                                                 <option value="PENDIENTE" ${order && order.status === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
@@ -209,7 +228,8 @@ window.ComprasView = {
                                             <thead class="bg-light small text-uppercase">
                                                 <tr>
                                                     <th class="ps-4">Ítem / Insumo</th>
-                                                    <th style="width: 150px;">Cantidad</th>
+                                                    <th style="width: 150px;">Proyectado</th>
+                                                    <th style="width: 150px;">Cant. Pedir</th>
                                                     <th style="width: 200px;">Costo Unit.</th>
                                                     <th style="width: 200px;">Subtotal</th>
                                                     <th class="text-end pe-4" style="width: 50px;"></th>
@@ -254,6 +274,43 @@ window.ComprasView = {
         modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
     },
 
+    async handleCycleChange(cycleId) {
+        if (!cycleId) return;
+
+        const confirm = await Swal.fire({
+            title: '¿Cargar proyecciones?',
+            text: "Se cargarán automáticamente los ítems proyectados para este ciclo descontando lo ya ordenado.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cargar ítems',
+            cancelButtonText: 'No'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                const res = await Helper.fetchAPI(`/inventory/cycle-projections/${cycleId}`);
+                if (res.success && res.data.length > 0) {
+                    document.getElementById('order-items-body').innerHTML = '';
+                    res.data.forEach(item => {
+                        const remaining = item.projected_qty - item.ordered_qty;
+                        if (remaining > 0) {
+                            this.addItemRow({
+                                item_id: item.item_id,
+                                quantity: remaining,
+                                unit_price: 0,
+                                projected_info: `${item.ordered_qty} / ${item.projected_qty} ${item.unit}`
+                            });
+                        }
+                    });
+                } else if (res.data.length === 0) {
+                    Helper.alert('info', 'No hay proyecciones pendientes para este ciclo.');
+                }
+            } catch (error) {
+                Helper.alert('error', 'Error al cargar proyecciones');
+            }
+        }
+    },
+
     addItemRow(data = null) {
         const body = document.getElementById('order-items-body');
         const row = document.createElement('tr');
@@ -267,8 +324,11 @@ window.ComprasView = {
                     ${itemsHtml}
                 </select>
             </td>
+            <td class="small text-muted">
+                ${data && data.projected_info ? data.projected_info : '-'}
+            </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_ordered || data.quantity) : '1'}" min="0.001" step="0.001" required oninput="ComprasView.calculateRow(this)">
+                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? data.quantity : '1'}" min="0.001" step="0.001" required oninput="ComprasView.calculateRow(this)">
             </td>
             <td>
                 <div class="input-group input-group-sm">
@@ -333,8 +393,10 @@ window.ComprasView = {
 
         const data = {
             supplier_id: document.getElementById('msg-supplier').value,
+            cycle_id: document.getElementById('msg-cycle').value,
             po_number: document.getElementById('msg-number').value,
             po_date: document.getElementById('msg-date').value,
+            expected_delivery: document.getElementById('msg-delivery').value,
             status: document.getElementById('msg-status').value,
             total_amount: this.total,
             items: items
@@ -370,3 +432,8 @@ window.ComprasView = {
         }
     }
 };
+
+// Initialize
+if (typeof ComprasView !== 'undefined') {
+    ComprasView.init();
+}

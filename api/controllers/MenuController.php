@@ -331,4 +331,63 @@ class MenuController
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
+    /**
+     * GET /api/menu-cycles/print/{id}
+     */
+    public function printCycle($id)
+    {
+        try {
+            // 1. Datos del ciclo
+            $stmt = $this->conn->prepare("SELECT * FROM menu_cycles WHERE id = ?");
+            $stmt->execute([$id]);
+            $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$cycle) throw new Exception("Ciclo no encontrado");
+
+            // 2. Menús y recetas
+            $query = "SELECT m.day_number, m.meal_type, m.name as menu_name, 
+                             r.name as recipe_name
+                      FROM menus m
+                      LEFT JOIN menu_recipes mr ON m.id = mr.menu_id
+                      LEFT JOIN recipes r ON mr.recipe_id = r.id
+                      WHERE m.cycle_id = ?
+                      ORDER BY m.day_number, m.meal_type";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([$id]);
+            $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Vista simple de impresión
+            header("Content-Type: text/html; charset=UTF-8");
+            echo "<html><head><title>Plan de Alimentación - {$cycle['name']}</title>";
+            echo "<style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                th { background-color: #f4f4f4; }
+                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                @media print { .btn-print { display: none; } }
+            </style></head><body>";
+
+            echo "<div class='header'>";
+            echo "<h2>PLAN DE ALIMENTACIÓN MENSUAL</h2>";
+            echo "<h3>Ciclo: {$cycle['name']}</h3>";
+            echo "<p>Periodo: {$cycle['start_date']} al {$cycle['end_date']} | Días hábiles: {$cycle['total_days']}</p>";
+            echo "<button class='btn-print' onclick='window.print()'>Imprimir Reporte</button>";
+            echo "</div>";
+
+            echo "<table><thead><tr><th>Día</th><th>Tipo</th><th>Menú</th><th>Receta</th></tr></thead><tbody>";
+            foreach ($menus as $m) {
+                echo "<tr>
+                    <td>Día {$m['day_number']}</td>
+                    <td><b>{$m['meal_type']}</b></td>
+                    <td>{$m['menu_name']}</td>
+                    <td>" . ($m['recipe_name'] ?? '<i>No asignada</i>') . "</td>
+                </tr>";
+            }
+            echo "</tbody></table></body></html>";
+        } catch (Exception $e) {
+            echo "Error al generar reporte: " . $e->getMessage();
+        }
+    }
 }

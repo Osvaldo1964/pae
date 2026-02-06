@@ -493,10 +493,13 @@ var BeneficiariesView = {
                     <td><span class="badge ${statusClass}">${b.status}</span></td>
                     <td class="text-end">
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary" onclick="BeneficiariesView.openModal(${b.id})">
+                            <button class="btn btn-sm btn-outline-info" title="Generar Carnet" onclick="BeneficiariesView.generateCarnet(${b.id})">
+                                <i class="fas fa-id-badge"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" title="Editar" onclick="BeneficiariesView.openModal(${b.id})">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="BeneficiariesView.delete(${b.id})">
+                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="BeneficiariesView.delete(${b.id})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -675,6 +678,200 @@ var BeneficiariesView = {
         } catch (err) {
             console.error(err);
         }
+    },
+
+    generateCarnet(id) {
+        const b = this.beneficiaries.find(x => x.id == id);
+        if (!b) return;
+
+        // Token format for QR
+        const token = `PAE:${b.id}:${b.document_number}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(token)}`;
+
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            Helper.alert('error', 'Por favor permita las ventanas emergentes para generar el carnet.');
+            return;
+        }
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Carnet - ${b.first_name} ${b.last_name1}</title>
+                <!-- FontAwesome for the avatar icon -->
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+                <style>
+                    body { 
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                        -webkit-print-color-adjust: exact; 
+                        padding: 40px; 
+                        background-color: #f0f0f0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-start;
+                        min-height: 100vh;
+                        margin: 0;
+                    }
+                    .carnet-card {
+                        width: 350px;
+                        height: 560px; /* Increased height */
+                        border-radius: 20px;
+                        padding: 0;
+                        margin: 0;
+                        position: relative;
+                        background: #fff;
+                        overflow: visible; /* Changed from hidden to avoid clipping */
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #1B4F72 0%, #2980b9 100%);
+                        color: white;
+                        padding: 15px; /* Reduced padding */
+                        text-align: center;
+                        border-bottom: 5px solid #F4D03F;
+                    }
+                    .content { 
+                        flex-grow: 1;
+                        padding: 15px; /* Reduced padding */
+                        text-align: center; 
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+                    
+                    .avatar-container {
+                        width: 100px;
+                        height: 100px;
+                        background-color: #ecf0f1;
+                        border-radius: 50%;
+                        margin-bottom: 15px;
+                        border: 4px solid #F4D03F;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 40px;
+                        color: #1B4F72;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    }
+                    
+                    .student-name { 
+                        font-size: 22px; 
+                        font-weight: 700; 
+                        color: #2c3e50; 
+                        margin-bottom: 5px; 
+                        line-height: 1.2;
+                    }
+                    
+                    .student-doc {
+                        font-family: monospace;
+                        font-size: 16px;
+                        background-color: #f8f9fa;
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        color: #555;
+                        margin-bottom: 10px;
+                        display: inline-block;
+                        border: 1px solid #ddd;
+                        font-weight: bold;
+                    }
+                    
+                    .school-info {
+                        font-size: 13px;
+                        color: #7f8c8d;
+                        margin-bottom: 2px;
+                        width: 100%;
+                    }
+                    
+                    .grade-badge {
+                        background-color: #1B4F72;
+                        color: white;
+                        padding: 5px 15px;
+                        border-radius: 15px;
+                        font-size: 14px;
+                        font-weight: bold;
+                        margin: 10px 0;
+                        display: inline-block;
+                    }
+                    
+                    .qr-container { 
+                        margin-top: auto; 
+                        padding: 10px;
+                        background: white;
+                        border: 1px dashed #ccc;
+                        border-radius: 10px;
+                    }
+                    
+                    .footer {
+                        background-color: #f8f9fa;
+                        color: #7f8c8d;
+                        padding: 10px;
+                        text-align: center;
+                        border-top: 1px solid #eee;
+                        font-size: 10px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                    }
+                    
+                    @media print {
+                        body { 
+                            background: none; 
+                            padding: 0; 
+                            display: block;
+                        }
+                        .carnet-card {
+                            box-shadow: none;
+                            border: 1px solid #ddd;
+                            margin: 10px;
+                            page-break-inside: avoid;
+                        }
+                        .no-print { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="carnet-card">
+                    <div class="header">
+                        <div class="logo-text">PAE 2026</div>
+                        <div class="sub-header">Identificación del Beneficiario</div>
+                    </div>
+                    <div class="content">
+                        <div class="avatar-container">
+                            <span>${b.first_name.charAt(0)}${b.last_name1.charAt(0)}</span>
+                        </div>
+                        <div class="student-name">${b.first_name} <br> ${b.last_name1}</div>
+                        <div class="student-doc">${b.document_type_name}: ${b.document_number}</div>
+                        
+                        <div class="grade-badge">
+                            Grado ${b.grade} - ${b.group_name || 'N/A'}
+                        </div>
+
+                        <div class="school-info"><strong>${b.school_name}</strong></div>
+                        <div class="school-info">${b.branch_name}</div>
+                        
+                        <div class="qr-container">
+                            <img src="${qrUrl}" width="110" height="110" alt="QR Code">
+                        </div>
+                    </div>
+                    <div class="footer">
+                        Este documento es personal e intransferible
+                    </div>
+                </div>
+                <script>
+                    window.onload = function() {
+                        // Attempt to close after print, but offer manual close too
+                        setTimeout(function() {
+                            window.print();
+                        }, 500); // Give image a moment to render
+                    }
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     },
 
     filterTable() {

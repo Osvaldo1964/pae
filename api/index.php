@@ -372,15 +372,29 @@ if ($resource === 'auth') {
         echo json_encode(["message" => "Method Not Allowed"]);
     }
 } elseif ($resource === 'menu-cycles') {
-    $controller = new \Controllers\MenuController();
+    $controller = new \Controllers\MenuCycleController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        if ($action && is_numeric($action)) {
-            $controller->getCycleDays($action);
+        if ($action === 'print' && $id_param) {
+            $menuCtrl = new \Controllers\MenuController();
+            $menuCtrl->printCycle($id_param);
+        } elseif ($action && is_numeric($action)) {
+            $menuCtrl = new \Controllers\MenuController();
+            $menuCtrl->getCycleDays($action);
         } else {
-            $controller->getCycles();
+            $controller->index();
         }
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->storeCycle();
+        if ($action === 'generate') {
+            $controller->generate();
+        } elseif ($action === 'approve') {
+            $controller->approve($id_param);
+        } else {
+            $controller->generate();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        if ($action && is_numeric($action)) {
+            $controller->delete($action);
+        }
     }
 } elseif ($resource === 'menus') {
     $controller = new \Controllers\MenuController();
@@ -476,20 +490,17 @@ if ($resource === 'auth') {
             $controller->delete($action);
         }
     }
-} elseif ($resource === 'menu-cycles') {
-    $controller = new \Controllers\MenuCycleController();
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+} elseif ($resource === 'reports') {
+    if ($action === 'needs' && $id_param) {
+        $controller = new \Controllers\NeedsReportController();
+        $controller->generate($id_param);
+    }
+} elseif ($resource === 'deliveries') {
+    $controller = new \Controllers\DeliveryController();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->register();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->index();
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($action === 'generate') {
-            $controller->generate();
-        } else {
-            $controller->store();
-        }
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
-        if ($action && is_numeric($action)) {
-            $controller->delete($action);
-        }
     }
 } else {
     http_response_code(404);

@@ -224,6 +224,10 @@ const App = {
                     'beneficiarios': 'beneficiaries',
                     'items': 'items',
                     'almacen': 'almacen',
+                    'compras': 'compras',
+                    'cotizaciones': 'cotizaciones',
+                    'salidas': 'salidas',
+                    'remisiones': 'remisiones_entradas',
                     'recetario': 'recetario',
                     'minutas': 'minutas',
                     'team': 'team'

@@ -24,24 +24,34 @@ class BranchController
             $headers = trim($_SERVER["Authorization"]);
         } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
             $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+        } else if (isset($_SERVER['HTTP_X_AUTH_TOKEN'])) {
+            $headers = trim($_SERVER["HTTP_X_AUTH_TOKEN"]);
         } elseif (function_exists('apache_request_headers')) {
             $requestHeaders = apache_request_headers();
             $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
             if (isset($requestHeaders['Authorization'])) {
                 $headers = trim($requestHeaders['Authorization']);
+            } elseif (isset($requestHeaders['X-Auth-Token'])) {
+                $headers = trim($requestHeaders['X-Auth-Token']);
             }
         }
 
-        if (!$headers) return null;
+        if (!$headers) {
+            return null;
+        }
 
-        $arr = explode(" ", $headers);
-        $jwt = isset($arr[1]) ? $arr[1] : "";
+        // Robust extraction: Handle with or without "Bearer "
+        $jwt = $headers;
+        if (preg_match('/Bearer\s+(.*)$/i', $headers, $matches)) {
+            $jwt = $matches[1];
+        }
 
         if ($jwt) {
             try {
                 $decoded = JWT::decode($jwt);
                 return $decoded['data']['pae_id'] ?? null;
             } catch (Exception $e) {
+                error_log("BranchController: JWT Decode Error: " . $e->getMessage());
                 return null;
             }
         }
@@ -53,7 +63,13 @@ class BranchController
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
             http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
+            $debug = [
+                'has_auth' => isset($_SERVER['Authorization']),
+                'has_http_auth' => isset($_SERVER['HTTP_AUTHORIZATION']),
+                'has_x_token' => isset($_SERVER['HTTP_X_AUTH_TOKEN']),
+                'all_headers' => function_exists('apache_request_headers') ? array_keys(apache_request_headers()) : 'N/A'
+            ];
+            echo json_encode(["message" => "Acceso denegado.", "debug" => $debug]);
             return;
         }
 

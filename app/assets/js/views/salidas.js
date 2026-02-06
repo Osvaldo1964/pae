@@ -1,30 +1,36 @@
-/**
- * Remisiones View - Módulo de Inventarios
+﻿/**
+ * Salidas View - Módulo de Inventarios
+ * Maneja las salidas de almacén hacia las sedes educativas basadas en proyecciones.
  */
 
-window.RemisionesView = {
+window.SalidasView = {
     remissions: [],
     branches: [],
     items: [],
+    cycles: [],
 
     async init() {
-        console.log('Initializing Remisiones Module...');
+        console.log('Initializing Salidas Module...');
         await this.loadData();
         this.render();
     },
 
     async loadData() {
         try {
-            const [remRes, branchRes, itemRes] = await Promise.all([
+            const [remRes, branchRes, itemRes, cycleRes] = await Promise.all([
                 Helper.fetchAPI('/remissions'),
                 Helper.fetchAPI('/branches'),
-                Helper.fetchAPI('/items')
+                Helper.fetchAPI('/items'),
+                Helper.fetchAPI('/menu-cycles')
             ]);
-            this.remissions = remRes.success ? remRes.data : [];
-            this.branches = branchRes.success ? branchRes.data : [];
-            this.items = itemRes.success ? itemRes.data : [];
+
+            this.remissions = remRes.success ? (remRes.data || []).filter(r => r.type === 'SALIDA_SEDE') : (Array.isArray(remRes) ? remRes.filter(r => r.type === 'SALIDA_SEDE') : []);
+            this.branches = branchRes.success ? (branchRes.data || []) : (Array.isArray(branchRes) ? branchRes : []);
+            this.items = itemRes.success ? (itemRes.data || []) : (Array.isArray(itemRes) ? itemRes : []);
+            this.cycles = cycleRes.success ? (cycleRes.data || []) : (Array.isArray(cycleRes) ? cycleRes : []);
         } catch (error) {
             console.error('Error loading remissions data:', error);
+            Helper.alert('error', 'Error al cargar los datos de salidas');
         }
     },
 
@@ -33,21 +39,21 @@ window.RemisionesView = {
             <div class="container-fluid py-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 class="mb-1 text-primary fw-bold"><i class="fas fa-truck-loading me-2"></i>Remisiones</h2>
+                        <h2 class="mb-1 text-primary fw-bold"><i class="fas fa-truck-loading me-2"></i>Salidas de Almacén</h2>
                         <p class="text-muted mb-0">Control de entregas y despachos a sedes educativas</p>
                     </div>
-                    <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="RemisionesView.openModal()">
-                        <i class="fas fa-plus me-1"></i> Nueva Remisión
+                    <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="SalidasView.openModal()">
+                        <i class="fas fa-plus me-1"></i> Nueva Salida
                     </button>
                 </div>
 
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0" id="remissions-table">
+                            <table class="table table-hover align-middle mb-0" id="salidas-table">
                                 <thead class="bg-light">
                                     <tr class="text-muted small text-uppercase fw-bold">
-                                        <th class="ps-4">No. Remisión</th>
+                                        <th class="ps-4">No. Salida</th>
                                         <th>Sede Destino</th>
                                         <th>Fecha</th>
                                         <th>Conductor</th>
@@ -70,15 +76,11 @@ window.RemisionesView = {
         if (container) {
             container.innerHTML = html;
             this.initTable();
-        } else {
-            console.error('App container not found');
         }
     },
 
     renderTableRows() {
-        if (!this.remissions || this.remissions.length === 0) {
-            return '';
-        }
+        if (!this.remissions || this.remissions.length === 0) return '';
 
         return this.remissions.map(r => `
             <tr>
@@ -99,8 +101,8 @@ window.RemisionesView = {
                 </td>
                 <td class="text-end pe-4">
                     <div class="btn-group shadow-sm rounded-3">
-                        <button class="btn btn-white btn-sm" onclick="RemisionesView.openModal(${r.id})" title="Ver/Editar"><i class="fas fa-edit text-primary"></i></button>
-                        <button class="btn btn-white btn-sm" onclick="RemisionesView.deleteRemission(${r.id})" title="Eliminar"><i class="fas fa-trash text-danger"></i></button>
+                        <button class="btn btn-white btn-sm" onclick="SalidasView.openModal(${r.id})" title="Ver/Editar"><i class="fas fa-edit text-primary"></i></button>
+                        <button class="btn btn-white btn-sm" onclick="SalidasView.deleteRemission(${r.id})" title="Eliminar"><i class="fas fa-trash text-danger"></i></button>
                     </div>
                 </td>
             </tr>
@@ -117,17 +119,13 @@ window.RemisionesView = {
     },
 
     initTable() {
-        if ($.fn.DataTable.isDataTable('#remissions-table')) {
-            $('#remissions-table').DataTable().destroy();
+        if ($.fn.DataTable.isDataTable('#salidas-table')) {
+            $('#salidas-table').DataTable().destroy();
         }
-        $('#remissions-table').DataTable({
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json',
-                emptyTable: "No se encontraron remisiones registradas"
-            },
+        $('#salidas-table').DataTable({
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json' },
             pageLength: 10,
             ordering: true,
-            info: true,
             columnDefs: [{ targets: 6, orderable: false }]
         });
     },
@@ -148,7 +146,7 @@ window.RemisionesView = {
 
         const modalDiv = document.createElement('div');
         modalDiv.className = 'modal fade';
-        modalDiv.id = 'remissionModal';
+        modalDiv.id = 'salidaModal';
 
         const branchesHtml = this.branches.map(b => `<option value="${b.id}" ${remission && remission.branch_id == b.id ? 'selected' : ''}>${b.name}</option>`).join('');
 
@@ -158,28 +156,35 @@ window.RemisionesView = {
                     <div class="modal-header bg-primary text-white py-3">
                         <h5 class="modal-title fw-bold">
                             <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus-circle'} me-2"></i>
-                            ${isEdit ? 'Editar Remisión' : 'Nueva Remisión'}
+                            ${isEdit ? 'Editar Salida' : 'Nueva Salida de Almacén'}
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4 bg-light">
-                        <form id="remission-form">
+                        <form id="salida-form">
                             <div class="card border-0 shadow-sm mb-4 rounded-3">
                                 <div class="card-body p-4">
                                     <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Ciclo de Menú</label>
+                                            <select class="form-control form-select-lg border-2" id="msg-cycle" required onchange="SalidasView.handleHeaderChange()">
+                                                <option value="">-- Seleccionar Ciclo --</option>
+                                                ${this.cycles.map(c => `<option value="${c.id}" ${remission && remission.cycle_id == c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
+                                            </select>
+                                        </div>
                                         <div class="col-md-5">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Sede Destino</label>
-                                            <select class="form-control form-select-lg border-2" id="msg-branch" required>
+                                            <select class="form-control form-select-lg border-2" id="msg-branch" required onchange="SalidasView.handleHeaderChange()">
                                                 <option value="">-- Seleccionar Sede --</option>
                                                 ${branchesHtml}
                                             </select>
                                         </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label small fw-bold text-muted text-uppercase">No. Remisión</label>
-                                            <input type="text" class="form-control form-control-lg border-2" id="msg-number" value="${remission ? remission.remission_number : ''}" placeholder="REM-2026-XXX" required>
+                                        <div class="col-md-3">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">No. Salida</label>
+                                            <input type="text" class="form-control form-control-lg border-2" id="msg-number" value="${remission ? remission.remission_number : ''}" placeholder="SAL-XXX" required>
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label small fw-bold text-muted text-uppercase">Fecha</label>
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Fecha Despacho</label>
                                             <input type="date" class="form-control form-control-lg border-2" id="msg-date" value="${remission ? remission.remission_date : new Date().toISOString().split('T')[0]}" required>
                                         </div>
                                     </div>
@@ -190,7 +195,7 @@ window.RemisionesView = {
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Placa Vehículo</label>
-                                            <input type="text" class="form-control border-2" id="msg-plate" value="${remission ? remission.vehicle_plate : ''}" required uppercase>
+                                            <input type="text" class="form-control border-2" id="msg-plate" value="${remission ? remission.vehicle_plate : ''}" required>
                                         </div>
                                         <div class="col-md-5">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Estado</label>
@@ -201,17 +206,13 @@ window.RemisionesView = {
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <label class="form-label small fw-bold text-muted text-uppercase">Observaciones</label>
-                                        <textarea class="form-control border-2" id="msg-notes" rows="2">${remission ? remission.notes : ''}</textarea>
-                                    </div>
                                 </div>
                             </div>
 
                             <div class="card border-0 shadow-sm rounded-3">
                                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0 fw-bold"><i class="fas fa-boxes me-2 text-primary"></i>Ítems a Despachar</h6>
-                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="RemisionesView.addItemRow()">
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="SalidasView.addItemRow()">
                                         <i class="fas fa-plus me-1"></i> Agregar Ítem
                                     </button>
                                 </div>
@@ -221,12 +222,13 @@ window.RemisionesView = {
                                             <thead class="bg-light small text-uppercase">
                                                 <tr>
                                                     <th class="ps-4">Ítem / Alimento</th>
+                                                    <th style="width: 150px;">Proyectado</th>
                                                     <th style="width: 200px;">Lote (Opcional)</th>
                                                     <th style="width: 150px;">Cantidad</th>
                                                     <th class="text-end pe-4" style="width: 50px;"></th>
                                                 </tr>
                                             </thead>
-                                            <tbody id="remission-items-body">
+                                            <tbody id="salida-items-body">
                                                 <!-- Rows here -->
                                             </tbody>
                                         </table>
@@ -237,8 +239,8 @@ window.RemisionesView = {
                     </div>
                     <div class="modal-footer bg-white py-3">
                         <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary px-5 rounded-pill shadow" onclick="RemisionesView.save(${remission ? remission.id : null})">
-                            <i class="fas fa-save me-2"></i>${isEdit ? 'Actualizar Remisión' : 'Guardar Remisión'}
+                        <button type="button" class="btn btn-primary px-5 rounded-pill shadow" onclick="SalidasView.save(${remission ? remission.id : null})">
+                            <i class="fas fa-save me-2"></i>${isEdit ? 'Actualizar Salida' : 'Guardar Salida'}
                         </button>
                     </div>
                 </div>
@@ -258,8 +260,44 @@ window.RemisionesView = {
         modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
     },
 
+    async handleHeaderChange() {
+        const cycleId = document.getElementById('msg-cycle').value;
+        const branchId = document.getElementById('msg-branch').value;
+
+        if (cycleId && branchId) {
+            const confirm = await Swal.fire({
+                title: '¿Cargar proyecciones?',
+                text: "Se cargarán los ítems proyectados para esta sede en el ciclo seleccionado.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cargar'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    const res = await Helper.fetchAPI(`/inventory/branch-projections/${cycleId}/${branchId}`);
+                    if (res.success && res.data.length > 0) {
+                        document.getElementById('salida-items-body').innerHTML = '';
+                        res.data.forEach(item => {
+                            const pend = item.projected_qty - item.delivered_qty;
+                            if (pend > 0) {
+                                this.addItemRow({
+                                    item_id: item.item_id,
+                                    quantity: pend,
+                                    projected_info: `${item.delivered_qty} / ${item.projected_qty}`
+                                });
+                            }
+                        });
+                    }
+                } catch (error) {
+                    Helper.alert('error', 'Error al cargar proyecciones');
+                }
+            }
+        }
+    },
+
     addItemRow(data = null) {
-        const body = document.getElementById('remission-items-body');
+        const body = document.getElementById('salida-items-body');
         const row = document.createElement('tr');
 
         const itemsHtml = this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit})</option>`).join('');
@@ -271,11 +309,14 @@ window.RemisionesView = {
                     ${itemsHtml}
                 </select>
             </td>
-            <td>
-                <input type="text" class="form-control border-0 bg-transparent row-batch" value="${data ? (data.batch_number || '') : ''}" placeholder="Ej: L-1002">
+            <td class="small text-muted">
+                ${data && data.projected_info ? data.projected_info : '-'}
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_sent || data.quantity) : '1'}" min="0.001" step="0.001" required>
+                <input type="text" class="form-control border-0 bg-transparent row-batch" value="${data ? (data.batch_number || '') : ''}" placeholder="Lote...">
+            </td>
+            <td>
+                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? data.quantity : '1'}" min="0.001" step="0.001" required>
             </td>
             <td class="text-end pe-4">
                 <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()">
@@ -287,14 +328,14 @@ window.RemisionesView = {
     },
 
     async save(id = null) {
-        const form = document.getElementById('remission-form');
+        const form = document.getElementById('salida-form');
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
 
         const items = [];
-        document.querySelectorAll('#remission-items-body tr').forEach(row => {
+        document.querySelectorAll('#salida-items-body tr').forEach(row => {
             const itemId = row.querySelector('.row-item').value;
             if (itemId) {
                 items.push({
@@ -311,13 +352,15 @@ window.RemisionesView = {
         }
 
         const data = {
+            type: 'SALIDA_SEDE',
+            cycle_id: document.getElementById('msg-cycle').value,
             branch_id: document.getElementById('msg-branch').value,
             remission_number: document.getElementById('msg-number').value,
             remission_date: document.getElementById('msg-date').value,
             carrier_name: document.getElementById('msg-carrier').value,
             vehicle_plate: document.getElementById('msg-plate').value,
             status: document.getElementById('msg-status').value,
-            notes: document.getElementById('msg-notes').value,
+            notes: document.getElementById('msg-notes') ? document.getElementById('msg-notes').value : '',
             items: items
         };
 
@@ -327,26 +370,19 @@ window.RemisionesView = {
             const res = await Helper.fetchAPI(url, { method, body: JSON.stringify(data) });
 
             if (res.success) {
-                bootstrap.Modal.getInstance(document.getElementById('remissionModal')).hide();
-                Helper.alert('success', 'Remisión guardada');
+                bootstrap.Modal.getInstance(document.getElementById('salidaModal')).hide();
+                Helper.alert('success', 'Salida de Almacén guardada');
                 this.init();
             } else {
                 Helper.alert('error', res.message);
             }
         } catch (error) {
-            Helper.alert('error', 'Error al guardar la remisión');
-        }
-    },
-
-    async deleteRemission(id) {
-        const confirm = await Helper.confirm('¿Eliminar remisión?', 'Esta acción no se puede deshacer.');
-        if (confirm.isConfirmed) {
-            try {
-                // Assuming standard endpoint for delete
-                Helper.alert('info', 'Funcionalidad de eliminar pendiente de endpoint');
-            } catch (error) {
-                Helper.alert('error', 'Error al eliminar');
-            }
+            Helper.alert('error', 'Error al guardar');
         }
     }
 };
+
+// Initialize
+if (typeof SalidasView !== 'undefined') {
+    SalidasView.init();
+}

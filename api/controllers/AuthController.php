@@ -206,7 +206,7 @@ class AuthController
                     m.id as module_id, m.name as module_name, m.route_key, m.icon as module_icon, m.description
                 FROM module_groups mg
                 JOIN modules m ON m.group_id = mg.id
-                ORDER BY mg.order_index, m.id";
+                ORDER BY mg.order_index, m.order_index, m.id";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();

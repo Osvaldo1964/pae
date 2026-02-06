@@ -4,8 +4,10 @@
  */
 
 const Config = {
-    // Unified source of truth
-    VERSION: window.APP_VERSION || '1.4.0',
+    // Unified source of truth - Always use server version
+    get VERSION() {
+        return window.APP_VERSION || '1.4.3';
+    },
 
     // Dynamic Base URL detection
     // Detects '/pae/app/' or just '/app/' automatically

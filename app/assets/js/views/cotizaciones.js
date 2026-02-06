@@ -20,11 +20,13 @@ window.CotizacionesView = {
                 Helper.fetchAPI('/proveedores'),
                 Helper.fetchAPI('/items')
             ]);
-            this.quotes = quoteRes.success ? quoteRes.data : [];
-            this.suppliers = supplierRes.success ? supplierRes.data : [];
-            this.items = itemRes.success ? itemRes.data : [];
+
+            this.quotes = quoteRes.success ? (quoteRes.data || []) : (Array.isArray(quoteRes) ? quoteRes : []);
+            this.suppliers = supplierRes.success ? (supplierRes.data || []) : (Array.isArray(supplierRes) ? supplierRes : []);
+            this.items = itemRes.success ? (itemRes.data || []) : (Array.isArray(itemRes) ? itemRes : []);
         } catch (error) {
             console.error('Error loading quotes data:', error);
+            Helper.alert('error', 'Error al cargar los datos de cotizaciones');
         }
     },
 

@@ -35,7 +35,12 @@ class MenuCycleController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
-            $query = "SELECT * FROM menu_cycles WHERE pae_id = :pae_id ORDER BY start_date DESC";
+            // Incluir conteo de proyecciones para saber si está congelado
+            $query = "SELECT c.*, 
+                      (SELECT COUNT(*) FROM cycle_projections WHERE cycle_id = c.id) as projection_count
+                      FROM menu_cycles c 
+                      WHERE c.pae_id = :pae_id 
+                      ORDER BY c.start_date DESC";
             $stmt = $this->conn->prepare($query);
             $stmt->bindValue(':pae_id', $pae_id);
             $stmt->execute();
@@ -60,10 +65,15 @@ class MenuCycleController
     {
         try {
             $data = json_decode(file_get_contents("php://input"), true);
-            $pae_id = $this->getPaeIdFromToken();
             $template_id = $data['template_id'];
             $start_date = $data['start_date'];
             $name = $data['name'];
+
+            $pae_id = $this->getPaeIdFromToken();
+            if (!$pae_id) {
+                $pae_id = $data['pae_id'] ?? null;
+                if (!$pae_id) throw new Exception("Debe especificar un programa PAE");
+            }
 
             $this->conn->beginTransaction();
 
@@ -74,49 +84,65 @@ class MenuCycleController
 
             if (!$templateDays) throw new Exception("La plantilla seleccionada no tiene días configurados.");
 
-            // 2. Crear el ciclo (menu_cycles)
-            // Calculamos el end_date (20 días hábiles)
-            $current_date = new \DateTime($start_date);
-            $business_days_count = 0;
-            $dates_mapping = []; // día_relativo => fecha_real
+            // 2. Definir el periodo de días hábiles entre las fechas
+            $start = new \DateTime($start_date);
+            $end = new \DateTime($data['end_date']);
+            $end_display = $end->format('Y-m-d');
 
-            while ($business_days_count < 20) {
-                $day_of_week = $current_date->format('N'); // 1 (mon) to 7 (sun)
-                if ($day_of_week < 6) { // Lunes a Viernes
+            $dates_mapping = [];
+            $business_days_count = 0;
+
+            $interval = new \DateInterval('P1D');
+            $period = new \DatePeriod($start, $interval, $end->modify('+1 day'));
+
+            foreach ($period as $date) {
+                $day_of_week = $date->format('N'); // 1 (Mon) to 7 (Sun)
+                if ($day_of_week < 6) {
                     $business_days_count++;
-                    $dates_mapping[$business_days_count] = $current_date->format('Y-m-d');
-                }
-                if ($business_days_count < 20) {
-                    $current_date->modify('+1 day');
+                    $dates_mapping[$business_days_count] = $date->format('Y-m-d');
                 }
             }
-            $end_date = $current_date->format('Y-m-d');
 
-            $stmtCycle = $this->conn->prepare("INSERT INTO menu_cycles (pae_id, name, start_date, end_date, total_days, status) VALUES (?, ?, ?, ?, 20, 'BORRADOR')");
-            $stmtCycle->execute([$pae_id, $name, $start_date, $end_date]);
+            if ($business_days_count === 0) throw new Exception("No hay días hábiles en el rango seleccionado.");
+
+            $stmtCycle = $this->conn->prepare("INSERT INTO menu_cycles (pae_id, name, start_date, end_date, total_days, status) VALUES (?, ?, ?, ?, ?, 'BORRADOR')");
+            $stmtCycle->execute([$pae_id, $name, $start_date, $end_display, $business_days_count]);
             $cycle_id = $this->conn->lastInsertId();
 
-            // 3. Crear los menús diarios (menus) y sus items (menu_items)
-            // Agrupamos los días de la plantilla por número de día
+            // 3. Crear los menús diarios (menus) y vincular recetas usando mapeo circular (módulo)
             $days_data = [];
             foreach ($templateDays as $td) {
                 $days_data[$td['day_number']][] = $td;
             }
+            // Obtener el número máximo de día en la plantilla para el módulo
+            $max_template_day = max(array_keys($days_data));
 
             foreach ($dates_mapping as $rel_day => $real_date) {
-                if (!isset($days_data[$rel_day])) continue;
+                // Mapeo circular: Si el ciclo es más largo que la plantilla, vuelve al día 1
+                $template_day_to_use = (($rel_day - 1) % $max_template_day) + 1;
 
-                // Para cada día real, creamos un registro en 'menus'
-                $stmtMenu = $this->conn->prepare("INSERT INTO menus (cycle_id, date, day_number) VALUES (?, ?, ?)");
-                $stmtMenu->execute([$cycle_id, $real_date, $rel_day]);
+                if (!isset($days_data[$template_day_to_use])) {
+                    // Si ese día específico no existe en la plantilla (ej: saltos), buscamos el anterior más cercano
+                    $found = false;
+                    for ($d = $template_day_to_use; $d >= 1; $d--) {
+                        if (isset($days_data[$d])) {
+                            $template_day_to_use = $d;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) continue;
+                }
+
+                $stmtMenu = $this->conn->prepare("INSERT INTO menus (pae_id, cycle_id, name, day_number) VALUES (?, ?, ?, ?)");
+                $menu_name = "Día " . $rel_day . " - " . $real_date;
+                $stmtMenu->execute([$pae_id, $cycle_id, $menu_name, $rel_day]);
                 $menu_id = $this->conn->lastInsertId();
 
-                // Insertamos las recetas asociadas a ese día
-                foreach ($days_data[$rel_day] as $recipe_info) {
-                    // Aquí vinculamos la receta al menú diario
-                    // Nota: En un futuro aquí se haría la explosión de víveres hacia menu_items
-                    $stmtMenuItem = $this->conn->prepare("INSERT INTO menu_items (menu_id, recipe_id, meal_type) VALUES (?, ?, ?)");
-                    $stmtMenuItem->execute([$menu_id, $recipe_info['recipe_id'], $recipe_info['meal_type']]);
+                foreach ($days_data[$template_day_to_use] as $recipe_info) {
+                    // Vinculamos la receta al menú diario en la tabla menu_recipes
+                    $stmtMenuRec = $this->conn->prepare("INSERT INTO menu_recipes (menu_id, recipe_id, meal_type) VALUES (?, ?, ?)");
+                    $stmtMenuRec->execute([$menu_id, $recipe_info['recipe_id'], $recipe_info['meal_type']]);
                 }
             }
 
@@ -130,20 +156,139 @@ class MenuCycleController
     }
 
     /**
+     * POST /api/menu-cycles/approve/{id}
+     * Congela la demanda del ciclo calculando items por sede
+     */
+    public function approve($id)
+    {
+        try {
+            $pae_id = $this->getPaeIdFromToken();
+            if (!$pae_id) {
+                $data = json_decode(file_get_contents("php://input"), true);
+                $pae_id = $data['pae_id'] ?? null;
+            }
+
+            // 1. Verificar estado del ciclo
+            $stmt = $this->conn->prepare("SELECT * FROM menu_cycles WHERE id = ? AND pae_id = ?");
+            $stmt->execute([$id, $pae_id]);
+            $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$cycle) throw new Exception("Ciclo no encontrado.");
+            if ($cycle['status'] !== 'BORRADOR') throw new Exception("Solo se pueden aprobar ciclos en estado BORRADOR.");
+
+            $this->conn->beginTransaction();
+
+            // 2. Limpiar proyecciones previas si existen (por seguridad)
+            $this->conn->prepare("DELETE FROM cycle_projections WHERE cycle_id = ?")->execute([$id]);
+
+            // 3. Obtener población por Sede, Tipo de Ración y Grado (para mapear a Grupo Etario)
+            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type, grade, COUNT(*) as total 
+                                            FROM beneficiaries 
+                                            WHERE pae_id = ? AND status = 'active' 
+                                            GROUP BY branch_id, ration_type, grade");
+            $stmtPop->execute([$pae_id]);
+            $populations = $stmtPop->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$populations) throw new Exception("No hay beneficiarios activos en el programa para calcular la demanda.");
+
+            // 4. Obtener la explosión de recetas vinculadas al ciclo
+            // Buscamos: Ciclo -> Menús -> Recetas -> ItemsReceta
+            $queryExplosion = "SELECT mr.meal_type, ri.age_group, ri.item_id, ri.quantity 
+                               FROM menu_recipes mr
+                               JOIN recipe_items ri ON mr.recipe_id = ri.recipe_id
+                               WHERE mr.menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)";
+            $stmtExp = $this->conn->prepare($queryExplosion);
+            $stmtExp->execute([$id]);
+            $recipeDetails = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$recipeDetails) throw new Exception("El ciclo no tiene recetas o ingredientes configurados.");
+
+            // 5. Motor de Cálculo (Cruce Matriz)
+            $projections = []; // [branch_id][item_id] => quantity
+            $totalBeneficiaries = 0;
+
+            // Mapeo de MealType a RationType
+            $mealToRation = [
+                'DESAYUNO' => 'COMPLEMENTO MAÑANA',
+                'MEDIA MAÑANA' => 'COMPLEMENTO MAÑANA',
+                'ALMUERZO' => 'ALMUERZO',
+                'ONCES' => 'COMPLEMENTO TARDE',
+                'CENA' => 'COMPLEMENTO TARDE'
+            ];
+
+            foreach ($populations as $pop) {
+                $totalBeneficiaries += $pop['total'];
+                $branch_id = $pop['branch_id'];
+                $age_group = $this->getAgeGroupForGrade($pop['grade']);
+                $ration_type = strtoupper($pop['ration_type']);
+
+                foreach ($recipeDetails as $recipe) {
+                    $targetRation = $mealToRation[$recipe['meal_type']] ?? 'ALMUERZO';
+
+                    // Solo sumar si el tipo de ración del niño coincide con el plato
+                    // Y el grupo etario coincide con el gramaje de la receta
+                    if ($ration_type === $targetRation && $age_group === $recipe['age_group']) {
+                        $item_id = $recipe['item_id'];
+                        $quantity = $recipe['quantity'] * $pop['total'];
+
+                        if (!isset($projections[$branch_id])) $projections[$branch_id] = [];
+                        if (!isset($projections[$branch_id][$item_id])) $projections[$branch_id][$item_id] = 0;
+
+                        $projections[$branch_id][$item_id] += $quantity;
+                    }
+                }
+            }
+
+            // 6. Guardar Proyecciones Congeladas
+            $stmtInsert = $this->conn->prepare("INSERT INTO cycle_projections (cycle_id, branch_id, item_id, total_quantity, beneficiary_count) VALUES (?, ?, ?, ?, ?)");
+            foreach ($projections as $branch_id => $items) {
+                foreach ($items as $item_id => $qty) {
+                    // Contamos beneficiarios aproximados para esta sede (opcional, para trazabilidad)
+                    $stmtInsert->execute([$id, $branch_id, $item_id, $qty, $totalBeneficiaries]);
+                }
+            }
+
+            // 7. Actualizar estado del ciclo
+            $stmtUpdate = $this->conn->prepare("UPDATE menu_cycles SET status = 'ACTIVO', updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmtUpdate->execute([$id]);
+
+            $this->conn->commit();
+            echo json_encode(['success' => true, 'message' => 'Ciclo aprobado y demanda congelada correctamente.']);
+        } catch (Exception $e) {
+            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    private function getAgeGroupForGrade($grade)
+    {
+        $grade = trim(strtoupper($grade));
+        if (in_array($grade, ['TRANSICIÓN', 'TRANSICION', 'JARDIN', 'JARDÍN', 'PRE-JARDIN', '0', '0°'])) return 'PREESCOLAR';
+        if (in_array($grade, ['1', '1°', '2', '2°', '3', '3°'])) return 'PRIMARIA_A';
+        if (in_array($grade, ['4', '4°', '5', '5°'])) return 'PRIMARIA_B';
+        return 'SECUNDARIA'; // 6 a 11
+    }
+
+    /**
      * DELETE /api/menu-cycles/{id}
      */
     public function delete($id)
     {
         try {
+            $pae_id = $this->getPaeIdFromToken();
+
             // Verificar estado antes de borrar
-            $stmt = $this->conn->prepare("SELECT status, is_validated FROM menu_cycles WHERE id = ?");
-            $stmt->execute([$id]);
+            $stmt = $this->conn->prepare("SELECT status FROM menu_cycles WHERE id = ? AND pae_id = ?");
+            $stmt->execute([$id, $pae_id]);
             $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$cycle) throw new Exception("Ciclo no encontrado.");
+            if ($cycle['status'] === 'ACTIVO') throw new Exception("No se puede eliminar un ciclo que ya está ACTIVO (congelado).");
 
             $this->conn->beginTransaction();
 
-            // 1. Delete menu items (explosion of items)
-            $stmt1 = $this->conn->prepare("DELETE FROM menu_items WHERE menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)");
+            // 1. Delete menu recipes
+            $stmt1 = $this->conn->prepare("DELETE FROM menu_recipes WHERE menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)");
             $stmt1->execute([$id]);
 
             // 2. Delete menus
@@ -155,7 +300,7 @@ class MenuCycleController
             $stmtDel->execute([$id]);
 
             $this->conn->commit();
-            echo json_encode(['success' => true, 'message' => 'Ciclo y toda su programación eliminados correctamente']);
+            echo json_encode(['success' => true, 'message' => 'Ciclo eliminado correctamente']);
         } catch (Exception $e) {
             if ($this->conn->inTransaction()) $this->conn->rollBack();
             http_response_code(400);
