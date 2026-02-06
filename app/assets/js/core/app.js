@@ -230,7 +230,8 @@ const App = {
                     'remisiones': 'remisiones_entradas',
                     'recetario': 'recetario',
                     'minutas': 'minutas',
-                    'team': 'team'
+                    'team': 'team',
+                    'consumos': 'consumos'
                 };
 
                 App.loadView(viewMap[route] || route);

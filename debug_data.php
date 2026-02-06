@@ -496,3 +496,23 @@ ct:
 2026-02-06 19:16:56 - ROUTER: GET /pae/api/beneficiarios/document_types -> Res: [beneficiarios] (13), Act: document_types
 2026-02-06 19:16:56 - ROUTER: GET /pae/api/schools -> Res: [schools] (7), Act: 
 2026-02-06 19:16:56 - ROUTER: GET /pae/api/beneficiarios/ethnic_groups -> Res: [beneficiarios] (13), Act: ethnic_groups
+2026-02-06 19:55:19 - ROUTER: GET /pae/api/auth/menu -> Res: [auth] (4), Act: menu
+2026-02-06 19:55:21 - ROUTER: POST /pae/api/auth/login -> Res: [auth] (4), Act: login
+2026-02-06 19:55:22 - ROUTER: POST /pae/api/auth/select_tenant -> Res: [auth] (4), Act: select_tenant
+2026-02-06 19:55:22 - ROUTER: GET /pae/api/auth/menu -> Res: [auth] (4), Act: menu
+2026-02-06 20:07:10 - ROUTER: GET /pae/api/auth/menu -> Res: [auth] (4), Act: menu
+2026-02-06 20:07:15 - ROUTER: GET /pae/api/schools -> Res: [schools] (7), Act: 
+2026-02-06 20:07:20 - ROUTER: GET /pae/api/branches -> Res: [branches] (8), Act: 
+2026-02-06 20:09:09 - ROUTER: GET /pae/api/auth/menu -> Res: [auth] (4), Act: menu
+2026-02-06 20:09:09 - ROUTER: GET /pae/api/schools -> Res: [schools] (7), Act: 
+2026-02-06 20:09:13 - ROUTER: GET /pae/api/branches -> Res: [branches] (8), Act: 
+2026-02-06 20:09:18 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report
+2026-02-06 20:09:22 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report
+2026-02-06 20:09:26 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report
+2026-02-06 20:13:06 - ROUTER: GET /pae/api/auth/menu -> Res: [auth] (4), Act: menu
+2026-02-06 20:13:06 - ROUTER: GET /pae/api/schools -> Res: [schools] (7), Act: 
+2026-02-06 20:13:09 - ROUTER: GET /pae/api/branches -> Res: [branches] (8), Act: 
+2026-02-06 20:13:13 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report
+2026-02-06 20:13:20 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report
+2026-02-06 20:13:24 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report
+2026-02-06 20:13:26 - ROUTER: GET /pae/api/consumptions/report -> Res: [consumptions] (12), Act: report

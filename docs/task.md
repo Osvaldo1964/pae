@@ -66,3 +66,9 @@
     - [x] Implement Delete Remission logic with Stock Reversal (Entries/Outputs).
     - [x] Fixed "Quotes" and "Purchase Orders" deletion silence and backend implementation.
 - [x] Final Verification: Test all deletion and formatting changes across modules.
+
+- [x] Implement Attendance/Consumption Report (QR)
+    - [x] Create Backend endpoint for consumption data
+    - [x] Create Frontend view `consumos.js`
+    - [x] Implement printable attendance layouts
+    - [x] Add module to database menu

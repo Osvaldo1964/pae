@@ -217,5 +217,24 @@ const Helper = {
             printWindow.print();
             printWindow.close();
         }, 500);
+    },
+
+    /**
+     * Show/Hide loading overlay using SweetAlert
+     */
+    loading: (show, title = 'Cargando...') => {
+        if (show) {
+            Swal.fire({
+                title: title,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        } else {
+            if (Swal.isVisible() && Swal.getTimerLeft() === undefined) {
+                Swal.close();
+            }
+        }
     }
 };
