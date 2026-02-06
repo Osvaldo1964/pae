@@ -52,3 +52,17 @@
 
 
 
+
+- [x] Adjust Cotizaciones Module
+    - [x] Add Print Button in modal
+    - [x] Right align numeric columns
+    - [x] Force US-style number formatting (Comma for thousands, Dot for decimal)
+    - [x] Fix Delete Quote functionality (Silent failure fixed)
+    - [x] Implement Delete Purchase Order functionality (Added Backend endpoint & Frontend fix)
+    - [x] Verify Cycle Balance restoration on PO deletion (Confirmed Dynamic Logic)
+- [x] Inventory UI Standardization:
+    - [x] Implement number formatting in all relevant inputs (Items, Almacen, Remisiones).
+    - [x] Right-align numeric columns in all inventory tables.
+    - [x] Implement Delete Remission logic with Stock Reversal (Entries/Outputs).
+    - [x] Fixed "Quotes" and "Purchase Orders" deletion silence and backend implementation.
+- [x] Final Verification: Test all deletion and formatting changes across modules.

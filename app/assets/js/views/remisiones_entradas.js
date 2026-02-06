@@ -184,8 +184,8 @@ window.RemisionesEntradasView = {
                                             <thead class="bg-light small text-uppercase">
                                                 <tr>
                                                     <th class="ps-4">Ítem / Insumo</th>
-                                                    <th style="width: 150px;">Solicitado</th>
-                                                    <th style="width: 150px;">Recibido</th>
+                                                    <th style="width: 150px;" class="text-end">Solicitado</th>
+                                                    <th style="width: 150px;" class="text-end">Recibido</th>
                                                     <th class="text-end pe-4" style="width: 50px;"></th>
                                                 </tr>
                                             </thead>
@@ -267,11 +267,14 @@ window.RemisionesEntradasView = {
                     ${itemsHtml}
                 </select>
             </td>
-            <td class="text-muted small">
-                ${data && data.requested ? data.requested : '-'}
+            <td class="text-muted small text-end">
+                ${data && data.requested ? Helper.formatNumber(data.requested, 3) : '-'}
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? (data.quantity_sent || data.quantity) : '1'}" min="0.001" step="0.001" required ${readonly ? 'readonly' : ''}>
+                <input type="text" class="form-control border-0 bg-transparent row-qty text-end" 
+                       value="${data ? Helper.formatNumber(data.quantity_sent || data.quantity, 3) : '1.000'}" 
+                       onfocus="RemisionesEntradasView.unformatInput(this)" 
+                       onblur="RemisionesEntradasView.formatInput(this, 3)" required ${readonly ? 'readonly' : ''}>
             </td>
             <td class="text-end pe-4">
                 ${!readonly ? `
@@ -314,7 +317,10 @@ window.RemisionesEntradasView = {
             remission_number: document.getElementById('msg-number').value,
             remission_date: document.getElementById('msg-date').value,
             status: 'ENTREGADA',
-            items: items
+            items: items.map(item => ({
+                item_id: item.item_id,
+                quantity: item.quantity.replace(/,/g, '') // Remove commas
+            }))
         };
 
         try {
@@ -328,6 +334,43 @@ window.RemisionesEntradasView = {
             }
         } catch (error) {
             Helper.alert('error', 'Error en el servidor');
+        }
+    },
+
+    async deleteRemission(id) {
+        if (!await Helper.confirm('¿Eliminar esta entrada?', 'Se revertirá el impacto en el inventario.')) return;
+
+        try {
+            const res = await Helper.fetchAPI(`/remissions/${id}`, { method: 'DELETE' });
+            if (res.success) {
+                Helper.alert('success', 'Entrada eliminada');
+                this.init();
+            } else {
+                Helper.alert('error', res.message);
+            }
+        } catch (error) {
+            Helper.alert('error', 'Error al eliminar');
+        }
+    },
+
+    unformatInput(input) {
+        let val = input.value;
+        val = val.replace(/,/g, '');
+        input.value = val;
+        input.select();
+    },
+
+    formatInput(input, decimals = 3) {
+        let val = input.value;
+        val = val.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            input.value = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
         }
     }
 };

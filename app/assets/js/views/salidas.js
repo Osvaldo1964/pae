@@ -8,6 +8,7 @@ window.SalidasView = {
     branches: [],
     items: [],
     cycles: [],
+    currentProjections: [],
 
     async init() {
         console.log('Initializing Salidas Module...');
@@ -131,6 +132,7 @@ window.SalidasView = {
     },
 
     async openModal(id = null) {
+        this.currentProjections = [];
         const isEdit = !!id;
         const remission = isEdit ? this.remissions.find(r => r.id === id) : null;
         let remissionItems = [];
@@ -222,9 +224,10 @@ window.SalidasView = {
                                             <thead class="bg-light small text-uppercase">
                                                 <tr>
                                                     <th class="ps-4">Ítem / Alimento</th>
-                                                    <th style="width: 150px;">Proyectado</th>
-                                                    <th style="width: 200px;">Lote (Opcional)</th>
-                                                    <th style="width: 150px;">Cantidad</th>
+                                                    <th style="width: 120px;" class="text-end">Proyectado</th>
+                                                    <th style="width: 120px;" class="text-end">Pendiente</th>
+                                                    <th style="width: 180px;">Lote (Opcional)</th>
+                                                    <th style="width: 130px;" class="text-end">Cantidad</th>
                                                     <th class="text-end pe-4" style="width: 50px;"></th>
                                                 </tr>
                                             </thead>
@@ -261,37 +264,48 @@ window.SalidasView = {
     },
 
     async handleHeaderChange() {
+        this.currentProjections = [];
         const cycleId = document.getElementById('msg-cycle').value;
         const branchId = document.getElementById('msg-branch').value;
 
         if (cycleId && branchId) {
-            const confirm = await Swal.fire({
-                title: '¿Cargar proyecciones?',
-                text: "Se cargarán los ítems proyectados para esta sede en el ciclo seleccionado.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, cargar'
-            });
+            try {
+                // Proactively fetch projections so balances are available for manual selection
+                const res = await Helper.fetchAPI(`/inventory/branch-projections/${cycleId}/${branchId}`);
+                if (res.success) {
+                    this.currentProjections = res.data;
 
-            if (confirm.isConfirmed) {
-                try {
-                    const res = await Helper.fetchAPI(`/inventory/branch-projections/${cycleId}/${branchId}`);
-                    if (res.success && res.data.length > 0) {
-                        document.getElementById('salida-items-body').innerHTML = '';
-                        res.data.forEach(item => {
-                            const pend = item.projected_qty - item.delivered_qty;
-                            if (pend > 0) {
-                                this.addItemRow({
-                                    item_id: item.item_id,
-                                    quantity: pend,
-                                    projected_info: `${item.delivered_qty} / ${item.projected_qty}`
-                                });
-                            }
+                    // Only prompt if they have pending items to load
+                    const hasPending = this.currentProjections.some(p => (parseFloat(p.projected_qty) - parseFloat(p.delivered_qty)) > 0);
+
+                    if (hasPending) {
+                        const confirm = await Swal.fire({
+                            title: '¿Cargar proyecciones?',
+                            text: "Se cargarán automáticamente los ítems con saldo pendiente para esta sede.",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, cargar'
                         });
+
+                        if (confirm.isConfirmed) {
+                            document.getElementById('salida-items-body').innerHTML = '';
+                            this.currentProjections.forEach(item => {
+                                const pend = parseFloat(item.projected_qty) - parseFloat(item.delivered_qty);
+                                if (pend > 0) {
+                                    this.addItemRow({
+                                        item_id: item.item_id,
+                                        quantity: pend,
+                                        projected_info: Helper.formatNumber(item.projected_qty, 2),
+                                        pending_info: Helper.formatNumber(pend, 2)
+                                    });
+                                }
+                            });
+                        }
                     }
-                } catch (error) {
-                    Helper.alert('error', 'Error al cargar proyecciones');
                 }
+            } catch (error) {
+                console.error('Error fetching projections:', error);
+                Helper.alert('error', 'Error al cargar datos de proyecciones');
             }
         }
     },
@@ -300,23 +314,46 @@ window.SalidasView = {
         const body = document.getElementById('salida-items-body');
         const row = document.createElement('tr');
 
-        const itemsHtml = this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit})</option>`).join('');
+        // Filter items based on currentProjections if cycle/branch are selected
+        let filteredItems = this.items;
+        if (this.currentProjections.length > 0) {
+            const projectedIds = this.currentProjections
+                .filter(p => (parseFloat(p.projected_qty) - parseFloat(p.delivered_qty)) > 0)
+                .map(p => parseInt(p.item_id));
+
+            // If we are editing/viewing existing data, we must include that item even if pend <= 0
+            if (data && data.item_id) {
+                if (!projectedIds.includes(parseInt(data.item_id))) {
+                    projectedIds.push(parseInt(data.item_id));
+                }
+            }
+
+            filteredItems = this.items.filter(i => projectedIds.includes(parseInt(i.id)));
+        }
+
+        const itemsHtml = filteredItems.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit_abbr || i.unit || ''})</option>`).join('');
 
         row.innerHTML = `
             <td class="ps-4">
-                <select class="form-select border-0 bg-transparent row-item" required>
+                <select class="form-select border-0 bg-transparent row-item" required onchange="SalidasView.updateRowProjected(this)">
                     <option value="">-- Seleccionar Ítem --</option>
                     ${itemsHtml}
                 </select>
             </td>
-            <td class="small text-muted">
+            <td class="small text-muted text-end row-projected-info">
                 ${data && data.projected_info ? data.projected_info : '-'}
+            </td>
+            <td class="small fw-bold text-end row-pending-info">
+                ${data && data.pending_info ? data.pending_info : '-'}
             </td>
             <td>
                 <input type="text" class="form-control border-0 bg-transparent row-batch" value="${data ? (data.batch_number || '') : ''}" placeholder="Lote...">
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? data.quantity : '1'}" min="0.001" step="0.001" required>
+                <input type="text" class="form-control border-0 bg-transparent row-qty text-end" 
+                       value="${data ? Helper.formatNumber(data.quantity, 3) : '1.000'}" 
+                       onfocus="SalidasView.unformatInput(this)" 
+                       onblur="SalidasView.formatInput(this, 3)" required>
             </td>
             <td class="text-end pe-4">
                 <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()">
@@ -325,6 +362,35 @@ window.SalidasView = {
             </td>
         `;
         body.appendChild(row);
+    },
+
+    updateRowProjected(select) {
+        const row = select.closest('tr');
+        const projectedTd = row.querySelector('.row-projected-info');
+        const pendingTd = row.querySelector('.row-pending-info');
+        const itemId = select.value;
+
+        if (!itemId) {
+            projectedTd.innerText = '-';
+            pendingTd.innerText = '-';
+            return;
+        }
+
+        const projection = this.currentProjections.find(p => p.item_id == itemId);
+        if (projection) {
+            const pend = parseFloat(projection.projected_qty) - parseFloat(projection.delivered_qty);
+            projectedTd.innerText = Helper.formatNumber(projection.projected_qty, 2);
+            pendingTd.innerText = Helper.formatNumber(pend, 2);
+
+            // Auto-fill quantity if it's currently 1.000 (default) or 0
+            const qtyInput = row.querySelector('.row-qty');
+            if (qtyInput.value === '1.000' || parseFloat(qtyInput.value) === 0) {
+                qtyInput.value = Helper.formatNumber(pend, 3);
+            }
+        } else {
+            projectedTd.innerText = 'No proyectado';
+            pendingTd.innerText = '-';
+        }
     },
 
     async save(id = null) {
@@ -361,7 +427,11 @@ window.SalidasView = {
             vehicle_plate: document.getElementById('msg-plate').value,
             status: document.getElementById('msg-status').value,
             notes: document.getElementById('msg-notes') ? document.getElementById('msg-notes').value : '',
-            items: items
+            items: items.map(item => ({
+                item_id: item.item_id,
+                batch: item.batch,
+                quantity: item.quantity.replace(/,/g, '') // Remove commas
+            }))
         };
 
         try {
@@ -378,6 +448,43 @@ window.SalidasView = {
             }
         } catch (error) {
             Helper.alert('error', 'Error al guardar');
+        }
+    },
+
+    async deleteRemission(id) {
+        if (!await Helper.confirm('¿Eliminar esta remisión?', 'Se revertirá el impacto en el inventario.')) return;
+
+        try {
+            const res = await Helper.fetchAPI(`/remissions/${id}`, { method: 'DELETE' });
+            if (res.success) {
+                Helper.alert('success', 'Remisión eliminada');
+                this.init();
+            } else {
+                Helper.alert('error', res.message);
+            }
+        } catch (error) {
+            Helper.alert('error', 'Error al eliminar');
+        }
+    },
+
+    unformatInput(input) {
+        let val = input.value;
+        val = val.replace(/,/g, '');
+        input.value = val;
+        input.select();
+    },
+
+    formatInput(input, decimals = 3) {
+        let val = input.value;
+        val = val.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            input.value = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
         }
     }
 };

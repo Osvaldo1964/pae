@@ -183,66 +183,78 @@ window.ItemsView = {
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Peso Bruto (g)</label>
-                                                <input type="number" class="form-control" name="gross_weight" value="100" step="0.01" onchange="ItemsView.calculateWaste()">
+                                                <input type="text" class="form-control text-end" name="gross_weight" value="100.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2); ItemsView.calculateWaste()">
                                                 <small class="text-muted">Como se compra</small>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Peso Neto (g)</label>
-                                                <input type="number" class="form-control" name="net_weight" value="100" step="0.01" onchange="ItemsView.calculateWaste()">
+                                                <input type="text" class="form-control text-end" name="net_weight" value="100.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2); ItemsView.calculateWaste()">
                                                 <small class="text-muted">Después de limpiar</small>
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">% Desperdicio</label>
-                                                <input type="number" class="form-control" name="waste_percentage" value="0" step="0.01" readonly>
+                                                <input type="text" class="form-control text-end" name="waste_percentage" value="0.00" readonly>
                                                 <small class="text-muted">Calculado automáticamente</small>
                                             </div>
                                         </div>
                                     </div>
-
+...
                                     <!-- Tab 2: Nutrition -->
                                     <div class="tab-pane fade" id="nutrition" role="tabpanel">
                                         <p class="text-muted mb-3"><i class="fas fa-info-circle me-1"></i>Valores por 100g o 100ml del producto</p>
                                         <div class="row g-3">
                                             <div class="col-md-3">
                                                 <label class="form-label">Calorías (kcal)</label>
-                                                <input type="number" class="form-control" name="calories" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="calories" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Proteínas (g)</label>
-                                                <input type="number" class="form-control" name="proteins" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="proteins" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Carbohidratos (g)</label>
-                                                <input type="number" class="form-control" name="carbohydrates" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="carbohydrates" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Grasas (g)</label>
-                                                <input type="number" class="form-control" name="fats" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="fats" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Fibra (g)</label>
-                                                <input type="number" class="form-control" name="fiber" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="fiber" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Hierro (mg)</label>
-                                                <input type="number" class="form-control" name="iron" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="iron" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Calcio (mg)</label>
-                                                <input type="number" class="form-control" name="calcium" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="calcium" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="form-label">Sodio (mg)</label>
-                                                <input type="number" class="form-control" name="sodium" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="sodium" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                                 <small class="text-muted">Control ultraprocesados</small>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Vitamina A (µg)</label>
-                                                <input type="number" class="form-control" name="vitamin_a" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="vitamin_a" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Vitamina C (mg)</label>
-                                                <input type="number" class="form-control" name="vitamin_c" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="vitamin_c" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                         </div>
                                     </div>
@@ -320,11 +332,13 @@ window.ItemsView = {
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Costo Unitario ($)</label>
-                                                <input type="number" class="form-control" name="unit_cost" value="0" step="0.01">
+                                                <input type="text" class="form-control text-end" name="unit_cost" value="0.00" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 2)">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Vida Útil (días)</label>
-                                                <input type="number" class="form-control" name="shelf_life_days" placeholder="Ej: 30">
+                                                <input type="text" class="form-control text-end" name="shelf_life_days" placeholder="Ej: 30" 
+                                                       onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 0)">
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-check form-switch mt-4">
@@ -538,7 +552,17 @@ window.ItemsView = {
             if (form.elements[key].type === 'checkbox') {
                 data[key] = form.elements[key].checked;
             } else {
-                data[key] = value;
+                // Strip commas from potentially numeric fields
+                const numericFields = [
+                    'gross_weight', 'net_weight', 'calories', 'proteins',
+                    'carbohydrates', 'fats', 'fiber', 'iron', 'calcium',
+                    'sodium', 'vitamin_a', 'vitamin_c', 'unit_cost', 'shelf_life_days'
+                ];
+                if (numericFields.includes(key)) {
+                    data[key] = value.replace(/,/g, '');
+                } else {
+                    data[key] = value;
+                }
             }
         });
 
@@ -594,6 +618,27 @@ window.ItemsView = {
                 console.error('Error deleting item:', error);
                 Helper.alert('error', '');
             }
+        }
+    },
+
+    unformatInput(input) {
+        let val = input.value;
+        val = val.replace(/,/g, '');
+        input.value = val;
+        input.select();
+    },
+
+    formatInput(input, decimals = 2) {
+        let val = input.value;
+        val = val.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            input.value = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
         }
     }
 };

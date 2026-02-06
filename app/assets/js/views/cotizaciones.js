@@ -136,7 +136,7 @@ window.CotizacionesView = {
 
     async openModal(id = null) {
         const isEdit = !!id;
-        const quote = isEdit ? this.quotes.find(q => q.id === id) : null;
+        const quote = isEdit ? this.quotes.find(q => q.id == id) : null;
         let quoteItems = [];
 
         if (isEdit) {
@@ -170,7 +170,7 @@ window.CotizacionesView = {
                             <div class="card border-0 shadow-sm mb-4 rounded-3">
                                 <div class="card-body p-4">
                                     <div class="row g-3">
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Proveedor</label>
                                             <select class="form-control form-select-lg border-2" id="q-supplier" required>
                                                 <option value="">-- Seleccionar Proveedor --</option>
@@ -181,9 +181,15 @@ window.CotizacionesView = {
                                             <label class="form-label small fw-bold text-muted text-uppercase">No. Cotización</label>
                                             <input type="text" class="form-control form-control-lg border-2" id="q-number" value="${quote ? quote.quote_number : ''}" placeholder="Ej: COT-2026-001">
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Fecha</label>
-                                            <input type="date" class="form-control form-control-lg border-2" id="q-date" value="${quote ? quote.quote_date : new Date().toISOString().split('T')[0]}" required>
+                                            <div class="d-flex">
+                                                <input type="date" class="form-control form-control-lg border-2 me-2" id="q-date" value="${quote ? quote.quote_date : new Date().toISOString().split('T')[0]}" required>
+                                                ${isEdit ? `
+                                                <button type="button" class="btn btn-outline-dark shadow-sm" title="Imprimir Cotización" onclick="CotizacionesView.printQuote(${quote.id})">
+                                                    <i class="fas fa-print"></i>
+                                                </button>` : ''}
+                                            </div>
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Vence</label>
@@ -206,9 +212,9 @@ window.CotizacionesView = {
                                             <thead class="bg-light small text-uppercase">
                                                 <tr>
                                                     <th class="ps-4">Ítem / Ingrediente</th>
-                                                    <th style="width: 150px;">Cantidad</th>
-                                                    <th style="width: 200px;">Precio Unitario</th>
-                                                    <th style="width: 200px;">Subtotal</th>
+                                                    <th style="width: 150px;" class="text-end">Cantidad</th>
+                                                    <th style="width: 200px;" class="text-end">Precio Unitario</th>
+                                                    <th style="width: 200px;" class="text-end">Subtotal</th>
                                                     <th class="text-end pe-4" style="width: 50px;"></th>
                                                 </tr>
                                             </thead>
@@ -217,8 +223,8 @@ window.CotizacionesView = {
                                             </tbody>
                                             <tfoot class="bg-light fw-bold">
                                                 <tr>
-                                                    <td colspan="3" class="text-end py-3">TOTAL COTIZACIÓN:</td>
-                                                    <td id="q-total-display" class="py-3 text-primary fs-5">$ 0.00</td>
+                                                    <td colspan="4" class="text-end py-3">TOTAL COTIZACIÓN:</td>
+                                                    <td id="q-total-display" class="py-3 text-primary fs-5 text-end">$ 0.00</td>
                                                     <td></td>
                                                 </tr>
                                             </tfoot>
@@ -257,6 +263,10 @@ window.CotizacionesView = {
 
         const itemsHtml = this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit})</option>`).join('');
 
+        // Formatted initial values
+        const qtyVal = data ? Helper.formatNumber(data.quantity, 3) : '1.000';
+        const priceVal = data ? Helper.formatNumber(data.unit_price, 2) : '0.00';
+
         row.innerHTML = `
             <td class="ps-4">
                 <select class="form-select border-0 bg-transparent row-item" required onchange="CotizacionesView.calculateRow(this)">
@@ -265,15 +275,23 @@ window.CotizacionesView = {
                 </select>
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? data.quantity : '1'}" min="0.001" step="0.001" required oninput="CotizacionesView.calculateRow(this)">
+                <input type="text" class="form-control border-0 bg-transparent row-qty text-end" 
+                       value="${qtyVal}" 
+                       onfocus="CotizacionesView.unformatInput(this)" 
+                       onblur="CotizacionesView.formatInput(this, 3)" 
+                       oninput="CotizacionesView.calculateRow(this)" required>
             </td>
             <td>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-transparent border-0">$</span>
-                    <input type="number" class="form-control border-0 bg-transparent row-price" value="${data ? data.unit_price : '0'}" min="0" step="0.01" required oninput="CotizacionesView.calculateRow(this)">
+                    <input type="text" class="form-control border-0 bg-transparent row-price text-end" 
+                           value="${priceVal}" 
+                           onfocus="CotizacionesView.unformatInput(this)" 
+                           onblur="CotizacionesView.formatInput(this, 2)" 
+                           oninput="CotizacionesView.calculateRow(this)" required>
                 </div>
             </td>
-            <td class="fw-bold text-dark row-subtotal">$ 0.00</td>
+            <td class="fw-bold text-dark row-subtotal text-end">$ 0.00</td>
             <td class="text-end pe-4">
                 <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove(); CotizacionesView.calculateTotal();">
                     <i class="fas fa-times"></i>
@@ -284,10 +302,35 @@ window.CotizacionesView = {
         this.calculateRow(row.querySelector('.row-item'));
     },
 
+    unformatInput(input) {
+        let val = input.value;
+        val = val.replace(/,/g, '');
+        input.value = val;
+        input.select();
+    },
+
+    formatInput(input, decimals = 2) {
+        let val = input.value;
+        val = val.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            input.value = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+    },
+
     calculateRow(element) {
         const row = element.closest('tr');
-        const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
-        const price = parseFloat(row.querySelector('.row-price').value) || 0;
+
+        const parseVal = (str) => parseFloat(str.replace(/,/g, '')) || 0;
+
+        const qty = parseVal(row.querySelector('.row-qty').value);
+        const price = parseVal(row.querySelector('.row-price').value);
+
         const subtotal = qty * price;
         row.querySelector('.row-subtotal').innerText = Helper.formatCurrency(subtotal);
         row.dataset.subtotal = subtotal;
@@ -316,8 +359,8 @@ window.CotizacionesView = {
             if (itemId) {
                 items.push({
                     item_id: itemId,
-                    quantity: row.querySelector('.row-qty').value,
-                    unit_price: row.querySelector('.row-price').value,
+                    quantity: row.querySelector('.row-qty').value.replace(/,/g, ''),
+                    unit_price: row.querySelector('.row-price').value.replace(/,/g, ''),
                     subtotal: row.dataset.subtotal
                 });
             }
@@ -329,6 +372,7 @@ window.CotizacionesView = {
         }
 
         const data = {
+            id: id,
             supplier_id: document.getElementById('q-supplier').value,
             quote_number: document.getElementById('q-number').value,
             quote_date: document.getElementById('q-date').value,
@@ -356,7 +400,7 @@ window.CotizacionesView = {
 
     async deleteQuote(id) {
         const confirm = await Helper.confirm('¿Eliminar cotización?', 'Esta acción no se puede deshacer.');
-        if (confirm.isConfirmed) {
+        if (confirm) {
             try {
                 const res = await Helper.fetchAPI(`/quotes/${id}`, { method: 'DELETE' });
                 if (res.success) {
@@ -368,6 +412,109 @@ window.CotizacionesView = {
             } catch (error) {
                 Helper.alert('error', 'Error al eliminar la cotización');
             }
+        }
+    },
+
+    async printQuote(id) {
+        const quote = this.quotes.find(q => q.id === id);
+        if (!quote) return;
+
+        try {
+            const res = await Helper.fetchAPI(`/quotes/${id}/details`);
+            const items = res.success ? res.data : [];
+            const supplier = this.suppliers.find(s => s.id == quote.supplier_id);
+
+            let itemsHtml = '';
+            items.forEach(item => {
+                const itemInfo = this.items.find(i => i.id == item.item_id);
+                // Calculate subtotal for the row
+                const subtotal = parseFloat(item.quantity) * parseFloat(item.unit_price);
+                itemsHtml += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${itemInfo ? itemInfo.name : 'Unknown Item'}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${itemInfo ? itemInfo.unit : ''}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatNumber(item.quantity, 3)}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatCurrency(item.unit_price)}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatCurrency(subtotal)}</td>
+                    </tr>
+                `;
+            });
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cotización #${quote.quote_number}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.4; font-size: 14px; }
+                        .header { margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+                        .title { font-size: 24px; font-weight: bold; color: #333; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                        th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; }
+                        td { border: 1px solid #ddd; padding: 8px; }
+                        .total-row td { background-color: #eee; font-weight: bold; font-size: 14px; }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="title">COTIZACIÓN</div>
+                            <div style="color: #667;"># ${quote.quote_number}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div><strong>Fecha:</strong> ${Helper.formatDate(quote.quote_date)}</div>             
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #777; margin-bottom: 4px;">Proveedor</div>
+                            <div style="font-weight: bold; font-size: 16px;">${supplier ? supplier.name : 'N/A'}</div>
+                            <div>NIT: ${supplier ? supplier.nit : 'N/A'}</div>
+                            <div>${supplier ? supplier.phone : ''}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div style="margin-bottom: 5px;"><strong>Vencimiento:</strong> ${quote.valid_until ? Helper.formatDate(quote.valid_until) : 'N/A'}</div>
+                             <div><strong>Estado:</strong> ${quote.status}</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ítem / Descripción</th>
+                                <th style="text-align: center; width: 80px;">Unidad</th>
+                                <th style="text-align: right; width: 100px;">Cantidad</th>
+                                <th style="text-align: right; width: 120px;">Valor Unitario</th>
+                                <th style="text-align: right; width: 120px;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                            <tr class="total-row">
+                                <td colspan="4" style="text-align: right;">TOTAL</td>
+                                <td style="text-align: right;">${Helper.formatCurrency(quote.total_amount)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="font-size: 11px; color: #999; margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+                        <p>Documento generado por PAE Control</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            Helper.printHTML(html);
+
+        } catch (e) {
+            console.error(e);
+            Helper.alert('error', 'Error al generar impresión');
         }
     }
 };

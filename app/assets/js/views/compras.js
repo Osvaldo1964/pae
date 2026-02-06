@@ -25,7 +25,8 @@ window.ComprasView = {
 
             this.orders = orderRes.success ? (orderRes.data || []) : (Array.isArray(orderRes) ? orderRes : []);
             this.suppliers = supplierRes.success ? (supplierRes.data || []) : (Array.isArray(supplierRes) ? supplierRes : []);
-            this.items = itemRes.success ? (itemRes.data || []) : (Array.isArray(itemRes) ? itemRes : []);
+            const rawItems = itemRes.success ? (itemRes.data || []) : (Array.isArray(itemRes) ? itemRes : []);
+            this.items = rawItems.map(i => ({ ...i, unit: i.unit || i.unit_abbr }));
             this.cycles = cycleRes.success ? (cycleRes.data || []) : (Array.isArray(cycleRes) ? cycleRes : []);
         } catch (error) {
             console.error('Error loading purchase orders data:', error);
@@ -56,7 +57,7 @@ window.ComprasView = {
                                         <th>Proveedor</th>
                                         <th>Fecha</th>
                                         <th>Entrega Esperada</th>
-                                        <th>Total</th>
+                                        <th class="text-end">Total</th>
                                         <th>Estado</th>
                                         <th class="text-end pe-4">Acciones</th>
                                     </tr>
@@ -101,7 +102,7 @@ window.ComprasView = {
                     <div class="small fw-bold text-muted">${o.cycle_name || 'Sin Ciclo'}</div>
                     <div class="small text-muted">${o.expected_delivery || '-'}</div>
                 </td>
-                <td class="fw-bold text-primary">${Helper.formatCurrency(o.total_amount)}</td>
+                <td class="fw-bold text-primary text-end">${Helper.formatCurrency(o.total_amount)}</td>
                 <td>
                     <span class="badge rounded-pill ${this.getStatusBadgeClass(o.status)}">${o.status}</span>
                 </td>
@@ -195,7 +196,13 @@ window.ComprasView = {
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Fecha Orden</label>
-                                            <input type="date" class="form-control form-control-lg border-2" id="msg-date" value="${order ? order.po_date : new Date().toISOString().split('T')[0]}" required>
+                                            <div class="d-flex">
+                                                <input type="date" class="form-control form-control-lg border-2 me-2" id="msg-date" value="${order ? order.po_date : new Date().toISOString().split('T')[0]}" required>
+                                                ${isEdit ? `
+                                                <button type="button" class="btn btn-outline-dark shadow-sm" title="Imprimir Orden" onclick="ComprasView.printOrder(${order.id})">
+                                                    <i class="fas fa-print"></i>
+                                                </button>` : ''}
+                                            </div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Fecha Entrega Esperada</label>
@@ -228,10 +235,10 @@ window.ComprasView = {
                                             <thead class="bg-light small text-uppercase">
                                                 <tr>
                                                     <th class="ps-4">Ítem / Insumo</th>
-                                                    <th style="width: 150px;">Proyectado</th>
-                                                    <th style="width: 150px;">Cant. Pedir</th>
-                                                    <th style="width: 200px;">Costo Unit.</th>
-                                                    <th style="width: 200px;">Subtotal</th>
+                                                    <th style="width: 150px;" class="text-end">Proyectado</th>
+                                                    <th style="width: 150px;" class="text-end">Cant. Pedir</th>
+                                                    <th style="width: 200px;" class="text-end">Costo Unit.</th>
+                                                    <th style="width: 200px;" class="text-end">Subtotal</th>
                                                     <th class="text-end pe-4" style="width: 50px;"></th>
                                                 </tr>
                                             </thead>
@@ -239,11 +246,13 @@ window.ComprasView = {
                                                 <!-- Rows here -->
                                             </tbody>
                                             <tfoot class="bg-light fw-bold">
+                                            <tfoot class="bg-light fw-bold">
                                                 <tr>
-                                                    <td colspan="3" class="text-end py-3">TOTAL ORDEN:</td>
-                                                    <td id="msg-total-display" class="py-3 text-primary fs-5">$ 0.00</td>
+                                                    <td colspan="4" class="text-end py-3">TOTAL ORDEN:</td>
+                                                    <td id="msg-total-display" class="py-3 text-primary fs-5 text-end">$ 0.00</td>
                                                     <td></td>
                                                 </tr>
+                                            </tfoot>
                                             </tfoot>
                                         </table>
                                     </div>
@@ -265,10 +274,24 @@ window.ComprasView = {
         const modal = new bootstrap.Modal(modalDiv);
         modal.show();
 
+        // Pre-fetch projections if a cycle is selected (Edit Mode) to avoid race conditions in rows
+        if (order && order.cycle_id) {
+            try {
+                const res = await Helper.fetchAPI(`/inventory/cycle-projections/${order.cycle_id}`);
+                if (res.success) {
+                    this.currentProjections = res.data;
+                }
+            } catch (error) {
+                console.error('Error pre-fetching projections:', error);
+            }
+        } else {
+            this.currentProjections = null;
+        }
+
         if (isEdit && orderItems.length > 0) {
             orderItems.forEach(item => this.addItemRow(item));
         } else {
-            this.addItemRow();
+            this.addItemRow(); // At least one empty row
         }
 
         modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
@@ -290,6 +313,7 @@ window.ComprasView = {
             try {
                 const res = await Helper.fetchAPI(`/inventory/cycle-projections/${cycleId}`);
                 if (res.success && res.data.length > 0) {
+                    this.currentProjections = res.data;
                     document.getElementById('order-items-body').innerHTML = '';
                     res.data.forEach(item => {
                         const remaining = item.projected_qty - item.ordered_qty;
@@ -317,6 +341,11 @@ window.ComprasView = {
 
         const itemsHtml = this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit})</option>`).join('');
 
+        // Helper to initially format values if data exists
+        const formatInitial = (val) => val ? Helper.formatNumber(val, 2) : '';
+        const qtyVal = data ? (data.quantity || data.quantity_ordered) : '1';
+        const priceVal = data ? data.unit_price : '0';
+
         row.innerHTML = `
             <td class="ps-4">
                 <select class="form-select border-0 bg-transparent row-item" required onchange="ComprasView.calculateRow(this)">
@@ -324,19 +353,27 @@ window.ComprasView = {
                     ${itemsHtml}
                 </select>
             </td>
-            <td class="small text-muted">
+            <td class="small text-muted text-end">
                 ${data && data.projected_info ? data.projected_info : '-'}
             </td>
             <td>
-                <input type="number" class="form-control border-0 bg-transparent row-qty" value="${data ? data.quantity : '1'}" min="0.001" step="0.001" required oninput="ComprasView.calculateRow(this)">
+                <input type="text" class="form-control border-0 bg-transparent row-qty text-end" 
+                       value="${qtyVal}" 
+                       onfocus="ComprasView.unformatInput(this)" 
+                       onblur="ComprasView.formatInput(this, 3)" 
+                       oninput="ComprasView.calculateRow(this)" required>
             </td>
             <td>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-transparent border-0">$</span>
-                    <input type="number" class="form-control border-0 bg-transparent row-price" value="${data ? data.unit_price : '0'}" min="0" step="0.01" required oninput="ComprasView.calculateRow(this)">
+                    <input type="text" class="form-control border-0 bg-transparent row-price text-end" 
+                           value="${priceVal}" 
+                           onfocus="ComprasView.unformatInput(this)" 
+                           onblur="ComprasView.formatInput(this, 2)" 
+                           oninput="ComprasView.calculateRow(this)" required>
                 </div>
             </td>
-            <td class="fw-bold text-dark row-subtotal">$ 0.00</td>
+            <td class="fw-bold text-dark row-subtotal text-end">$ 0.00</td>
             <td class="text-end pe-4">
                 <button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove(); ComprasView.calculateTotal();">
                     <i class="fas fa-times"></i>
@@ -344,13 +381,85 @@ window.ComprasView = {
             </td>
         `;
         body.appendChild(row);
+
+        // Initialize formatting
+        const qtyInput = row.querySelector('.row-qty');
+        const priceInput = row.querySelector('.row-price');
+        this.formatInput(qtyInput, 3);
+        this.formatInput(priceInput, 2);
+
         this.calculateRow(row.querySelector('.row-item'));
     },
 
-    calculateRow(element) {
+    unformatInput(input) {
+        let val = input.value;
+        // Remove thousands separators (commas)
+        val = val.replace(/,/g, '');
+        input.value = val;
+        input.select();
+    },
+
+    formatInput(input, decimals = 2) {
+        let val = input.value;
+        // Clean non-numeric except dot
+        val = val.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            input.value = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
+    },
+
+    async calculateRow(element) {
         const row = element.closest('tr');
-        const qty = parseFloat(row.querySelector('.row-qty').value) || 0;
-        const price = parseFloat(row.querySelector('.row-price').value) || 0;
+
+        // Parse removing commas
+        const parseVal = (str) => parseFloat(str.replace(/,/g, '')) || 0;
+
+        const qty = parseVal(row.querySelector('.row-qty').value);
+        const price = parseVal(row.querySelector('.row-price').value);
+
+        // Update projection info if triggered by item change
+        if (element.classList.contains('row-item')) {
+            const itemId = element.value;
+            const cycleId = document.getElementById('msg-cycle').value;
+            const projectionCell = row.cells[1]; // The 'Proyectado' column
+
+            if (itemId && cycleId) {
+                try {
+                    if (this.currentProjections) {
+                        const proj = this.currentProjections.find(p => p.item_id == itemId);
+                        if (proj) {
+                            projectionCell.innerText = `${proj.ordered_qty} / ${proj.projected_qty} ${proj.unit}`;
+                        } else {
+                            projectionCell.innerText = 'No proyectado';
+                        }
+                    } else {
+                        // Attempt to fetch if not loaded
+                        const res = await Helper.fetchAPI(`/inventory/cycle-projections/${cycleId}`);
+                        if (res.success) {
+                            this.currentProjections = res.data;
+                            const proj = this.currentProjections.find(p => p.item_id == itemId);
+                            if (proj) {
+                                projectionCell.innerText = `${proj.ordered_qty} / ${proj.projected_qty} ${proj.unit}`;
+                            } else {
+                                projectionCell.innerText = 'No proyectado';
+                            }
+                        }
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                }
+            } else {
+                projectionCell.innerText = '-';
+            }
+        }
+
         const subtotal = qty * price;
         row.querySelector('.row-subtotal').innerText = Helper.formatCurrency(subtotal);
         row.dataset.subtotal = subtotal;
@@ -379,8 +488,8 @@ window.ComprasView = {
             if (itemId) {
                 items.push({
                     item_id: itemId,
-                    quantity: row.querySelector('.row-qty').value,
-                    unit_price: row.querySelector('.row-price').value,
+                    quantity: row.querySelector('.row-qty').value.replace(/,/g, ''),
+                    unit_price: row.querySelector('.row-price').value.replace(/,/g, ''),
                     subtotal: row.dataset.subtotal
                 });
             }
@@ -392,6 +501,7 @@ window.ComprasView = {
         }
 
         const data = {
+            id: id,
             supplier_id: document.getElementById('msg-supplier').value,
             cycle_id: document.getElementById('msg-cycle').value,
             po_number: document.getElementById('msg-number').value,
@@ -421,14 +531,126 @@ window.ComprasView = {
 
     async deleteOrder(id) {
         const confirm = await Helper.confirm('¿Eliminar orden?', 'Esta acción no se puede deshacer.');
-        if (confirm.isConfirmed) {
+        if (confirm) {
             try {
-                // DELETE logic placeholder (needs API endpoint verification)
-                // Assuming standard endpoint
-                Helper.alert('info', 'Funcionalidad de eliminar pendiente de verificación');
+                const res = await Helper.fetchAPI(`/purchase-orders/${id}`, { method: 'DELETE' });
+                if (res.success) {
+                    Helper.alert('success', 'Orden eliminada');
+                    this.init();
+                } else {
+                    Helper.alert('error', res.message);
+                }
             } catch (error) {
                 Helper.alert('error', 'Error al eliminar');
             }
+        }
+    },
+
+    async printOrder(id) {
+        const order = this.orders.find(o => o.id === id);
+        if (!order) return;
+
+        try {
+            const res = await Helper.fetchAPI(`/purchase-orders/${id}/details`);
+            const items = res.success ? res.data : [];
+            const supplier = this.suppliers.find(s => s.id == order.supplier_id);
+
+            let itemsHtml = '';
+            items.forEach(item => {
+                const itemInfo = this.items.find(i => i.id == item.item_id);
+                // Calculate subtotal for the row depending on what data we have
+                // item.subtotal might be available, otherwise calculate
+                const unitPrice = parseFloat(item.unit_price) || 0;
+                // Try qty ordered first (edit mode usually has it), fall back to qty if newly created object (unlikely here)
+                const qty = parseFloat(item.quantity_ordered) || parseFloat(item.quantity) || 0;
+                const subtotal = qty * unitPrice;
+
+                itemsHtml += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${itemInfo ? itemInfo.name : 'Unknown Item'}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${itemInfo ? itemInfo.unit : ''}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatNumber(qty, 3)}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatCurrency(unitPrice)}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatCurrency(subtotal)}</td>
+                    </tr>
+                `;
+            });
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Orden de Compra #${order.po_number}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.4; font-size: 14px; }
+                        .header { margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+                        .title { font-size: 24px; font-weight: bold; color: #333; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                        th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; }
+                        td { border: 1px solid #ddd; padding: 8px; }
+                        .total-row td { background-color: #eee; font-weight: bold; font-size: 14px; }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="title">ORDEN DE COMPRA</div>
+                            <div style="color: #667;"># ${order.po_number}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div><strong>Fecha:</strong> ${Helper.formatDate(order.po_date)}</div>             
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #777; margin-bottom: 4px;">Proveedor</div>
+                            <div style="font-weight: bold; font-size: 16px;">${supplier ? supplier.name : 'N/A'}</div>
+                            <div>NIT: ${supplier ? supplier.nit : 'N/A'}</div>
+                            <div>${supplier ? supplier.phone : ''}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div style="margin-bottom: 5px;"><strong>Entrega Esperada:</strong> ${order.expected_delivery ? Helper.formatDate(order.expected_delivery) : 'N/A'}</div>
+                             <div><strong>Estado:</strong> ${order.status}</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ítem / Descripción</th>
+                                <th style="text-align: center; width: 80px;">Unidad</th>
+                                <th style="text-align: right; width: 100px;">Cantidad</th>
+                                <th style="text-align: right; width: 120px;">Valor Unitario</th>
+                                <th style="text-align: right; width: 120px;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                            <tr class="total-row">
+                                <td colspan="4" style="text-align: right;">TOTAL</td>
+                                <td style="text-align: right;">${Helper.formatCurrency(order.total_amount)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="font-size: 11px; color: #999; margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+                        <p>Documento generado por PAE Control</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            Helper.printHTML(html);
+
+        } catch (e) {
+            console.error(e);
+            Helper.alert('error', 'Error al generar impresión');
         }
     }
 };

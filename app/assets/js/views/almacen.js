@@ -284,7 +284,7 @@ window.AlmacenView = {
                                             <thead class="bg-light">
                                                 <tr>
                                                     <th>Ítem</th>
-                                                    <th style="width: 20%">Cantidad</th>
+                                                    <th style="width: 20%" class="text-end">Cantidad</th>
                                                     <th style="width: 25%">Observación/Lote</th>
                                                     <th style="width: 5%"></th>
                                                 </tr>
@@ -336,7 +336,9 @@ window.AlmacenView = {
                 </select>
             </td>
             <td>
-                <input type="number" step="0.001" class="form-control form-control-sm text-end" name="quantity" required>
+                <input type="text" class="form-control form-control-sm text-end" name="quantity" 
+                       value="1.000" onfocus="AlmacenView.unformatInput(this)" 
+                       onblur="AlmacenView.formatInput(this, 3)" required>
             </td>
             <td>
                 <input type="text" class="form-control form-control-sm" name="batch" placeholder="Lote/Venc">
@@ -386,7 +388,11 @@ window.AlmacenView = {
             reference: formData.get('reference'),
             supplier_id: formData.get('supplier_id'),
             notes: formData.get('notes'),
-            items: items
+            items: items.map(item => ({
+                item_id: item.item_id,
+                quantity: item.quantity.replace(/,/g, ''), // Remove commas
+                batch: item.batch
+            }))
         };
 
         try {
@@ -405,6 +411,27 @@ window.AlmacenView = {
         } catch (error) {
             console.error('Error saving movement:', error);
             Helper.alert('error', 'Error al procesar el movimiento');
+        }
+    },
+
+    unformatInput(input) {
+        let val = input.value;
+        val = val.replace(/,/g, '');
+        input.value = val;
+        input.select();
+    },
+
+    formatInput(input, decimals = 3) {
+        let val = input.value;
+        val = val.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            input.value = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
         }
     }
 };

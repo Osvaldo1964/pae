@@ -22,8 +22,10 @@ class MenuCycleController
         if (preg_match('/Bearer\s(\S+)/', $auth, $matches)) {
             try {
                 $decoded = \Utils\JWT::decode($matches[1]);
-                if (is_object($decoded)) return $decoded->data->pae_id ?? null;
-                if (is_array($decoded)) return $decoded['data']['pae_id'] ?? null;
+                if (is_object($decoded))
+                    return $decoded->data->pae_id ?? null;
+                if (is_array($decoded))
+                    return $decoded['data']['pae_id'] ?? null;
             } catch (Exception $e) {
                 return null;
             }
@@ -65,6 +67,16 @@ class MenuCycleController
     {
         try {
             $data = json_decode(file_get_contents("php://input"), true);
+
+            if (!isset($data['template_id'])) {
+                // Determine if this was intended as an 'approve' action but routed incorrectly
+                $uri = $_SERVER['REQUEST_URI'];
+                if (strpos($uri, 'approve') !== false) {
+                    throw new Exception("Error de enrutamiento: La acción 'approve' fue capturada por 'generate'. Verifique api/index.php.");
+                }
+                throw new Exception("Datos inválidos: Se requiere template_id para generar un ciclo.");
+            }
+
             $template_id = $data['template_id'];
             $start_date = $data['start_date'];
             $name = $data['name'];
@@ -72,7 +84,8 @@ class MenuCycleController
             $pae_id = $this->getPaeIdFromToken();
             if (!$pae_id) {
                 $pae_id = $data['pae_id'] ?? null;
-                if (!$pae_id) throw new Exception("Debe especificar un programa PAE");
+                if (!$pae_id)
+                    throw new Exception("Debe especificar un programa PAE");
             }
 
             $this->conn->beginTransaction();
@@ -82,7 +95,8 @@ class MenuCycleController
             $stmtTemp->execute([$template_id]);
             $templateDays = $stmtTemp->fetchAll(PDO::FETCH_ASSOC);
 
-            if (!$templateDays) throw new Exception("La plantilla seleccionada no tiene días configurados.");
+            if (!$templateDays)
+                throw new Exception("La plantilla seleccionada no tiene días configurados.");
 
             // 2. Definir el periodo de días hábiles entre las fechas
             $start = new \DateTime($start_date);
@@ -103,7 +117,8 @@ class MenuCycleController
                 }
             }
 
-            if ($business_days_count === 0) throw new Exception("No hay días hábiles en el rango seleccionado.");
+            if ($business_days_count === 0)
+                throw new Exception("No hay días hábiles en el rango seleccionado.");
 
             $stmtCycle = $this->conn->prepare("INSERT INTO menu_cycles (pae_id, name, start_date, end_date, total_days, status) VALUES (?, ?, ?, ?, ?, 'BORRADOR')");
             $stmtCycle->execute([$pae_id, $name, $start_date, $end_display, $business_days_count]);
@@ -131,7 +146,8 @@ class MenuCycleController
                             break;
                         }
                     }
-                    if (!$found) continue;
+                    if (!$found)
+                        continue;
                 }
 
                 $stmtMenu = $this->conn->prepare("INSERT INTO menus (pae_id, cycle_id, name, day_number) VALUES (?, ?, ?, ?)");
@@ -149,7 +165,8 @@ class MenuCycleController
             $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Ciclo de 20 días generado correctamente', 'id' => $cycle_id]);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -172,8 +189,10 @@ class MenuCycleController
             $stmt = $this->conn->prepare("SELECT * FROM menu_cycles WHERE id = ? AND pae_id = ?");
             $stmt->execute([$id, $pae_id]);
             $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$cycle) throw new Exception("Ciclo no encontrado.");
-            if ($cycle['status'] !== 'BORRADOR') throw new Exception("Solo se pueden aprobar ciclos en estado BORRADOR.");
+            if (!$cycle)
+                throw new Exception("Ciclo no encontrado.");
+            if ($cycle['status'] !== 'BORRADOR')
+                throw new Exception("Solo se pueden aprobar ciclos en estado BORRADOR.");
 
             $this->conn->beginTransaction();
 
@@ -183,12 +202,13 @@ class MenuCycleController
             // 3. Obtener población por Sede, Tipo de Ración y Grado (para mapear a Grupo Etario)
             $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type, grade, COUNT(*) as total 
                                             FROM beneficiaries 
-                                            WHERE pae_id = ? AND status = 'active' 
+                                            WHERE pae_id = ? AND status = 'ACTIVO' 
                                             GROUP BY branch_id, ration_type, grade");
             $stmtPop->execute([$pae_id]);
             $populations = $stmtPop->fetchAll(PDO::FETCH_ASSOC);
 
-            if (!$populations) throw new Exception("No hay beneficiarios activos en el programa para calcular la demanda.");
+            if (!$populations)
+                throw new Exception("No hay beneficiarios activos en el programa para calcular la demanda.");
 
             // 4. Obtener la explosión de recetas vinculadas al ciclo
             // Buscamos: Ciclo -> Menús -> Recetas -> ItemsReceta
@@ -200,7 +220,8 @@ class MenuCycleController
             $stmtExp->execute([$id]);
             $recipeDetails = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
 
-            if (!$recipeDetails) throw new Exception("El ciclo no tiene recetas o ingredientes configurados.");
+            if (!$recipeDetails)
+                throw new Exception("El ciclo no tiene recetas o ingredientes configurados.");
 
             // 5. Motor de Cálculo (Cruce Matriz)
             $projections = []; // [branch_id][item_id] => quantity
@@ -230,8 +251,10 @@ class MenuCycleController
                         $item_id = $recipe['item_id'];
                         $quantity = $recipe['quantity'] * $pop['total'];
 
-                        if (!isset($projections[$branch_id])) $projections[$branch_id] = [];
-                        if (!isset($projections[$branch_id][$item_id])) $projections[$branch_id][$item_id] = 0;
+                        if (!isset($projections[$branch_id]))
+                            $projections[$branch_id] = [];
+                        if (!isset($projections[$branch_id][$item_id]))
+                            $projections[$branch_id][$item_id] = 0;
 
                         $projections[$branch_id][$item_id] += $quantity;
                     }
@@ -254,7 +277,8 @@ class MenuCycleController
             $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Ciclo aprobado y demanda congelada correctamente.']);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -263,9 +287,12 @@ class MenuCycleController
     private function getAgeGroupForGrade($grade)
     {
         $grade = trim(strtoupper($grade));
-        if (in_array($grade, ['TRANSICIÓN', 'TRANSICION', 'JARDIN', 'JARDÍN', 'PRE-JARDIN', '0', '0°'])) return 'PREESCOLAR';
-        if (in_array($grade, ['1', '1°', '2', '2°', '3', '3°'])) return 'PRIMARIA_A';
-        if (in_array($grade, ['4', '4°', '5', '5°'])) return 'PRIMARIA_B';
+        if (in_array($grade, ['TRANSICIÓN', 'TRANSICION', 'JARDIN', 'JARDÍN', 'PRE-JARDIN', '0', '0°']))
+            return 'PREESCOLAR';
+        if (in_array($grade, ['1', '1°', '2', '2°', '3', '3°']))
+            return 'PRIMARIA_A';
+        if (in_array($grade, ['4', '4°', '5', '5°']))
+            return 'PRIMARIA_B';
         return 'SECUNDARIA'; // 6 a 11
     }
 
@@ -282,8 +309,10 @@ class MenuCycleController
             $stmt->execute([$id, $pae_id]);
             $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$cycle) throw new Exception("Ciclo no encontrado.");
-            if ($cycle['status'] === 'ACTIVO') throw new Exception("No se puede eliminar un ciclo que ya está ACTIVO (congelado).");
+            if (!$cycle)
+                throw new Exception("Ciclo no encontrado.");
+            if ($cycle['status'] === 'ACTIVO')
+                throw new Exception("No se puede eliminar un ciclo que ya está ACTIVO (congelado).");
 
             $this->conn->beginTransaction();
 
@@ -302,7 +331,8 @@ class MenuCycleController
             $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Ciclo eliminado correctamente']);
         } catch (Exception $e) {
-            if ($this->conn->inTransaction()) $this->conn->rollBack();
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

@@ -197,6 +197,16 @@ class InventoryController
             $pae_id = $this->getPaeIdFromToken();
             $user_id = $this->getUserIdFromToken();
 
+            // Validate unique Quote Number
+            $quoteId = isset($data['id']) ? $data['id'] : 0;
+            $stmtCheck = $this->conn->prepare("SELECT id FROM inventory_quotes WHERE pae_id = ? AND quote_number = ? AND id != ?");
+            $stmtCheck->execute([$pae_id, $data['quote_number'], $quoteId]);
+            if ($stmtCheck->fetch()) {
+                http_response_code(409); // Conflict
+                echo json_encode(['success' => false, 'message' => "El número de cotización '{$data['quote_number']}' ya existe."]);
+                return;
+            }
+
             $this->conn->beginTransaction();
 
             if (isset($data['id'])) {
@@ -234,10 +244,28 @@ class InventoryController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
+
+            // Verify ownership
+            $check = $this->conn->prepare("SELECT id FROM inventory_quotes WHERE id = ? AND pae_id = ?");
+            $check->execute([$id, $pae_id]);
+            if (!$check->fetch()) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Cotización no encontrada']);
+                return;
+            }
+
+            $this->conn->beginTransaction();
+
+            $this->conn->prepare("DELETE FROM inventory_quote_details WHERE quote_id = ?")->execute([$id]);
+
             $stmt = $this->conn->prepare("DELETE FROM inventory_quotes WHERE id = ? AND pae_id = ?");
             $stmt->execute([$id, $pae_id]);
+
+            $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Cotización eliminada']);
         } catch (Exception $e) {
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -344,6 +372,16 @@ class InventoryController
             $pae_id = $this->getPaeIdFromToken();
             $user_id = $this->getUserIdFromToken();
 
+            // Validate unique PO Number
+            $poId = isset($data['id']) ? $data['id'] : 0;
+            $stmtCheck = $this->conn->prepare("SELECT id FROM purchase_orders WHERE pae_id = ? AND po_number = ? AND id != ?");
+            $stmtCheck->execute([$pae_id, $data['po_number'], $poId]);
+            if ($stmtCheck->fetch()) {
+                http_response_code(409); // Conflict
+                echo json_encode(['success' => false, 'message' => "El número de orden '{$data['po_number']}' ya existe."]);
+                return;
+            }
+
             $this->conn->beginTransaction();
 
             if (isset($data['id'])) {
@@ -385,6 +423,37 @@ class InventoryController
 
             $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Orden de Compra guardada']);
+        } catch (Exception $e) {
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function deletePurchaseOrder($id)
+    {
+        try {
+            $pae_id = $this->getPaeIdFromToken();
+
+            // Verify ownership
+            $check = $this->conn->prepare("SELECT id FROM purchase_orders WHERE id = ? AND pae_id = ?");
+            $check->execute([$id, $pae_id]);
+            if (!$check->fetch()) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Orden de compra no encontrada']);
+                return;
+            }
+
+            $this->conn->beginTransaction();
+
+            $this->conn->prepare("DELETE FROM purchase_order_details WHERE po_id = ?")->execute([$id]);
+
+            $stmt = $this->conn->prepare("DELETE FROM purchase_orders WHERE id = ? AND pae_id = ?");
+            $stmt->execute([$id, $pae_id]);
+
+            $this->conn->commit();
+            echo json_encode(['success' => true, 'message' => 'Orden de compra eliminada']);
         } catch (Exception $e) {
             if ($this->conn->inTransaction())
                 $this->conn->rollBack();
@@ -511,6 +580,50 @@ class InventoryController
 
             $this->conn->commit();
             echo json_encode(['success' => true, 'message' => 'Remisión guardada y stock actualizado']);
+        } catch (Exception $e) {
+            if ($this->conn->inTransaction())
+                $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteRemission($id)
+    {
+        try {
+            $pae_id = $this->getPaeIdFromToken();
+
+            // Verify ownership and get type
+            $stmt = $this->conn->prepare("SELECT id, type FROM inventory_remissions WHERE id = ? AND pae_id = ?");
+            $stmt->execute([$id, $pae_id]);
+            $remission = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$remission) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Remisión no encontrada']);
+                return;
+            }
+
+            // Get details to reverse stock
+            $stmtDet = $this->conn->prepare("SELECT item_id, quantity_sent FROM inventory_remission_details WHERE remission_id = ?");
+            $stmtDet->execute([$id]);
+            $details = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
+
+            $this->conn->beginTransaction();
+
+            foreach ($details as $item) {
+                // Reverse stock impact: if it was ENTRADA (positive), we subtract. If it was SALIDA (negative), we add.
+                $reverseQty = ($remission['type'] === 'ENTRADA_OC') ? -$item['quantity_sent'] : $item['quantity_sent'];
+
+                $stmtInv = $this->conn->prepare("UPDATE inventory SET current_stock = current_stock + ? WHERE item_id = ? AND pae_id = ?");
+                $stmtInv->execute([$reverseQty, $item['item_id'], $pae_id]);
+            }
+
+            $this->conn->prepare("DELETE FROM inventory_remission_details WHERE remission_id = ?")->execute([$id]);
+            $this->conn->prepare("DELETE FROM inventory_remissions WHERE id = ?")->execute([$id]);
+
+            $this->conn->commit();
+            echo json_encode(['success' => true, 'message' => 'Remisión eliminada y stock actualizado']);
         } catch (Exception $e) {
             if ($this->conn->inTransaction())
                 $this->conn->rollBack();

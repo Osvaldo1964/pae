@@ -33,12 +33,12 @@ const Helper = {
      */
     formatCurrency: (amount) => {
         if (!amount && amount !== 0) return '$ 0';
-        return new Intl.NumberFormat('es-CO', {
+        return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'COP',
+            currency: 'USD', // Using USD symbol ($) but US formatting (1,000.00)
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }).format(amount);
+        }).format(amount).replace('USD', '$');
     },
 
     /**
@@ -47,7 +47,7 @@ const Helper = {
      */
     formatNumber: (number, decimals = 2) => {
         if (!number && number !== 0) return '0';
-        return new Intl.NumberFormat('es-CO', {
+        return new Intl.NumberFormat('en-US', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
         }).format(number);

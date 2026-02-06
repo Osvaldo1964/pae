@@ -172,4 +172,59 @@ class ConsumptionController
             "progress" => $progress
         ]);
     }
+
+    /**
+     * GET /api/consumptions/report
+     * Returns detailed report of consumptions with filters
+     */
+    public function report()
+    {
+        $auth = $this->getAuthData();
+        if (!$auth) {
+            http_response_code(401);
+            echo json_encode(["message" => "No autorizado."]);
+            return;
+        }
+
+        $date = $_GET['date'] ?? date('Y-m-d');
+        $branch_id = $_GET['branch_id'] ?? null;
+        $meal_type = $_GET['meal_type'] ?? null;
+
+        $query = "SELECT 
+                    dc.id, dc.created_at as time, dc.meal_type,
+                    b.document_number, b.first_name, b.last_name1, b.grade, b.group_name,
+                    sb.name as branch_name
+                  FROM daily_consumptions dc
+                  JOIN beneficiaries b ON dc.beneficiary_id = b.id
+                  JOIN school_branches sb ON dc.branch_id = sb.id
+                  WHERE dc.pae_id = ? AND dc.date = ?";
+
+        $params = [$auth['pae_id'], $date];
+
+        if ($branch_id) {
+            $query .= " AND dc.branch_id = ?";
+            $params[] = $branch_id;
+        }
+
+        if ($meal_type) {
+            $query .= " AND dc.meal_type = ?";
+            $params[] = $meal_type;
+        }
+
+        $query .= " ORDER BY dc.created_at DESC";
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute($params);
+            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                "success" => true,
+                "data" => $data
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(["message" => "Error generating report: " . $e->getMessage()]);
+        }
+    }
 }
