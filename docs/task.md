@@ -31,3 +31,18 @@
     - [x] Backend API Implementation (Controllers, Routes)
     - [x] Frontend Views (Quotes, Purchases, Entries, Remissions, Adjustments)
     - [x] Verify full flow
+
+- [ ] Trabajar en el módulo de Ciclos
+    - [x] Identificar archivos actuales (Controladores, Modelos, Vistas)
+    - [x] Definir objetivos específicos (Generación Manual, Rotativa, Aleatoria)
+    - [x] Implementar cambios Backend (Controller)
+    - [x] Implementar cambios Frontend (Minutas JS)
+    - [x] **Debugging**:
+        - [x] Corregir persistencia al eliminar (Bug de enrutamiento y controlador).
+        - [x] Corregir error SQL durante generación (Faltaba columna `date` en `menus`).
+    - [ ] **Bloqueo Actual**:
+        - [ ] Schema Inconsistency: `menu_items` espera `item_id` pero el sistema intenta guardar `recipe_id`. Requiere migración.
+    - [ ] **Feature**: Explosión de Víveres (Pendiente de corrección de schema).
+
+
+

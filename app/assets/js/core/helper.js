@@ -121,20 +121,31 @@ const Helper = {
 
             // Handle Global Session Expiry (401/403)
             if (response.status === 401 || response.status === 403) {
-                const data = await response.json();
-                if (data.message && (data.message.includes('Token') || data.message.includes('No autorizado'))) {
-                    console.warn("Session expired or unauthorized. Redirecting to login...");
-                    if (typeof App !== 'undefined' && App.logout) {
-                        App.logout();
-                    } else {
-                        localStorage.removeItem('pae_token');
-                        window.location.hash = '#login';
+                // ... same logic ...
+                try {
+                    const data = await response.json();
+                    if (data.message && (data.message.includes('Token') || data.message.includes('No autorizado'))) {
+                        console.warn("Session expired or unauthorized. Redirecting to login...");
+                        if (typeof App !== 'undefined' && App.logout) {
+                            App.logout();
+                        } else {
+                            localStorage.removeItem('pae_token');
+                            window.location.hash = '#login';
+                        }
                     }
-                }
-                return data;
+                    return data;
+                } catch (e) { /* ignore json error on 401 */ }
             }
 
-            return await response.json();
+            const text = await response.text();
+            if (!text) return { success: true }; // Empty response handling (Assume 204)
+
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error("Server Response (Not JSON):", text);
+                throw new Error("Respuesta del servidor inválida (No es JSON). Ver consola.");
+            }
         } catch (error) {
             console.error(`Fetch API Error (${endpoint}):`, error);
             throw error;
