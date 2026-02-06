@@ -1,7 +1,7 @@
 # Arquitectura del Sistema - PAE Control WebApp
 
 **Versión:** 1.0  
-**Última Actualización:** 31 de Enero de 2026
+**Última Actualización:** 06 de Febrero de 2026
 
 ---
 
@@ -121,6 +121,7 @@ PAE Control WebApp es una aplicación web de arquitectura cliente-servidor que i
 │   ├── UserController.php    # Gestión de usuarios
 │   ├── RoleController.php    # Gestión de roles
 │   ├── TenantController.php  # Gestión de PAE
+│   ├── ConsumptionController.php # Reporte de Asistencia (QR)
 │   └── [Otros controladores]
 ├── /models
 │   └── [Modelos de datos]
@@ -289,6 +290,7 @@ class Database {
 │       └── /views
 │           ├── users.js      # Vista de usuarios
 │           ├── tenants.js    # Vista de PAE
+│           ├── consumos.js   # Reporte de Asistencia (QR)
 │           └── [Otras vistas]
 └── index.php                 # Shell HTML de la SPA
 ```

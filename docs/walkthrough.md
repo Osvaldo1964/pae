@@ -31,7 +31,16 @@ Se resolvieron errores críticos que impedían el guardado y la visualización c
 - **Sincronización UI**: Se recuperó la visibilidad del Colegio y Sede en el modo edición al incluir el `school_id` en la respuesta de la API.
 - **Corrección de Codificación**: Arreglo de la base de datos para manejar correctamente caracteres con tildes y eñes (ej: "MAÑANA") en los campos de Ración y Modalidad.
 
+## 4. Reporte de Asistencia y Consumo (QR)
+Se implementó un nuevo módulo para el monitoreo legal de entregas basado en el escaneo de carnets.
+
+- **Auditoría en Tiempo Real**: Visualización de la hora exacta de consumo por estudiante.
+- **Planillas de Resolución 0003**: Generación automática de listas de asistencia para archivo físico y cobro de raciones.
+- **Filtros de Gestión**: Capacidad de auditar por Sede, Grupo y Tipo de Complemento (AM/ALMUERZO/PM).
+
 ## Verificación Final
-- ✅ **DB Sync**: Migración, recovery y fix de codificación ejecutados exitosamente.
-- ✅ **API**: Endpoints de Inventarios y Beneficiarios operativos y estables.
-- ✅ **Frontend**: Matrícula de estudiantes 100% funcional con persistencia de todos los campos.
+- ✅ **DB Sync**: Migración, recovery y permisos de módulos ejecutados exitosamente.
+- ✅ **API**: Endpoints de Inventarios, Beneficiarios y Consumos operativos.
+- ✅ **Frontend**: Reportes dinámicos con estados de carga y layouts de impresión optimizados.
+
+**Última actualización**: 06 de Febrero 2026

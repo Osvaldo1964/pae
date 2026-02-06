@@ -1,6 +1,6 @@
 # Estructura del Menú - PAE Control
 
-**Actualizado:** 01 de Febrero de 2026, 16:41
+**Actualizado:** 06 de Febrero de 2026, 14:45
 
 ## 🎯 Navegación por Rol
 
@@ -36,6 +36,8 @@
 │   └── 👨‍🎓 Beneficiarios
 ├── 🍽️ Cocina
 │   └── 🥕 Ítems
+├── 📊 Reportes
+│   └── 📈 Consumos (Reporte QR)
 └── ⚙️ Configuración ← Click aquí
     └── 📦 Hub de Configuración
         ├── 🔐 Roles y Permisos
@@ -107,6 +109,7 @@
 | **Usuarios** | ✅ Ver/Crear/Editar/Eliminar | ❌ No visible | Sidebar (standalone) |
 | **Programas PAE** | ✅ Ver/Crear/Editar/Eliminar | ❌ No visible | Configuración → Hub |
 | **Mi Equipo** | ❌ No visible | ✅ Ver/Crear/Editar/Eliminar* | Configuración → Hub |
+| **Consumos (QR)** | ✅ Ver/Imprimir | ✅ Ver/Imprimir | Reportes → Consumos |
 
 *No puede eliminarse a sí mismo
 

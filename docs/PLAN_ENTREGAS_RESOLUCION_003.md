@@ -62,9 +62,10 @@ Se propone el desarrollo de un módulo operativo diseñado para Tablet/Móvil (R
 *   **Seguridad:** Implementación de encabezado `X-Auth-Token` p/ Apache.
 *   **Gestión de Datos:** Selección de sede y cálculo automático de tipo de ración.
 
-### Fase 3: Consolidación y Reportes
-*   **Acción:** Integrar `Dompdf` para trasformar la data diaria en documentos oficiales bajo formato UApA.
-*   **Validación:** Bloquear cierre de día si faltan fotos obligatorias.
+### Fase 3: Consolidación y Reportes ✅ **EN MARCHA**
+*   **Acción:** Integrar `Dompdf` y lógica de consulta para transformar la data diaria en documentos oficiales.
+*   **Entregable:** Nuevo módulo de **Reporte de Asistencia (QR)** con vista de impresión de planillas.
+*   **Validación:** El sistema ya permite filtrar por Institución/Sede/Jornada y generar los soportes para archivo físico.
 
 ---
 

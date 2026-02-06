@@ -1,4 +1,4 @@
-# Estado del Sistema PAE Control - 05 de Febrero 2026
+# Estado del Sistema PAE Control - 06 de Febrero 2026
 
 ## ✅ Módulos Completados
 
@@ -23,34 +23,35 @@
 - ✅ **Carnetización Digital:** Generación de carnet con QR (`PAE:ID:DOC`).
   - *Refinamiento:* Layout optimizado para evitar cortes en impresión.
 
-### 5. **Operación** 🟡 ⭐ EN CURSO
+### 5. **Operación / Reportes** 🟢 ⭐ FASE AVANZADA
 - ✅ **Almacén:** Inventario actual y movimientos de entradas/salidas.
   - ✅ **Nuevo:** Reporte de Necesidades (Stock Actual vs Requerimientos de Menú).
-- 🔴 **Módulo Móvil de Entregas (PWA):** *BLOQUEADO/DEBUG*
-  - Error persistente "Acceso denegado" en selección de sedes.
-  - Implementado `X-Auth-Token` y robustez en extracción, pero sigue fallando.
+- ✅ **Asistencia y Consumo (QR):** 
+  - Monitoreo en tiempo real de raciones entregadas por escáner móvil.
+  - Generación de planillas oficiales (Resolución 0003) para archivo físico.
+  - Filtros avanzados por Institución, Sede, Jornada y Complemento.
+- 🟡 **Módulo Móvil de Entregas (PWA):** *REFINANDO*
+  - Escáner funcional. Persisten ajustes menores de UX en entornos locales.
 
 ---
 
 ## 🔧 Correcciones Recientes
 
-### App Móvil
-- ✅ **Seguridad:** Implementada compatibilidad con encabezado `X-Auth-Token` para evitar bloqueos por `Authorization` header en servidores XAMPP/CGI.
-- ✅ **Sesión:** Sincronización de credenciales `username` para coincidencia con API central.
-- ✅ **Caché:** Versionado de scripts (`v1.0.2`) para asegurar carga de actualizaciones en dispositivos móviles.
+### Core JS Utilities
+- ✅ **Helper.js:** Implementado método universal `Helper.loading()` para sincronizar estados de espera en toda la aplicación.
 
 ### Reportes
-- ✅ **Reporte de Necesidades:** Primer motor de inteligencia de almacén que detecta faltantes antes de la jornada.
+- ✅ **Reporte de Asistencia (QR):** Primer módulo de auditoría legal que vincula lecturas QR con la base de datos central de beneficiarios.
 
 ---
 
 ## 🎯 Próximos Pasos
 
 ### Fase Actual: Operación (Fase 4)
-1. 🔜 Sincronización Offline (Móvil).
-2. 🔜 Registro Fotográfico de Evidencia.
-3. 🔜 Generación de Planillas Firmadas (Resolución 003).
+1. 🔜 Consolidación Mensual de Raciones (Soportes de cobro).
+2. 🔜 Registro Fotográfico de Evidencia de Calidad.
+3. 🔜 Sincronización Offline nativa.
 
 ---
 
-**Última actualización**: 05 de Febrero 2026, 22:50 PM
+**Última actualización**: 06 de Febrero 2026, 14:50 PM

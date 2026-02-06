@@ -47,6 +47,11 @@ Se requiere actualizar el sistema para soportar la nueva segmentación de grupos
 - **Backend**: `InventoryController.php` with full CRUD for the new entities.
 - **Frontend**: `cotizaciones.js`, `compras.js`, `remisiones.js` implemented.
 
+### Attendance Report Module (QR) [DONE]
+- **Database**: Module registered with route `consumos` and permissions granted to all roles.
+- **Backend**: `ConsumptionController.php` with `/report` logic filtering by `pae_id`.
+- **Frontend**: `consumos.js` with printable attendance sheets according to Resolution 0003.
+
 ---
 
 ## Verification Plan

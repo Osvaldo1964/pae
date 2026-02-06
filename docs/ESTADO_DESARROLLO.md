@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 05 de Febrero de 2026, 22:45  
-**Versión:** 1.5.1 (Fase 4 - Operación: Módulo Móvil de Entregas)
+**Última Actualización:** 06 de Febrero de 2026, 14:45  
+**Versión:** 1.6.0 (Fase 4 - Operación: Reportes de Consumo QR)
 
 ---
 
@@ -14,7 +14,7 @@
 | **App Móvil (PWA)** | 🔴 Bloqueado | 70% |
 | **Base de Datos** | 🟢 Estable | 99% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
-| **Módulos Operativos** | 🟡 En Debug | 85% |
+| **Módulos Operativos** | 🟢 Funcional | 90% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -125,6 +125,14 @@
 - [x] **Lógica de Entrega:** Registro automático de AM/ALMUERZO/PM según horario.
 - [x] **Validación Anti-Fraude:** Bloqueo de doble entrega del mismo complemento en el mismo día.
 
+### 13. Reporte de Asistencia y Consumo (QR) ✅ ⭐ NUEVO
+- [x] **Backend:** `ConsumptionController.php` con endpoint `/consumptions/report`.
+- [x] **Filtros Dinámicos:** Consulta por Institución, Sede, Fecha y Jornada.
+- [x] **Frontend:** `consumos.js` con visualización de registros en tiempo real.
+- [x] **Planilla Oficial:** Formato de impresión según Resolución 0003 con logos y firmas.
+- [x] **Aislamiento:** Filtrado estricto por `pae_id` para seguridad multitenancy.
+- [x] **UX:** Integración de estados de carga (`Helper.loading`).
+
 ### 12. Módulo de Almacén - Reporte de Necesidades ✅ ⭐ NUEVO
 - [x] **Comparativa Dinámica:** Reporte que cruza Inventario Actual vs Requerimientos de Menú Programado.
 - [x] **Cálculo de Déficit:** Identificación automática de insumos faltantes para la operación.
@@ -159,12 +167,12 @@
 
 ---
 
-## 🔧 CORRECCIONES RECIENTES (v1.5.1)
+## 🔧 CORRECCIONES RECIENTES (v1.6.0)
 
-### Módulo de Reportes
-- ✅ **Explosión de Insumos:** Generación automática basada en censo real.
-- ✅ **Normalización:** Algoritmo robusto para coincidencia de grupos de edad.
-- ✅ **Exportación:** Soporte dual para Excel (.xls) y PDF (Vista Impresión).
+### Módulo de Operatividad y Reportes
+- ✅ **Reporte de Asistencia (QR):** Implementado desde cero para auditoría de raciones capturadas en móvil.
+- ✅ **Fix de UX:** Añadido `Helper.loading()` para feedback visual en búsquedas pesadas.
+- ✅ **Estabilización de Almacén:** Corregida lógica de saldos en remociones de órdenes de compra.
 
 ### Módulo de Almacén
 - ✅ Corregida ruta de API para proveedores (`/proveedores`).
