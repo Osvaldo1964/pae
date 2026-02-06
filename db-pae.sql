@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-02-2026 a las 04:46:50
+-- Tiempo de generación: 06-02-2026 a las 21:46:08
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -124,6 +124,16 @@ CREATE TABLE `cycle_projections` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `cycle_projections`
+--
+
+INSERT INTO `cycle_projections` (`id`, `cycle_id`, `branch_id`, `item_id`, `total_quantity`, `beneficiary_count`, `created_at`) VALUES
+(1, 104, 9, 278, 90.0000, 30, '2026-02-06 15:57:02'),
+(2, 104, 9, 283, 37.0000, 30, '2026-02-06 15:57:02'),
+(3, 104, 9, 275, 27.4000, 30, '2026-02-06 15:57:02'),
+(4, 104, 9, 265, 28.6000, 30, '2026-02-06 15:57:02');
+
 -- --------------------------------------------------------
 
 --
@@ -215,6 +225,30 @@ INSERT INTO `cycle_template_days` (`id`, `template_id`, `day_number`, `meal_type
 (49, 2, 19, 'ALMUERZO', 3),
 (50, 2, 20, 'DESAYUNO', 1),
 (51, 2, 20, 'ALMUERZO', 2);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `daily_consumptions`
+--
+
+CREATE TABLE `daily_consumptions` (
+  `id` int(11) NOT NULL,
+  `pae_id` int(11) NOT NULL,
+  `branch_id` int(11) NOT NULL,
+  `beneficiary_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `meal_type` enum('DESAYUNO','ALMUERZO','AM','PM','CENA') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `synced_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `daily_consumptions`
+--
+
+INSERT INTO `daily_consumptions` (`id`, `pae_id`, `branch_id`, `beneficiary_id`, `date`, `meal_type`, `created_at`, `synced_at`) VALUES
+(1, 3, 10, 49, '2026-02-06', 'ALMUERZO', '2026-02-06 13:34:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -312,6 +346,14 @@ CREATE TABLE `inventory` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `inventory`
+--
+
+INSERT INTO `inventory` (`id`, `pae_id`, `item_id`, `current_stock`, `minimum_stock`, `last_entry_date`, `last_exit_date`, `updated_at`) VALUES
+(1, 3, 265, 4.000, 0.000, '2026-02-06', NULL, '2026-02-06 17:42:20'),
+(2, 3, 275, 2.000, 0.000, '2026-02-06', NULL, '2026-02-06 17:42:20');
+
 -- --------------------------------------------------------
 
 --
@@ -366,6 +408,13 @@ CREATE TABLE `inventory_quotes` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `inventory_quotes`
+--
+
+INSERT INTO `inventory_quotes` (`id`, `pae_id`, `user_id`, `supplier_id`, `quote_number`, `quote_date`, `valid_until`, `total_amount`, `status`, `notes`, `created_at`) VALUES
+(2, 3, 1, 1, 'cot001', '2026-02-06', '2026-02-14', 18500.50, 'BORRADOR', '', '2026-02-06 16:33:08');
+
 -- --------------------------------------------------------
 
 --
@@ -381,6 +430,13 @@ CREATE TABLE `inventory_quote_details` (
   `tax_percentage` decimal(5,2) DEFAULT 0.00,
   `subtotal` decimal(12,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `inventory_quote_details`
+--
+
+INSERT INTO `inventory_quote_details` (`id`, `quote_id`, `item_id`, `quantity`, `unit_price`, `tax_percentage`, `subtotal`) VALUES
+(3, 2, 276, 1.000, 18500.50, 0.00, 18500.50);
 
 -- --------------------------------------------------------
 
@@ -406,6 +462,13 @@ CREATE TABLE `inventory_remissions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `inventory_remissions`
+--
+
+INSERT INTO `inventory_remissions` (`id`, `pae_id`, `type`, `cycle_id`, `po_id`, `supplier_id`, `user_id`, `branch_id`, `remission_number`, `remission_date`, `carrier_name`, `vehicle_plate`, `status`, `notes`, `created_at`) VALUES
+(1, 3, 'ENTRADA_OC', NULL, 1, 1, 1, NULL, 'rm-001', '2026-02-07', '', '', 'CAMINO', '', '2026-02-06 17:42:20');
+
 -- --------------------------------------------------------
 
 --
@@ -420,6 +483,14 @@ CREATE TABLE `inventory_remission_details` (
   `quantity_received` decimal(12,3) DEFAULT 0.000,
   `novelty_notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `inventory_remission_details`
+--
+
+INSERT INTO `inventory_remission_details` (`id`, `remission_id`, `item_id`, `quantity_sent`, `quantity_received`, `novelty_notes`) VALUES
+(1, 1, 265, 4.000, 0.000, NULL),
+(2, 1, 275, 2.000, 0.000, NULL);
 
 -- --------------------------------------------------------
 
@@ -635,7 +706,7 @@ CREATE TABLE `menu_cycles` (
 --
 
 INSERT INTO `menu_cycles` (`id`, `pae_id`, `name`, `description`, `start_date`, `end_date`, `total_days`, `is_validated`, `validated_by`, `validated_at`, `status`, `created_at`, `updated_at`) VALUES
-(104, 3, 'CICLO 1 FEBRERO', NULL, '2026-02-01', '2026-02-28', 20, 0, NULL, NULL, 'BORRADOR', '2026-02-06 00:19:44', '2026-02-06 00:19:44');
+(104, 3, 'CICLO 1 FEBRERO', NULL, '2026-02-01', '2026-02-28', 20, 0, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 15:57:02');
 
 -- --------------------------------------------------------
 
@@ -749,7 +820,8 @@ INSERT INTO `modules` (`id`, `group_id`, `name`, `description`, `route_key`, `ic
 (21, 6, 'Almacén', 'Control de stock e inventario', 'almacen', 'fas fa-warehouse', 6),
 (22, 6, 'Cotizaciones', 'Gestión de precios de proveedores', 'cotizaciones', 'fas fa-file-invoice-dollar', 2),
 (23, 6, 'Órdenes de Compra', 'Gestión de pedidos a proveedores', 'compras', 'fas fa-shopping-cart', 3),
-(24, 6, 'Remisiones (Entradas)', 'Ingreso de mercancÝa desde proveedores (OC)', 'remisiones', 'fas fa-file-import', 4);
+(24, 6, 'Remisiones (Entradas)', 'Ingreso de mercancÝa desde proveedores (OC)', 'remisiones', 'fas fa-file-import', 4),
+(25, 3, 'Reporte de Asistencia (QR)', 'Registro de entregas capturadas por escáner', 'consumos', 'fas fa-id-card-alt', 10);
 
 -- --------------------------------------------------------
 
@@ -841,7 +913,13 @@ INSERT INTO `module_permissions` (`id`, `role_id`, `pae_id`, `module_id`, `can_c
 (56, 1, 3, 3, 0, 0, 0, 0),
 (57, 1, 3, 9, 1, 1, 1, 1),
 (60, 1, 3, 16, 1, 1, 1, 1),
-(61, 6, 3, 16, 1, 1, 1, 1);
+(61, 6, 3, 16, 1, 1, 1, 1),
+(62, 2, NULL, 25, 1, 1, 1, 1),
+(63, 5, NULL, 25, 1, 1, 1, 1),
+(64, 3, NULL, 25, 1, 1, 1, 1),
+(65, 6, NULL, 25, 1, 1, 1, 1),
+(66, 4, NULL, 25, 1, 1, 1, 1),
+(67, 1, NULL, 25, 1, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -934,6 +1012,13 @@ CREATE TABLE `purchase_orders` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `purchase_orders`
+--
+
+INSERT INTO `purchase_orders` (`id`, `pae_id`, `cycle_id`, `user_id`, `supplier_id`, `quote_id`, `po_number`, `po_date`, `expected_delivery`, `total_amount`, `status`, `notes`, `created_at`) VALUES
+(1, 3, 104, 1, 1, NULL, 'oc-001', '2026-02-06', '2026-02-14', 51127.04, 'PENDIENTE', '', '2026-02-06 16:00:02');
+
 -- --------------------------------------------------------
 
 --
@@ -949,6 +1034,14 @@ CREATE TABLE `purchase_order_details` (
   `unit_price` decimal(10,2) NOT NULL,
   `subtotal` decimal(12,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `purchase_order_details`
+--
+
+INSERT INTO `purchase_order_details` (`id`, `po_id`, `item_id`, `quantity_ordered`, `quantity_received`, `unit_price`, `subtotal`) VALUES
+(7, 1, 265, 5.000, 0.000, 4525.20, 22626.00),
+(8, 1, 275, 2.000, 0.000, 14250.52, 28501.04);
 
 -- --------------------------------------------------------
 
@@ -1205,7 +1298,8 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `role_id`, `pae_id`, `username`, `email`, `password_hash`, `full_name`, `address`, `phone`, `status`, `created_at`) VALUES
 (1, 1, NULL, 'admin', 'admin@pae.gov.co', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Super Administrador', NULL, NULL, 'active', '2026-02-01 00:04:12'),
-(4, 6, 3, 'paestamta@mail.com', 'paestamta@mail.com', '$2y$10$RxFrF3gp9J0xUbMt89cxYOKbVBLvj6ZTgRO8xpALDJ/wiXBwZ7yHm', 'Admin PAE SANTA MARTA', '', '', 'active', '2026-02-01 13:50:33');
+(4, 6, 3, 'paestamta@mail.com', 'paestamta@mail.com', '$2y$10$RxFrF3gp9J0xUbMt89cxYOKbVBLvj6ZTgRO8xpALDJ/wiXBwZ7yHm', 'Admin PAE SANTA MARTA', '', '', 'active', '2026-02-01 13:50:33'),
+(5, 2, 3, 'testuser', 'test@test.com', '$2y$10$/ESBPKMs2iFeHSe7/Rvh1uz35gKGZoDpNB4vSBpzPGX7ppA4vtKcW', 'Test User', NULL, NULL, 'active', '2026-02-06 13:32:32');
 
 --
 -- Índices para tablas volcadas
@@ -1249,6 +1343,16 @@ ALTER TABLE `cycle_template_days`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_meal_per_day` (`template_id`,`day_number`,`meal_type`),
   ADD KEY `recipe_id` (`recipe_id`);
+
+--
+-- Indices de la tabla `daily_consumptions`
+--
+ALTER TABLE `daily_consumptions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_consumption` (`beneficiary_id`,`date`,`meal_type`),
+  ADD KEY `idx_consumption_date` (`date`),
+  ADD KEY `idx_consumption_branch` (`branch_id`),
+  ADD KEY `pae_id` (`pae_id`);
 
 --
 -- Indices de la tabla `document_types`
@@ -1517,7 +1621,7 @@ ALTER TABLE `beneficiaries`
 -- AUTO_INCREMENT de la tabla `cycle_projections`
 --
 ALTER TABLE `cycle_projections`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `cycle_templates`
@@ -1530,6 +1634,12 @@ ALTER TABLE `cycle_templates`
 --
 ALTER TABLE `cycle_template_days`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+
+--
+-- AUTO_INCREMENT de la tabla `daily_consumptions`
+--
+ALTER TABLE `daily_consumptions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `document_types`
@@ -1553,7 +1663,7 @@ ALTER TABLE `food_groups`
 -- AUTO_INCREMENT de la tabla `inventory`
 --
 ALTER TABLE `inventory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_movements`
@@ -1571,25 +1681,25 @@ ALTER TABLE `inventory_movement_details`
 -- AUTO_INCREMENT de la tabla `inventory_quotes`
 --
 ALTER TABLE `inventory_quotes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_quote_details`
 --
 ALTER TABLE `inventory_quote_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_remissions`
 --
 ALTER TABLE `inventory_remissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_remission_details`
 --
 ALTER TABLE `inventory_remission_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `items`
@@ -1631,7 +1741,7 @@ ALTER TABLE `menu_recipes`
 -- AUTO_INCREMENT de la tabla `modules`
 --
 ALTER TABLE `modules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de la tabla `module_groups`
@@ -1643,7 +1753,7 @@ ALTER TABLE `module_groups`
 -- AUTO_INCREMENT de la tabla `module_permissions`
 --
 ALTER TABLE `module_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT de la tabla `nutritional_parameters`
@@ -1661,13 +1771,13 @@ ALTER TABLE `pae_programs`
 -- AUTO_INCREMENT de la tabla `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `purchase_order_details`
 --
 ALTER TABLE `purchase_order_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `recipes`
@@ -1709,7 +1819,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas
@@ -1744,6 +1854,14 @@ ALTER TABLE `cycle_templates`
 ALTER TABLE `cycle_template_days`
   ADD CONSTRAINT `cycle_template_days_ibfk_1` FOREIGN KEY (`template_id`) REFERENCES `cycle_templates` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cycle_template_days_ibfk_2` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`);
+
+--
+-- Filtros para la tabla `daily_consumptions`
+--
+ALTER TABLE `daily_consumptions`
+  ADD CONSTRAINT `daily_consumptions_ibfk_1` FOREIGN KEY (`pae_id`) REFERENCES `pae_programs` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `daily_consumptions_ibfk_2` FOREIGN KEY (`branch_id`) REFERENCES `school_branches` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `daily_consumptions_ibfk_3` FOREIGN KEY (`beneficiary_id`) REFERENCES `beneficiaries` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `inventory`
