@@ -25,8 +25,8 @@ class NeedsReportController
 
             if (!$cycle) throw new Exception("Ciclo no encontrado");
 
-            // 2. Get Active Beneficiaries and Classify them by Branch and Age Group
-            $sqlBen = "SELECT id, branch_id, birth_date FROM beneficiaries WHERE status = 'ACTIVO'";
+            // 2. Get Active Beneficiaries and Classify them by Branch, Ration Type and Age Group
+            $sqlBen = "SELECT id, branch_id, ration_type_id, birth_date FROM beneficiaries WHERE status = 'ACTIVO'";
             $beneficiaries = $this->conn->query($sqlBen)->fetchAll(PDO::FETCH_ASSOC);
 
             // Structure: $census[branch_id][age_group] = count
@@ -51,7 +51,16 @@ class NeedsReportController
                 }
 
                 if ($group) {
-                    $census[$b['branch_id']][$group]++;
+                    $rtid = $b['ration_type_id'];
+                    if (!isset($census[$b['branch_id']][$rtid])) {
+                        $census[$b['branch_id']][$rtid] = [
+                            'PREESCOLAR' => 0,
+                            'PRIMARIAA' => 0,
+                            'PRIMARIAB' => 0,
+                            'SECUNDARIA' => 0
+                        ];
+                    }
+                    $census[$b['branch_id']][$rtid][$group]++;
                 }
             }
 
@@ -59,6 +68,7 @@ class NeedsReportController
             $sqlMenus = "SELECT 
                             m.day_number,
                             mr.recipe_id,
+                            mr.ration_type_id,
                             ri.item_id,
                             i.name as item_name,
                             mu.name as unit,
@@ -98,17 +108,21 @@ class NeedsReportController
                     }
                 }
 
-                // For each branch, calculate raw need: (Census[Group] * Qty)
-                foreach ($census as $branchId => $groups) {
-                    if (isset($groups[$ageGroup]) && $groups[$ageGroup] > 0) {
-                        $totalForBranch = $groups[$ageGroup] * $qtyPerPerson;
+                // For each branch, calculate raw need: (Census[Ration][Group] * Qty)
+                foreach ($census as $branchId => $rations) {
+                    $targetRtId = $row['ration_type_id'];
+                    if (isset($rations[$targetRtId])) {
+                        $groups = $rations[$targetRtId];
+                        if (isset($groups[$ageGroup]) && $groups[$ageGroup] > 0) {
+                            $totalForBranch = $groups[$ageGroup] * $qtyPerPerson;
 
-                        if (!isset($demand[$itemId]['branches'][$branchId])) {
-                            $demand[$itemId]['branches'][$branchId] = 0;
+                            if (!isset($demand[$itemId]['branches'][$branchId])) {
+                                $demand[$itemId]['branches'][$branchId] = 0;
+                            }
+
+                            $demand[$itemId]['branches'][$branchId] += $totalForBranch;
+                            $demand[$itemId]['grand_total'] += $totalForBranch;
                         }
-
-                        $demand[$itemId]['branches'][$branchId] += $totalForBranch;
-                        $demand[$itemId]['grand_total'] += $totalForBranch;
                     }
                 }
             }

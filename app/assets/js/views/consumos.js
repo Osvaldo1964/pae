@@ -48,14 +48,12 @@ const ConsumosView = {
                             <input type="date" id="filter-date" class="form-control border-0 shadow-sm" value="${new Date().toISOString().split('T')[0]}">
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small fw-bold text-uppercase">Complemento</label>
+                            <label class="form-label small fw-bold text-uppercase">Momento de Consumo</label>
                             <select id="filter-meal" class="form-select border-0 shadow-sm">
                                 <option value="">Todos</option>
-                                <option value="AM">AM (Desayuno)</option>
-                                <option value="ALMUERZO">Almuerzo</option>
-                                <option value="PM">PM (Refrigerio)</option>
                             </select>
                         </div>
+
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-secondary w-100 rounded-3 shadow-sm">
                                 <i class="fas fa-search me-2"></i>Filtrar
@@ -105,6 +103,18 @@ const ConsumosView = {
                 opt.textContent = s.name;
                 schoolSelect.appendChild(opt);
             });
+
+            // Load Ration Types
+            const rationRes = await Helper.fetchAPI('/ration-types');
+            const rationSelect = document.getElementById('filter-meal');
+            if (rationRes.success) {
+                rationRes.data.forEach(rt => {
+                    const opt = document.createElement('option');
+                    opt.value = rt.id;
+                    opt.textContent = rt.name;
+                    rationSelect.appendChild(opt);
+                });
+            }
 
             schoolSelect.onchange = async () => {
                 const schoolId = schoolSelect.value;

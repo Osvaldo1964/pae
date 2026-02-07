@@ -9,6 +9,7 @@ var BeneficiariesView = {
     branches: [],
     documentTypes: [],
     ethnicGroups: [],
+    rationTypes: [],
     filteredBranches: [],
     selectedSchoolId: null,
 
@@ -252,12 +253,12 @@ var BeneficiariesView = {
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Tipo de Ración *</label>
-                                                <select class="form-select" id="ration-type" required>
-                                                    <option value="COMPLEMENTO MAÑANA">Complemento AM</option>
-                                                    <option value="COMPLEMENTO TARDE">Complemento PM</option>
-                                                    <option value="ALMUERZO">Almuerzo</option>
-                                                </select>
+                                                <select class="form-select" id="ration-type-id" required></select>
+                                                <input type="hidden" id="ration-type"> <!-- Legacy field -->
                                             </div>
+
+
+
                                             <div class="col-md-4">
                                                 <label class="form-label">Estado *</label>
                                                 <select class="form-select" id="status" required>
@@ -401,24 +402,28 @@ var BeneficiariesView = {
             this.loadBeneficiaries(),
             this.loadMasterData()
         ]);
+        this.renderTable(); // Ensure table is rendered after data is loaded
         this.renderFilters();
     },
 
     async loadMasterData() {
         try {
-            const [schools, docTypes, ethnicGroups] = await Promise.all([
+            const [schools, docTypes, ethnicGroups, rationTypes] = await Promise.all([
                 Helper.fetchAPI('/schools'),
                 Helper.fetchAPI('/beneficiarios/document_types'),
-                Helper.fetchAPI('/beneficiarios/ethnic_groups')
+                Helper.fetchAPI('/beneficiarios/ethnic_groups'),
+                Helper.fetchAPI('/ration-types')
             ]);
 
             this.schools = schools || [];
             this.documentTypes = docTypes || [];
             this.ethnicGroups = ethnicGroups || [];
+            this.rationTypes = rationTypes.success ? rationTypes.data : [];
 
             this.populateSelect('school-id', this.schools, 'Seleccione Institución');
             this.populateSelect('doc-type', this.documentTypes, 'Seleccione Tipo');
             this.populateSelect('ethnic-group', this.ethnicGroups, 'Seleccione Etnia');
+            this.populateSelect('ration-type-id', this.rationTypes, 'Seleccione Ración');
 
             // Filters
             this.populateSelect('filterSchool', this.schools, 'Todos los Colegios');
@@ -494,6 +499,7 @@ var BeneficiariesView = {
                         <span class="badge bg-light text-dark border">${b.grade}Â°</span>
                         <span class="badge bg-light text-dark border">${b.group_name || 'N/A'}</span>
                         <br><small class="text-muted">${b.shift}</small>
+                        <br><span class="badge bg-primary-light text-primary border" style="font-size: 0.65rem;">${b.ration_type_name || b.ration_type}</span>
                     </td>
                     <td><span class="badge ${statusClass}">${b.status}</span></td>
                     <td class="text-end">
@@ -567,7 +573,7 @@ var BeneficiariesView = {
             document.getElementById('shift').value = b.shift;
             document.getElementById('enrollment-date').value = b.enrollment_date || '';
             document.getElementById('modality').value = b.modality;
-            document.getElementById('ration-type').value = b.ration_type;
+            document.getElementById('ration-type-id').value = b.ration_type_id || '';
             document.getElementById('status').value = b.status;
 
             document.getElementById('address').value = b.address || '';
@@ -634,7 +640,8 @@ var BeneficiariesView = {
             shift: document.getElementById('shift').value,
             enrollment_date: document.getElementById('enrollment-date').value,
             modality: document.getElementById('modality').value,
-            ration_type: document.getElementById('ration-type').value,
+            ration_type_id: document.getElementById('ration-type-id').value,
+            ration_type: this.rationTypes.find(rt => rt.id == document.getElementById('ration-type-id').value)?.name || '',
             status: document.getElementById('status').value,
 
             address: document.getElementById('address').value,

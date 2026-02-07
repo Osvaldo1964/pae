@@ -34,6 +34,7 @@ class MobileApp {
             this.showDashboard();
             this.loadUserData();
             this.loadStats();
+            this.loadRationTypes();
         }
     }
 
@@ -82,6 +83,7 @@ class MobileApp {
                 this.showDashboard();
                 this.loadUserData();
                 this.loadStats();
+                this.loadRationTypes();
             } else {
                 Swal.fire('Error', data.message || 'Error de autenticación', 'error');
             }
@@ -100,6 +102,39 @@ class MobileApp {
 
     loadUserData() {
         document.getElementById('user-name').innerText = this.user.full_name?.split(' ')[0] || 'Usuario';
+    }
+
+    async loadRationTypes() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/ration-types`, {
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+
+            if (response.ok) {
+                const res = await response.json();
+                const list = res.data || [];
+                const select = document.getElementById('current-ration-type');
+
+                if (list.length === 0) {
+                    select.innerHTML = '<option value="">Sin raciones config.</option>';
+                    return;
+                }
+
+                select.innerHTML = list.map(rt => `<option value="${rt.id}">${rt.name}</option>`).join('');
+
+                // Auto-select based on time?
+                const hour = new Date().getHours();
+                if (hour < 10) {
+                    const desay = list.find(r => r.name.toUpperCase().includes('DESAYUNO') || r.name.toUpperCase().includes('MAÑANA'));
+                    if (desay) select.value = desay.id;
+                } else if (hour >= 11 && hour <= 14) {
+                    const almu = list.find(r => r.name.toUpperCase().includes('ALMUERZO'));
+                    if (almu) select.value = almu.id;
+                }
+            }
+        } catch (error) {
+            console.error("Error loading ration types", error);
+        }
     }
 
     async loadStats() {
@@ -256,18 +291,21 @@ class MobileApp {
         const beneficiaryId = parts[1];
 
         try {
-            const time = new Date().getHours();
-            let mealType = 'ALMUERZO';
-            if (time < 11) mealType = 'AM'; // Complemento AM
-            if (time > 15) mealType = 'PM'; // Complemento PM / Cena logic
+            const rationSelect = document.getElementById('current-ration-type');
+            const rationTypeId = rationSelect.value;
+            const rationTypeName = rationSelect.options[rationSelect.selectedIndex]?.text || '';
 
-            // Prompt for meal type override? For speed, we auto-detect
-            // Ideally we show a selector in the UI BEFORE scanning.
+            if (!rationTypeId) {
+                Swal.fire('Error', 'Seleccione un momento de entrega primero.', 'warning')
+                    .then(() => this.html5QrCode.resume());
+                return;
+            }
 
             const payload = {
                 beneficiary_id: beneficiaryId,
                 branch_id: this.selectedBranch.id,
-                meal_type: mealType
+                ration_type_id: rationTypeId,
+                meal_type: rationTypeName // Legacy support
             };
 
             const response = await fetch(`${API_BASE_URL}/consumptions`, {
@@ -285,7 +323,7 @@ class MobileApp {
                 Swal.fire({
                     icon: 'success',
                     title: '¡Entrega Registrada!',
-                    html: `<b>${data.beneficiary_name || ''}</b><br>${mealType}`,
+                    html: `<b>${data.beneficiary_name || ''}</b><br>${rationTypeName}`,
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {

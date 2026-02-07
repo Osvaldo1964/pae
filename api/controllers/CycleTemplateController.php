@@ -101,14 +101,15 @@ class CycleTemplateController
             $template_id = $this->conn->lastInsertId();
 
             if (isset($data['days']) && is_array($data['days'])) {
-                $queryDay = "INSERT INTO cycle_template_days (template_id, day_number, meal_type, recipe_id) 
-                             VALUES (:tid, :day, :type, :rid)";
+                $queryDay = "INSERT INTO cycle_template_days (template_id, day_number, ration_type_id, meal_type, recipe_id) 
+                             VALUES (:tid, :day, :rtid, :type, :rid)";
                 $stmtDay = $this->conn->prepare($queryDay);
                 foreach ($data['days'] as $day) {
                     $stmtDay->execute([
                         ':tid' => $template_id,
                         ':day' => $day['day_number'],
-                        ':type' => $day['meal_type'],
+                        ':rtid' => $day['ration_type_id'] ?? null,
+                        ':type' => $day['meal_type'] ?? '',
                         ':rid' => $day['recipe_id']
                     ]);
                 }
@@ -141,14 +142,15 @@ class CycleTemplateController
             $this->conn->prepare("DELETE FROM cycle_template_days WHERE template_id = ?")->execute([$id]);
 
             if (isset($data['days']) && is_array($data['days'])) {
-                $queryDay = "INSERT INTO cycle_template_days (template_id, day_number, meal_type, recipe_id) 
-                             VALUES (:tid, :day, :type, :rid)";
+                $queryDay = "INSERT INTO cycle_template_days (template_id, day_number, ration_type_id, meal_type, recipe_id) 
+                             VALUES (:tid, :day, :rtid, :type, :rid)";
                 $stmtDay = $this->conn->prepare($queryDay);
                 foreach ($data['days'] as $day) {
                     $stmtDay->execute([
                         ':tid' => $id,
                         ':day' => $day['day_number'],
-                        ':type' => $day['meal_type'],
+                        ':rtid' => $day['ration_type_id'] ?? null,
+                        ':type' => $day['meal_type'] ?? '',
                         ':rid' => $day['recipe_id']
                     ]);
                 }

@@ -3,9 +3,9 @@
 ## 📋 Información del Proyecto
 
 **Nombre:** Sistema de Información para la Gestión del Programa de Alimentación Escolar (PAE)  
-**Versión:** 1.3.0  
+**Versión:** 1.5.0  
 **Desarrollador por:** OVCSYSTEMS S.A.S.  
-**Estado Actual:** Fase 1 Completada (Cimentación y Administración)
+**Estado Actual:** Fase de Operación (En desarrollo de tipos de raciones dinámicos)
 
 ---
 
@@ -21,6 +21,7 @@ Para garantizar la calidad de la información, el sistema aplica reglas automát
 - **NOMBRES:** Siempre se transforman a MAYÚSCULAS (Colegios, Rectores, Usuarios).
 - **EMAILS:** Siempre se transforman a minúsculas.
 - **DIRECCIONES:** Permiten formato libre.
+- **IDIOMA OFICIAL:** Toda la comunicación e interfaces deben ser en **Español**.
 
 ### 3. Interfaz de Usuario Moderna
 - **DataTables:** En todos los listados para búsqueda rápida y ordenamiento.
@@ -37,4 +38,4 @@ Para garantizar la calidad de la información, el sistema aplica reglas automát
 
 ---
 
-**Última Actualización:** 01 de Febrero de 2026
+**Última Actualización:** 07 de Febrero de 2026

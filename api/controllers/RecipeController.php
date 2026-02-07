@@ -48,7 +48,11 @@ class RecipeController
                 $this->recalculateNutrition($row['id']);
             }
 
-            $query = "SELECT * FROM recipes WHERE pae_id = :pae_id ORDER BY name";
+            $query = "SELECT r.*, rt.name as ration_type_name 
+                      FROM recipes r
+                      LEFT JOIN pae_ration_types rt ON r.ration_type_id = rt.id
+                      WHERE r.pae_id = :pae_id 
+                      ORDER BY r.name";
             $stmt = $this->conn->prepare($query);
             $stmt->bindValue(':pae_id', $pae_id);
             $stmt->execute();
@@ -68,7 +72,10 @@ class RecipeController
             // Asegurar que los datos estén frescos antes de mostrar
             $this->recalculateNutrition($id);
 
-            $query = "SELECT * FROM recipes WHERE id = :id";
+            $query = "SELECT r.*, rt.name as ration_type_name 
+                      FROM recipes r
+                      LEFT JOIN pae_ration_types rt ON r.ration_type_id = rt.id
+                      WHERE r.id = :id";
             $stmt = $this->conn->prepare($query);
             $stmt->bindValue(':id', $id);
             $stmt->execute();
@@ -135,12 +142,13 @@ class RecipeController
 
             $this->conn->beginTransaction();
 
-            $query = "INSERT INTO recipes (pae_id, name, meal_type, description) VALUES (:pae_id, :name, :type, :desc)";
+            $query = "INSERT INTO recipes (pae_id, name, meal_type, ration_type_id, description) VALUES (:pae_id, :name, :type, :rtid, :desc)";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':pae_id' => $pae_id,
                 ':name' => $data['name'],
-                ':type' => $data['meal_type'],
+                ':type' => $data['meal_type'] ?? '',
+                ':rtid' => $data['ration_type_id'] ?? null,
                 ':desc' => $data['description'] ?? ''
             ]);
             $recipe_id = $this->conn->lastInsertId();
@@ -233,12 +241,13 @@ class RecipeController
             $data = json_decode(file_get_contents("php://input"), true);
             $this->conn->beginTransaction();
 
-            $query = "UPDATE recipes SET name = :name, meal_type = :type, description = :desc WHERE id = :id";
+            $query = "UPDATE recipes SET name = :name, meal_type = :type, ration_type_id = :rtid, description = :desc WHERE id = :id";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':id' => $id,
                 ':name' => $data['name'],
-                ':type' => $data['meal_type'],
+                ':type' => $data['meal_type'] ?? '',
+                ':rtid' => $data['ration_type_id'] ?? null,
                 ':desc' => $data['description'] ?? ''
             ]);
 

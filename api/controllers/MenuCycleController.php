@@ -157,8 +157,8 @@ class MenuCycleController
 
                 foreach ($days_data[$template_day_to_use] as $recipe_info) {
                     // Vinculamos la receta al menú diario en la tabla menu_recipes
-                    $stmtMenuRec = $this->conn->prepare("INSERT INTO menu_recipes (menu_id, recipe_id, meal_type) VALUES (?, ?, ?)");
-                    $stmtMenuRec->execute([$menu_id, $recipe_info['recipe_id'], $recipe_info['meal_type']]);
+                    $stmtMenuRec = $this->conn->prepare("INSERT INTO menu_recipes (menu_id, recipe_id, ration_type_id, meal_type) VALUES (?, ?, ?, ?)");
+                    $stmtMenuRec->execute([$menu_id, $recipe_info['recipe_id'], $recipe_info['ration_type_id'], $recipe_info['meal_type']]);
                 }
             }
 
@@ -200,10 +200,10 @@ class MenuCycleController
             $this->conn->prepare("DELETE FROM cycle_projections WHERE cycle_id = ?")->execute([$id]);
 
             // 3. Obtener población por Sede, Tipo de Ración y Grado (para mapear a Grupo Etario)
-            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type, grade, COUNT(*) as total 
+            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type_id, grade, COUNT(*) as total 
                                             FROM beneficiaries 
                                             WHERE pae_id = ? AND status = 'ACTIVO' 
-                                            GROUP BY branch_id, ration_type, grade");
+                                            GROUP BY branch_id, ration_type_id, grade");
             $stmtPop->execute([$pae_id]);
             $populations = $stmtPop->fetchAll(PDO::FETCH_ASSOC);
 
@@ -212,7 +212,7 @@ class MenuCycleController
 
             // 4. Obtener la explosión de recetas vinculadas al ciclo
             // Buscamos: Ciclo -> Menús -> Recetas -> ItemsReceta
-            $queryExplosion = "SELECT mr.meal_type, ri.age_group, ri.item_id, ri.quantity 
+            $queryExplosion = "SELECT mr.ration_type_id, ri.age_group, ri.item_id, ri.quantity 
                                FROM menu_recipes mr
                                JOIN recipe_items ri ON mr.recipe_id = ri.recipe_id
                                WHERE mr.menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)";
@@ -227,27 +227,19 @@ class MenuCycleController
             $projections = []; // [branch_id][item_id] => quantity
             $totalBeneficiaries = 0;
 
-            // Mapeo de MealType a RationType
-            $mealToRation = [
-                'DESAYUNO' => 'COMPLEMENTO MAÑANA',
-                'MEDIA MAÑANA' => 'COMPLEMENTO MAÑANA',
-                'ALMUERZO' => 'ALMUERZO',
-                'ONCES' => 'COMPLEMENTO TARDE',
-                'CENA' => 'COMPLEMENTO TARDE'
-            ];
-
+            // Mapeo de MealType a RationType (Nombres simplificados y emparejados en DB)
             foreach ($populations as $pop) {
                 $totalBeneficiaries += $pop['total'];
                 $branch_id = $pop['branch_id'];
                 $age_group = $this->getAgeGroupForGrade($pop['grade']);
-                $ration_type = strtoupper($pop['ration_type']);
+                $ration_type_id = $pop['ration_type_id'];
 
                 foreach ($recipeDetails as $recipe) {
-                    $targetRation = $mealToRation[$recipe['meal_type']] ?? 'ALMUERZO';
+                    $targetRationId = $recipe['ration_type_id'];
 
                     // Solo sumar si el tipo de ración del niño coincide con el plato
                     // Y el grupo etario coincide con el gramaje de la receta
-                    if ($ration_type === $targetRation && $age_group === $recipe['age_group']) {
+                    if ($ration_type_id == $targetRationId && $age_group === $recipe['age_group']) {
                         $item_id = $recipe['item_id'];
                         $quantity = $recipe['quantity'] * $pop['total'];
 

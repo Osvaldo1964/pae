@@ -6,6 +6,7 @@ window.MinutasView = {
     templates: [],
     cycles: [],
     recipes: [],
+    rationTypes: [],
 
     async init() {
         console.log('Initializing Minutas Module v1.4.4...');
@@ -15,15 +16,17 @@ window.MinutasView = {
 
     async loadData() {
         try {
-            const [tempRes, cycleRes, recipeRes] = await Promise.all([
+            const [tempRes, cycleRes, recipeRes, rationRes] = await Promise.all([
                 Helper.fetchAPI('/cycle-templates'),
                 Helper.fetchAPI('/menu-cycles'),
-                Helper.fetchAPI('/recipes')
+                Helper.fetchAPI('/recipes'),
+                Helper.fetchAPI('/ration-types')
             ]);
 
             this.templates = tempRes.success ? (tempRes.data || []) : (Array.isArray(tempRes) ? tempRes : []);
             this.cycles = cycleRes.success ? (cycleRes.data || []) : (Array.isArray(cycleRes) ? cycleRes : []);
             this.recipes = recipeRes.success ? (recipeRes.data || []) : (Array.isArray(recipeRes) ? recipeRes : []);
+            this.rationTypes = rationRes.success ? (rationRes.data || []) : [];
         } catch (error) {
             console.error('Error loading minutas data:', error);
             Helper.alert('error', 'Error al cargar los datos de minutas');
@@ -370,22 +373,22 @@ window.MinutasView = {
         // Generate 20 days rows
         let rowsHtml = '';
         for (let i = 1; i <= 20; i++) {
-            const existingDayBreakfast = template ? template.days.find(d => d.day_number == i && d.meal_type == 'DESAYUNO') : null;
-            const existingDayLunch = template ? template.days.find(d => d.day_number == i && d.meal_type == 'ALMUERZO') : null;
+            let cellsHtml = '';
+            this.rationTypes.forEach(rt => {
+                const existing = template ? template.days.find(d => d.day_number == i && d.ration_type_id == rt.id) : null;
+                cellsHtml += `
+                    <td>
+                        <select class="form-select form-select-sm" data-day="${i}" data-ration-id="${rt.id}" data-type="${rt.name}">
+                            ${this.getRecipeOptions(existing ? existing.recipe_id : null)}
+                        </select>
+                    </td>
+                `;
+            });
 
             rowsHtml += `
                 <tr>
                     <td class="fw-bold text-center bg-light" style="width: 60px;">${i}</td>
-                    <td>
-                        <select class="form-select form-select-sm" data-day="${i}" data-type="DESAYUNO">
-                            ${this.getRecipeOptions(existingDayBreakfast ? existingDayBreakfast.recipe_id : null)}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="form-select form-select-sm" data-day="${i}" data-type="ALMUERZO">
-                            ${this.getRecipeOptions(existingDayLunch ? existingDayLunch.recipe_id : null)}
-                        </select>
-                    </td>
+                    ${cellsHtml}
                 </tr>
             `;
         }
@@ -414,8 +417,7 @@ window.MinutasView = {
                                 <thead class="bg-light sticky-top">
                                     <tr class="text-center text-muted small text-uppercase">
                                         <th class="py-2">Día</th>
-                                        <th class="py-2">Desayuno</th>
-                                        <th class="py-2">Almuerzo</th>
+                                        ${this.rationTypes.map(rt => `<th class="py-2">${rt.name}</th>`).join('')}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -458,7 +460,8 @@ window.MinutasView = {
             if (select.value) {
                 days.push({
                     day_number: select.dataset.day,
-                    meal_type: select.dataset.type,
+                    ration_type_id: select.dataset.rationId,
+                    meal_type: select.dataset.type, // Legacy Support
                     recipe_id: select.value
                 });
             }

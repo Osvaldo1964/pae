@@ -5,6 +5,7 @@
 window.RecetarioView = {
     recipes: [],
     items: [],
+    rationTypes: [],
 
     async init() {
         console.log('Initializing Recetario Module...');
@@ -14,12 +15,14 @@ window.RecetarioView = {
 
     async loadData() {
         try {
-            const [recipeRes, itemRes] = await Promise.all([
+            const [recipeRes, itemRes, rationRes] = await Promise.all([
                 Helper.fetchAPI('/recipes'),
-                Helper.fetchAPI('/items')
+                Helper.fetchAPI('/items'),
+                Helper.fetchAPI('/ration-types')
             ]);
             this.recipes = recipeRes.success ? recipeRes.data : [];
             this.items = itemRes.success ? itemRes.data : [];
+            this.rationTypes = rationRes.success ? rationRes.data : [];
         } catch (error) {
             console.error('Error loading recipes data:', error);
         }
@@ -73,8 +76,8 @@ window.RecetarioView = {
         return this.recipes.map(r => `
             <div class="col-md-3">
                 <div class="card h-100 border-0 shadow-sm recipe-card position-relative overflow-hidden">
-                    <div class="meal-type-badge ${r.meal_type === 'ALMUERZO' ? 'bg-primary' : 'bg-info'} text-white px-2 py-0 small fw-bold" style="font-size: 0.6rem;">
-                        ${r.meal_type}
+                    <div class="meal-type-badge ${r.ration_type_name === 'ALMUERZO' ? 'bg-primary' : 'bg-info'} text-white px-2 py-0 small fw-bold" style="font-size: 0.6rem;">
+                        ${r.ration_type_name || r.meal_type}
                     </div>
                     <div class="card-body pt-4 p-2">
                         <div class="d-flex justify-content-between align-items-start mb-1">
@@ -250,12 +253,13 @@ window.RecetarioView = {
                                     <input type="text" class="form-control" name="name" value="${isEdit ? recipe.name : ''}" placeholder="Ej: Arroz con Pollo..." required>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-bold small text-muted text-uppercase">Tipo de Comida</label>
-                                    <select class="form-select" name="meal_type" required>
-                                        <option value="DESAYUNO" ${isEdit && recipe.meal_type === 'DESAYUNO' ? 'selected' : ''}>DESAYUNO</option>
-                                        <option value="ALMUERZO" ${(!isEdit || recipe.meal_type === 'ALMUERZO') ? 'selected' : ''}>ALMUERZO</option>
-                                        <option value="MEDIA MAÑANA" ${isEdit && recipe.meal_type === 'MEDIA MAÑANA' ? 'selected' : ''}>MEDIA MAÑANA</option>
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Tipo de Ración / Entrega</label>
+                                    <select class="form-select" name="ration_type_id" required>
+                                        <option value="">Seleccione...</option>
+                                        ${this.rationTypes.map(rt => `<option value="${rt.id}" ${isEdit && recipe.ration_type_id == rt.id ? 'selected' : ''}>${rt.name}</option>`).join('')}
                                     </select>
+
+
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold small text-muted text-uppercase">Descripción / Observaciones</label>
@@ -367,7 +371,8 @@ window.RecetarioView = {
 
         const data = {
             name: formData.get('name'),
-            meal_type: formData.get('meal_type'),
+            ration_type_id: formData.get('ration_type_id'),
+            meal_type: this.rationTypes.find(rt => rt.id == formData.get('ration_type_id'))?.name || '',
             description: formData.get('description'),
             items: items
         };

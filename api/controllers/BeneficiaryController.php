@@ -63,12 +63,14 @@ class BeneficiaryController
         }
 
         $query = "SELECT b.*, br.name as branch_name, s.name as school_name, br.school_id as school_id, 
-                         dt.name as document_type_name, eg.name as ethnic_group_name
+                         dt.name as document_type_name, eg.name as ethnic_group_name,
+                         rt.name as ration_type_name
                   FROM " . $this->table_name . " b
                   LEFT JOIN school_branches br ON b.branch_id = br.id
                   LEFT JOIN schools s ON br.school_id = s.id
                   LEFT JOIN document_types dt ON b.document_type_id = dt.id
                   LEFT JOIN ethnic_groups eg ON b.ethnic_group_id = eg.id
+                  LEFT JOIN pae_ration_types rt ON b.ration_type_id = rt.id
                   WHERE b.pae_id = :pae_id 
                   ORDER BY b.last_name1 ASC, b.first_name ASC";
 
@@ -124,13 +126,13 @@ class BeneficiaryController
                   (pae_id, branch_id, document_type_id, document_number, first_name, second_name, last_name1, last_name2, 
                    birth_date, gender, ethnic_group_id, sisben_category, disability_type, is_victim, is_migrant, 
                    address, phone, email, guardian_name, guardian_phone, guardian_relationship, 
-                   simat_id, shift, grade, group_name, status, enrollment_date, modality, ration_type, 
+                   simat_id, shift, grade, group_name, status, enrollment_date, modality, ration_type, ration_type_id, 
                    medical_restrictions, observations, data_authorization, is_overage) 
                   VALUES 
                   (:pae_id, :branch_id, :document_type_id, :document_number, :first_name, :second_name, :last_name1, :last_name2, 
                    :birth_date, :gender, :ethnic_group_id, :sisben_category, :disability_type, :is_victim, :is_migrant, 
                    :address, :phone, :email, :guardian_name, :guardian_phone, :guardian_relationship, 
-                   :simat_id, :shift, :grade, :group_name, :status, :enrollment_date, :modality, :ration_type, 
+                   :simat_id, :shift, :grade, :group_name, :status, :enrollment_date, :modality, :ration_type, :ration_type_id, 
                    :medical_restrictions, :observations, :data_authorization, :is_overage)";
 
         $stmt = $this->conn->prepare($query);
@@ -165,6 +167,7 @@ class BeneficiaryController
         $stmt->bindParam(":enrollment_date", $data['enrollment_date']);
         $stmt->bindParam(":modality", $data['modality']);
         $stmt->bindParam(":ration_type", $data['ration_type']);
+        $stmt->bindParam(":ration_type_id", $data['ration_type_id']);
         $stmt->bindParam(":medical_restrictions", $data['medical_restrictions']);
         $stmt->bindParam(":observations", $data['observations']);
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
@@ -247,6 +250,7 @@ class BeneficiaryController
                   enrollment_date = :enrollment_date, 
                   modality = :modality, 
                   ration_type = :ration_type, 
+                  ration_type_id = :ration_type_id, 
                   medical_restrictions = :medical_restrictions, 
                   observations = :observations, 
                   data_authorization = :data_authorization,
@@ -286,6 +290,7 @@ class BeneficiaryController
         $stmt->bindParam(":enrollment_date", $data['enrollment_date']);
         $stmt->bindParam(":modality", $data['modality']);
         $stmt->bindParam(":ration_type", $data['ration_type']);
+        $stmt->bindParam(":ration_type_id", $data['ration_type_id']);
         $stmt->bindParam(":medical_restrictions", $data['medical_restrictions']);
         $stmt->bindParam(":observations", $data['observations']);
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);

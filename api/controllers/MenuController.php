@@ -73,24 +73,39 @@ class MenuController
     public function getCycleDays($cycle_id)
     {
         try {
-            // Obtener todos los menus del ciclo
-            $query = "SELECT * FROM menus WHERE cycle_id = :cycle_id ORDER BY day_number, meal_type";
+            // Obtener todos los menus del ciclo con sus recetas y raciones
+            $query = "SELECT m.id as menu_id, m.day_number, m.name as day_name,
+                             mr.recipe_id, mr.meal_type, mr.ration_type_id,
+                             r.name as recipe_name, rt.name as ration_type_name
+                      FROM menus m
+                      LEFT JOIN menu_recipes mr ON m.id = mr.menu_id
+                      LEFT JOIN recipes r ON mr.recipe_id = r.id
+                      LEFT JOIN pae_ration_types rt ON mr.ration_type_id = rt.id
+                      WHERE m.cycle_id = :cycle_id 
+                      ORDER BY m.day_number, rt.id, mr.meal_type";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':cycle_id', $cycle_id);
             $stmt->execute();
-            $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Organizar por día para el frontend
             $days = [];
-            foreach ($menus as $menu) {
-                $dayNum = $menu['day_number'];
+            foreach ($results as $row) {
+                $dayNum = $row['day_number'];
                 if (!isset($days[$dayNum])) {
                     $days[$dayNum] = [
                         'day' => $dayNum,
+                        'name' => $row['day_name'],
                         'meals' => []
                     ];
                 }
-                $days[$dayNum]['meals'][] = $menu;
+                if ($row['recipe_id']) {
+                    $days[$dayNum]['meals'][] = [
+                        'meal_type' => $row['ration_type_name'] ?: $row['meal_type'],
+                        'name' => $row['recipe_name'],
+                        'ration_type_id' => $row['ration_type_id']
+                    ];
+                }
             }
 
             echo json_encode([
@@ -158,6 +173,7 @@ class MenuController
 
             $query = "UPDATE menus SET 
                         name = :name, 
+                        ration_type_id = :ration_type_id,
                         meal_type = :meal_type,
                         day_number = :day_number,
                         age_group = :age_group
@@ -165,6 +181,7 @@ class MenuController
 
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':name', $data['name']);
+            $stmt->bindParam(':ration_type_id', $data['ration_type_id']);
             $stmt->bindParam(':meal_type', $data['meal_type']);
             $stmt->bindParam(':day_number', $data['day_number']);
             $stmt->bindParam(':age_group', $data['age_group']);
@@ -294,29 +311,26 @@ class MenuController
             ]);
             $cycle_id = $this->conn->lastInsertId();
 
-            // 2. Generar 20 días automáticos (Desayuno y Almuerzo)
-            $queryMenu = "INSERT INTO menus (pae_id, cycle_id, day_number, meal_type, name) 
-                          VALUES (:pae_id, :cycle_id, :day, :type, :name)";
+            // 2. Generar 20 días automáticos con raciones dinámicas
+            $rationTypes = $this->conn->query("SELECT * FROM pae_ration_types WHERE pae_id = " . intval($pae_id))->fetchAll(PDO::FETCH_ASSOC);
+
+            $queryMenu = "INSERT INTO menus (pae_id, cycle_id, day_number, ration_type_id, meal_type, name) 
+                          VALUES (:pae_id, :cycle_id, :day, :rt_id, :type, :name)";
             $stmtMenu = $this->conn->prepare($queryMenu);
 
             for ($i = 1; $i <= 20; $i++) {
-                // Desayuno
-                $stmtMenu->execute([
-                    ':pae_id' => $pae_id,
-                    ':cycle_id' => $cycle_id,
-                    ':day' => $i,
-                    ':type' => 'DESAYUNO',
-                    ':name' => "Desayuno Día $i"
-                ]);
-                // Almuerzo
-                $stmtMenu->execute([
-                    ':pae_id' => $pae_id,
-                    ':cycle_id' => $cycle_id,
-                    ':day' => $i,
-                    ':type' => 'ALMUERZO',
-                    ':name' => "Almuerzo Día $i"
-                ]);
+                foreach ($rationTypes as $rt) {
+                    $stmtMenu->execute([
+                        ':pae_id' => $pae_id,
+                        ':cycle_id' => $cycle_id,
+                        ':day' => $i,
+                        ':rt_id' => $rt['id'],
+                        ':type' => $rt['name'],
+                        ':name' => $rt['name'] . " Día $i"
+                    ]);
+                }
             }
+
 
             $this->conn->commit();
             echo json_encode([
@@ -346,13 +360,14 @@ class MenuController
             if (!$cycle) throw new Exception("Ciclo no encontrado");
 
             // 2. Menús y recetas
-            $query = "SELECT m.day_number, m.meal_type, m.name as menu_name, 
-                             r.name as recipe_name
+            $query = "SELECT m.day_number, m.name as menu_name, 
+                             mr.meal_type, r.name as recipe_name, rt.name as ration_name
                       FROM menus m
                       LEFT JOIN menu_recipes mr ON m.id = mr.menu_id
                       LEFT JOIN recipes r ON mr.recipe_id = r.id
+                      LEFT JOIN pae_ration_types rt ON mr.ration_type_id = rt.id
                       WHERE m.cycle_id = ?
-                      ORDER BY m.day_number, m.meal_type";
+                      ORDER BY m.day_number, rt.id, mr.meal_type";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([$id]);
             $menus = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -380,7 +395,7 @@ class MenuController
             foreach ($menus as $m) {
                 echo "<tr>
                     <td>Día {$m['day_number']}</td>
-                    <td><b>{$m['meal_type']}</b></td>
+                    <td><b>" . ($m['ration_name'] ?: $m['meal_type']) . "</b></td>
                     <td>{$m['menu_name']}</td>
                     <td>" . ($m['recipe_name'] ?? '<i>No asignada</i>') . "</td>
                 </tr>";

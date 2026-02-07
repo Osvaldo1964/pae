@@ -231,7 +231,9 @@ const App = {
                     'recetario': 'recetario',
                     'minutas': 'minutas',
                     'team': 'team',
-                    'consumos': 'consumos'
+                    'consumos': 'consumos',
+                    'hr-positions': 'hr_positions',
+                    'hr-employees': 'hr_employees'
                 };
 
                 App.loadView(viewMap[route] || route);

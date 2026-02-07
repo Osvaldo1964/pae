@@ -65,9 +65,9 @@ class ConsumptionController
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['beneficiary_id']) || empty($data['meal_type']) || empty($data['branch_id'])) {
+        if (empty($data['beneficiary_id']) || empty($data['ration_type_id']) || empty($data['branch_id'])) {
             http_response_code(400);
-            echo json_encode(["message" => "Datos incompletos (Beneficiario, Tipo Comida, Sede)."]);
+            echo json_encode(["message" => "Datos incompletos (Beneficiario, Tipo Ración, Sede)."]);
             return;
         }
 
@@ -87,15 +87,15 @@ class ConsumptionController
         }
 
         // 2. Check for Duplicate
-        $stmtDup = $this->conn->prepare("SELECT id, created_at FROM daily_consumptions WHERE beneficiary_id = ? AND date = ? AND meal_type = ?");
-        $stmtDup->execute([$data['beneficiary_id'], $date, $data['meal_type']]);
+        $stmtDup = $this->conn->prepare("SELECT id, created_at FROM daily_consumptions WHERE beneficiary_id = ? AND date = ? AND ration_type_id = ?");
+        $stmtDup->execute([$data['beneficiary_id'], $date, $data['ration_type_id']]);
         $existing = $stmtDup->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
             http_response_code(409); // Conflict
             $time = date('H:i', strtotime($existing['created_at']));
             echo json_encode([
-                "message" => "El beneficiario ya recibió {$data['meal_type']} hoy a las {$time}.",
+                "message" => "El beneficiario ya recibió esta ración hoy a las {$time}.",
                 "duplicate" => true
             ]);
             return;
@@ -103,14 +103,15 @@ class ConsumptionController
 
         // 3. Insert
         try {
-            $query = "INSERT INTO daily_consumptions (pae_id, branch_id, beneficiary_id, date, meal_type, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+            $query = "INSERT INTO daily_consumptions (pae_id, branch_id, beneficiary_id, date, ration_type_id, meal_type, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 $auth['pae_id'],
                 $data['branch_id'],
                 $data['beneficiary_id'],
                 $date,
-                $data['meal_type']
+                $data['ration_type_id'],
+                $data['meal_type'] ?? ''
             ]);
 
             echo json_encode([
@@ -118,7 +119,6 @@ class ConsumptionController
                 "message" => "Entrega registrada correctamente",
                 "beneficiary_name" => $beneficiary['first_name'] . ' ' . $beneficiary['last_name1']
             ]);
-
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(["message" => "Error al guardar el consumo: " . $e->getMessage()]);
@@ -157,7 +157,7 @@ class ConsumptionController
         // For simple progress, let's assume we want % of total active beneficiaries in that branch
         $progress = 0;
         if ($branch_id) {
-            $stmtCount = $this->conn->prepare("SELECT COUNT(*) as total FROM beneficiaries WHERE branch_id = ? AND status = 'active'");
+            $stmtCount = $this->conn->prepare("SELECT COUNT(*) as total FROM beneficiaries WHERE branch_id = ? AND status = 'ACTIVO'");
             $stmtCount->execute([$branch_id]);
             $totalBen = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
 
@@ -191,12 +191,13 @@ class ConsumptionController
         $meal_type = $_GET['meal_type'] ?? null;
 
         $query = "SELECT 
-                    dc.id, dc.created_at as time, dc.meal_type,
+                    dc.id, dc.created_at as time, rt.name as meal_type,
                     b.document_number, b.first_name, b.last_name1, b.grade, b.group_name,
                     sb.name as branch_name
                   FROM daily_consumptions dc
                   JOIN beneficiaries b ON dc.beneficiary_id = b.id
                   JOIN school_branches sb ON dc.branch_id = sb.id
+                  LEFT JOIN pae_ration_types rt ON dc.ration_type_id = rt.id
                   WHERE dc.pae_id = ? AND dc.date = ?";
 
         $params = [$auth['pae_id'], $date];
@@ -207,7 +208,7 @@ class ConsumptionController
         }
 
         if ($meal_type) {
-            $query .= " AND dc.meal_type = ?";
+            $query .= " AND dc.ration_type_id = ?";
             $params[] = $meal_type;
         }
 

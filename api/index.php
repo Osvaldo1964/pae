@@ -74,7 +74,6 @@ if ($resource === 'auth') {
         http_response_code(404);
         echo json_encode(["message" => "Auth Action Not Found"]);
     }
-
 } elseif ($resource === 'tenant') {
     $controller = new \Controllers\TenantController();
     if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -521,7 +520,42 @@ if ($resource === 'auth') {
             $controller->store();
     }
     exit;
+} elseif ($resource === 'ration-types') {
+    $controller = new \Controllers\RationTypeController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    }
+} elseif ($resource === 'hr-positions') {
+
+    $controller = new \Controllers\HRPositionController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    }
+} elseif ($resource === 'hr-employees') {
+    $controller = new \Controllers\HREmployeeController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    }
 } elseif ($resource === 'reports') {
+
     if ($action === 'needs' && $id_param) {
         $controller = new \Controllers\NeedsReportController();
         $controller->generate($id_param);
