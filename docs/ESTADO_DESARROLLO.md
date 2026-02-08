@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 06 de Febrero de 2026, 14:45  
-**Versión:** 1.6.0 (Fase 4 - Operación: Reportes de Consumo QR)
+**Última Actualización:** 07 de Febrero de 2026, 17:40  
+**Versión:** 1.6.5 (Fase 4 - Operación: Logística y Perecederos)
 
 ---
 
@@ -90,6 +90,8 @@
 - [x] Cálculo automático de % desperdicio
 - [x] Filtros por grupo, compra local y estado
 - [x] Badges de colores por grupo de alimento
+- [x] **Lógica de Perecederos:** Campo explícito `is_perishable` para diferenciar logística de frío vs rotación rápida (Pan, Huevos).
+- [x] **Indicadores Visuales:** Iconos de reloj (Perecedero 🕒) y nieve (Refrigerado ❄️) integrados en Ítems y Almacén.
 
 ### 8. Módulo de Cocina - Recetario Maestro ✅ ⭐ NUEVO
 - [x] **Backend:** `RecipeController.php` con CRUD y motor de recalculación.
@@ -108,6 +110,7 @@
 - [x] **Validaciones:** Restricción de eliminación para ciclos activos o validados nutricionalmente.
 - [x] **Refinamiento:** Borrado en cascada (limpia menús e ítems asociados).
 - [x] **Reportes:** Explosión de insumos detallada por sede y edad (Excel/PDF).
+- [x] **Tipos de Ración:** Reubicación funcional al módulo de Cocina con ordenamiento manual (Items > Tipos Ración > Recetario > Ciclos).
 
 ### 10. Módulo de Almacén (Inventario) 🟡 ⭐ EN CURSO
 - [x] **Backend:** `InventoryController.php` con gestión de stock y movimientos.
@@ -137,6 +140,7 @@
 - [x] **Comparativa Dinámica:** Reporte que cruza Inventario Actual vs Requerimientos de Menú Programado.
 - [x] **Cálculo de Déficit:** Identificación automática de insumos faltantes para la operación.
 - [x] **Filtros:** Por rango de fechas y sedes.
+- [x] **UX Navegación:** Reordenamiento del menú lateral (Recurso Humano antes de Reportes) para flujo lógico de operación.
 
 ---
 
@@ -169,10 +173,13 @@
 
 ## 🔧 CORRECCIONES RECIENTES (v1.6.0)
 
-### Módulo de Operatividad y Reportes
+### Módulo de Operatividad y Logística
+- ✅ **Lógica de Perecederos:** Implementada distinción explícita entre productos refrigerados y de alta rotación (Perecederos).
+- ✅ **Tipos de Ración:** Corregido SyntaxError de re-declaración y warning de "status" en el controlador.
+- ✅ **Navegación:** Ajustado orden de grupos en el Sidebar y manual ordering en Hub de Cocina.
 - ✅ **Reporte de Asistencia (QR):** Implementado desde cero para auditoría de raciones capturadas en móvil.
 - ✅ **Fix de UX:** Añadido `Helper.loading()` para feedback visual en búsquedas pesadas.
-- ✅ **Estabilización de Almacén:** Corregida lógica de saldos en remociones de órdenes de compra.
+- ✅ **Estabilización de Almacén:** Corregida lógica de saldos en remociones de órdenes de compra y visualización de iconos logísticos.
 
 ### Módulo de Almacén
 - ✅ Corregida ruta de API para proveedores (`/proveedores`).

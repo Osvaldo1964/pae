@@ -79,7 +79,7 @@ class RationTypeController
                 ':id' => $id,
                 ':name' => $data['name'],
                 ':description' => $data['description'] ?? null,
-                ':status' => $data['status']
+                ':status' => $data['status'] ?? 'ACTIVO'
             ]);
 
             echo json_encode(['success' => true, 'message' => 'Tipo de ración actualizado']);

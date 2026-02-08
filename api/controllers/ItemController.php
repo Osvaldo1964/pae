@@ -202,7 +202,7 @@ class ItemController
                         contains_gluten, contains_lactose, contains_peanuts, contains_seafood,
                         contains_eggs, contains_soy,
                         is_local_purchase, local_producer, sanitary_registry,
-                        requires_refrigeration, shelf_life_days, unit_cost, status
+                        requires_refrigeration, is_perishable, shelf_life_days, unit_cost, status
                       ) VALUES (
                         :pae_id, :code, :name, :description, :food_group_id, :measurement_unit_id,
                         :gross_weight, :net_weight, :waste_percentage,
@@ -211,7 +211,7 @@ class ItemController
                         :contains_gluten, :contains_lactose, :contains_peanuts, :contains_seafood,
                         :contains_eggs, :contains_soy,
                         :is_local_purchase, :local_producer, :sanitary_registry,
-                        :requires_refrigeration, :shelf_life_days, :unit_cost, :status
+                        :requires_refrigeration, :is_perishable, :shelf_life_days, :unit_cost, :status
                       )";
 
             $stmt = $this->conn->prepare($query);
@@ -271,6 +271,7 @@ class ItemController
             $local_producer = $data['local_producer'] ?? null;
             $sanitary_registry = $data['sanitary_registry'] ?? null;
             $requires_refrigeration = $data['requires_refrigeration'] ?? false;
+            $is_perishable = $data['is_perishable'] ?? false;
             $shelf_life_days = $data['shelf_life_days'] ?? null;
             $unit_cost = $data['unit_cost'] ?? 0.00;
             $status = $data['status'] ?? 'ACTIVO';
@@ -279,6 +280,7 @@ class ItemController
             $stmt->bindParam(':local_producer', $local_producer);
             $stmt->bindParam(':sanitary_registry', $sanitary_registry);
             $stmt->bindParam(':requires_refrigeration', $requires_refrigeration, PDO::PARAM_BOOL);
+            $stmt->bindParam(':is_perishable', $is_perishable, PDO::PARAM_BOOL);
             $stmt->bindParam(':shelf_life_days', $shelf_life_days);
             $stmt->bindParam(':unit_cost', $unit_cost);
             $stmt->bindParam(':status', $status);
@@ -357,6 +359,7 @@ class ItemController
                         local_producer = :local_producer,
                         sanitary_registry = :sanitary_registry,
                         requires_refrigeration = :requires_refrigeration,
+                        is_perishable = :is_perishable,
                         shelf_life_days = :shelf_life_days,
                         unit_cost = :unit_cost,
                         status = :status
@@ -395,6 +398,7 @@ class ItemController
             $stmt->bindParam(':local_producer', $data['local_producer']);
             $stmt->bindParam(':sanitary_registry', $data['sanitary_registry']);
             $stmt->bindParam(':requires_refrigeration', $data['requires_refrigeration'], PDO::PARAM_BOOL);
+            $stmt->bindParam(':is_perishable', $data['is_perishable'], PDO::PARAM_BOOL);
             $stmt->bindParam(':shelf_life_days', $data['shelf_life_days']);
             $stmt->bindParam(':unit_cost', $data['unit_cost']);
             $stmt->bindParam(':status', $data['status']);

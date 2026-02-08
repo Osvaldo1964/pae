@@ -341,10 +341,16 @@ window.ItemsView = {
                                                        onfocus="ItemsView.unformatInput(this)" onblur="ItemsView.formatInput(this, 0)">
                                             </div>
                                             <div class="col-md-4">
-                                                <div class="form-check form-switch mt-4">
+                                                <div class="form-check form-switch mt-2">
                                                     <input class="form-check-input" type="checkbox" name="requires_refrigeration" id="refrigeration">
                                                     <label class="form-check-label" for="refrigeration">
-                                                        <i class="fas fa-snowflake me-1"></i>Requiere Refrigeración
+                                                        <i class="fas fa-snowflake text-info me-1"></i>Requiere Refrigeración
+                                                    </label>
+                                                </div>
+                                                <div class="form-check form-switch mt-2">
+                                                    <input class="form-check-input" type="checkbox" name="is_perishable" id="perishable">
+                                                    <label class="form-check-label" for="perishable">
+                                                        <i class="fas fa-clock text-danger me-1"></i>Es Perecedero
                                                     </label>
                                                 </div>
                                             </div>
@@ -399,7 +405,14 @@ window.ItemsView = {
                 {
                     data: 'name',
                     render: (data, type, row) => {
-                        return `<strong>${data}</strong>`;
+                        let html = `<strong>${data}</strong>`;
+                        if (row.is_perishable == 1) {
+                            html += ` <i class="fas fa-clock text-danger ms-1" title="Perecedero"></i>`;
+                        }
+                        if (row.requires_refrigeration == 1) {
+                            html += ` <i class="fas fa-snowflake text-info ms-1" title="Refrigerado"></i>`;
+                        }
+                        return html;
                     }
                 },
                 {
@@ -556,7 +569,8 @@ window.ItemsView = {
                 const numericFields = [
                     'gross_weight', 'net_weight', 'calories', 'proteins',
                     'carbohydrates', 'fats', 'fiber', 'iron', 'calcium',
-                    'sodium', 'vitamin_a', 'vitamin_c', 'unit_cost', 'shelf_life_days'
+                    'sodium', 'vitamin_a', 'vitamin_c', 'unit_cost', 'shelf_life_days',
+                    'is_local_purchase', 'requires_refrigeration', 'is_perishable'
                 ];
                 if (numericFields.includes(key)) {
                     data[key] = value.replace(/,/g, '');

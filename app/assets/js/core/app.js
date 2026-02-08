@@ -133,6 +133,9 @@ const App = {
                 } else if (route === 'team') {
                     foundGroup = App.state.menu.find(g => g.name === 'Configuración');
                     foundModule = { name: 'Mi Equipo' };
+                } else if (route === 'ration-types') {
+                    foundGroup = App.state.menu.find(g => g.name === 'Cocina');
+                    foundModule = { name: 'Tipos de Ración' };
                 }
             }
 
@@ -233,7 +236,8 @@ const App = {
                     'team': 'team',
                     'consumos': 'consumos',
                     'hr-positions': 'hr_positions',
-                    'hr-employees': 'hr_employees'
+                    'hr-employees': 'hr_employees',
+                    'ration-types': 'ration_types'
                 };
 
                 App.loadView(viewMap[route] || route);
@@ -652,68 +656,74 @@ const App = {
         if (!group) return;
 
         let cardsHtml = '';
+        const modulesToRender = [];
+
+        // 1. Add base modules from database
         group.modules.forEach(mod => {
-            // SECURITY: Hide "Usuarios" module from non-Super Admin users
-            if (mod.route === 'users' && App.state.user && App.state.user.role_id !== 1) {
-                return; // Skip this module
+            if (mod.route === 'users' && App.state.user && App.state.user.role_id !== 1) return;
+            modulesToRender.push(mod);
+        });
+
+        // 2. Inject Virtual Modules based on Group
+        if (group.name === 'Configuración') {
+            if (App.state.user && App.state.user.role_id === 1) {
+                modulesToRender.push({ name: 'Programas PAE', route: 'pae-programs', icon: 'fas fa-building', description: 'Gestión de entidades', virtual: true, color: 'primary' });
             }
+            if (App.state.user && App.state.user.role_id !== 1 && App.state.user.pae_id) {
+                modulesToRender.push({ name: 'Mi Equipo', route: 'team', icon: 'fas fa-users', description: 'Gestión de miembros', virtual: true, color: 'success' });
+            }
+        }
+
+        if (group.name === 'Cocina') {
+            modulesToRender.push({ name: 'Tipos de Ración', route: 'ration-types', icon: 'fas fa-utensils', description: 'Momento entrega', virtual: true, color: 'warning' });
+        }
+
+        // 3. APPLY MANUAL ORDERING
+        // COCINA: items, ration-types, recetario, minutas (ciclos)
+        if (group.name === 'Cocina') {
+            const order = ['items', 'ration-types', 'recetario', 'minutas'];
+            modulesToRender.sort((a, b) => {
+                let idxA = order.indexOf(a.route);
+                let idxB = order.indexOf(b.route);
+                if (idxA === -1) idxA = 99;
+                if (idxB === -1) idxB = 99;
+                return idxA - idxB;
+            });
+        }
+
+        // 4. Generate HTML
+        modulesToRender.forEach(mod => {
+            const isVirtual = !!mod.virtual;
+            const borderClass = isVirtual ? `border-${mod.color || 'primary'}` : '';
+            const bgClass = isVirtual && mod.color === 'warning' ? 'style="background-color: #fff3cd;"' :
+                isVirtual && mod.color === 'success' ? 'style="background-color: #d4edda;"' : '';
+            const iconColor = isVirtual ? `text-${mod.color || 'primary'}` : 'text-primary';
 
             cardsHtml += `
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm hover-card">
+                <div class="col-md-4 mb-4 fade-in">
+                    <div class="card h-100 shadow-sm hover-card ${borderClass}">
                         <div class="card-body text-center">
-                            <div class="icon-circle mb-3 mx-auto">
-                                <i class="${mod.icon} fa-2x text-primary"></i>
+                            <div class="icon-circle mb-3 mx-auto" ${bgClass}>
+                                <i class="${mod.icon} fa-2x ${iconColor}"></i>
                             </div>
-                            <h5 class="card-title">${mod.name}</h5>
+                            <h5 class="card-title fw-bold">${mod.name}</h5>
                             <p class="card-text small text-muted">${mod.description || 'Acceso al módulo'}</p>
-                            <a href="#module/${mod.route}" class="btn btn-outline-primary btn-sm stretched-link">Ingresar</a>
+                            <a href="#module/${mod.route}" class="btn btn-outline-${mod.color || 'primary'} btn-sm stretched-link">
+                                ${mod.route === 'ration-types' ? 'Configurar' : 'Ingresar'}
+                            </a>
                         </div>
                     </div>
                 </div>
             `;
         });
 
-        // Inject special card for PAE Programs if it's the Configuration group and user is Super Admin
-        if (group.name === 'Configuración' && App.state.user && App.state.user.role_id === 1) {
-            cardsHtml += `
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm hover-card border-primary">
-                        <div class="card-body text-center">
-                            <div class="icon-circle mb-3 mx-auto bg-primary-light">
-                                <i class="fas fa-building fa-2x text-primary"></i>
-                            </div>
-                            <h5 class="card-title">Programas PAE</h5>
-                            <p class="card-text small text-muted">Gestión de entidades y operadores (Super Admin)</p>
-                            <a href="#module/pae-programs" class="nav-link btn btn-outline-primary btn-sm stretched-link">Ingresar</a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Inject special card for Mi Equipo if it's the Configuration group and user is PAE Administrator
-        if (group.name === 'Configuración' && App.state.user && App.state.user.role_id !== 1 && App.state.user.pae_id) {
-            cardsHtml += `
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm hover-card border-success">
-                        <div class="card-body text-center">
-                            <div class="icon-circle mb-3 mx-auto" style="background-color: #d4edda;">
-                                <i class="fas fa-users fa-2x text-success"></i>
-                            </div>
-                            <h5 class="card-title">Mi Equipo</h5>
-                            <p class="card-text small text-muted">Gestión de miembros del equipo de trabajo</p>
-                            <a href="#module/team" class="btn btn-outline-success btn-sm stretched-link">Ingresar</a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
         document.getElementById('app').innerHTML = `
-            <h3 class="mb-4 text-primary-custom border-bottom pb-2">
-                <i class="${group.icon} me-2"></i>${group.name}
-            </h3>
+            <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+                <div class="icon-circle bg-primary-light me-3" style="width: 50px; height: 50px;">
+                    <i class="${group.icon} text-primary"></i>
+                </div>
+                <h3 class="mb-0 text-primary-custom fw-bold">${group.name}</h3>
+            </div>
             <div class="row">
                 ${cardsHtml}
             </div>

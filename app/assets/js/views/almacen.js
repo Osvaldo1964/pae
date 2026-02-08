@@ -177,7 +177,11 @@ window.AlmacenView = {
             return `
                 <tr>
                     <td class="ps-4">
-                        <div class="fw-bold text-primary">${item.name}</div>
+                        <div class="fw-bold text-primary">
+                            ${item.name}
+                            ${item.is_perishable == 1 ? '<i class="fas fa-clock text-danger ms-1" title="Perecedero"></i>' : ''}
+                            ${item.requires_refrigeration == 1 ? '<i class="fas fa-snowflake text-info ms-1" title="Refrigerado"></i>' : ''}
+                        </div>
                         <small class="text-muted">${item.code}</small>
                     </td>
                     <td><span class="badge bg-light text-dark border">${item.food_group}</span></td>

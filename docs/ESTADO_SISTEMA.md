@@ -1,4 +1,4 @@
-# Estado del Sistema PAE Control - 06 de Febrero 2026
+# Estado del Sistema PAE Control - 07 de Febrero 2026
 
 ## ✅ Módulos Completados
 
@@ -14,7 +14,9 @@
 
 ### 3. **Cocina** ✅ ⭐ FASE COMPLETADA
 - ✅ Ítems (Gestión de insumos con info nutricional y alérgenos)
+  - ✅ **Nuevo:** Lógica de Perecederos (Iconografía 🕒/❄️ en Stock e Ítems).
 - ✅ Recetario Maestro (Estandarización de platos base)
+- ✅ Tipos de Ración (Configuración de momentos de consumo)
 - ✅ Minutas y Ciclos (Planeación automática de 20 días)
   - ✅ **Reporte de Explosión de Insumos:** Cálculo de compras exactas vs censo.
 
@@ -33,6 +35,10 @@
 - 🟡 **Módulo Móvil de Entregas (PWA):** *REFINANDO*
   - Escáner funcional. Persisten ajustes menores de UX en entornos locales.
 
+### 6. **UX / Navegación**
+- ✅ **Reordenamiento Sidebar:** Recurso Humano posicionado antes de Reportes para flujo lógico.
+- ✅ **Hub Cocina:** Ordenamiento manual (Ítems > Tipos de Ración > Recetario > Ciclos).
+
 ---
 
 ## 🔧 Correcciones Recientes
@@ -40,7 +46,9 @@
 ### Core JS Utilities
 - ✅ **Helper.js:** Implementado método universal `Helper.loading()` para sincronizar estados de espera en toda la aplicación.
 
-### Reportes
+### Reportes y Logística
+- ✅ **Lógica de Perecederos:** Diferenciación visual y operativa de productos según rotación.
+- ✅ **Tipos de Ración:** Resuelto SyntaxError por re-declaración y warning de persistencia en BD.
 - ✅ **Reporte de Asistencia (QR):** Primer módulo de auditoría legal que vincula lecturas QR con la base de datos central de beneficiarios.
 
 ---
@@ -54,4 +62,4 @@
 
 ---
 
-**Última actualización**: 06 de Febrero 2026, 14:50 PM
+**Última actualización**: 07 de Febrero 2026, 17:45 PM
