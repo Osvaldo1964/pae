@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última Actualización:** 07 de Febrero de 2026, 17:40  
-**Versión:** 1.6.5 (Fase 4 - Operación: Logística y Perecederos)
+**Última actualización**: 08 de Febrero 2026, 13:15 PM
+**Versión:** 1.6.6 (Fase 4 - Operación: Estabilización de Ítems)
 
 ---
 
@@ -174,6 +174,8 @@
 ## 🔧 CORRECCIONES RECIENTES (v1.6.0)
 
 ### Módulo de Operatividad y Logística
+- ✅ **Estabilización de Ítems:** Corregida extracción de `pae_id` del token JWT y normalización de códigos automáticos.
+- ✅ **Fix de UI:** Corregido orden de argumentos en `Helper.alert` para mostrar iconos correctos en SweetAlert2.
 - ✅ **Lógica de Perecederos:** Implementada distinción explícita entre productos refrigerados y de alta rotación (Perecederos).
 - ✅ **Tipos de Ración:** Corregido SyntaxError de re-declaración y warning de "status" en el controlador.
 - ✅ **Navegación:** Ajustado orden de grupos en el Sidebar y manual ordering en Hub de Cocina.

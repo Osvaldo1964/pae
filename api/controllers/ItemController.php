@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Config\Database;
+use Utils\JWT;
 use PDO;
 use PDOException;
 use Exception;
@@ -23,20 +24,14 @@ class ItemController
     private function getPaeIdFromToken()
     {
         $headers = getallheaders();
-        if (!isset($headers['Authorization'])) {
-            if (function_exists('apache_request_headers')) {
-                $headers = apache_request_headers();
-            }
-        }
-
-        if (isset($headers['Authorization'])) {
-            $authHeader = $headers['Authorization'];
-            $token = str_replace('Bearer ', '', $authHeader);
-
-            $parts = explode('.', $token);
-            if (count($parts) === 3) {
-                $payload = json_decode(base64_decode($parts[1]), true);
-                return $payload['pae_id'] ?? null;
+        $auth = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        if (preg_match('/Bearer\s(\S+)/', $auth, $matches)) {
+            try {
+                $decoded = JWT::decode($matches[1]);
+                if (is_object($decoded)) return $decoded->data->pae_id ?? null;
+                if (is_array($decoded)) return $decoded['data']['pae_id'] ?? null;
+            } catch (Exception $e) {
+                return null;
             }
         }
         return null;
@@ -187,7 +182,7 @@ class ItemController
 
             // Normalizar nombre a MAYÚSCULAS
             $data['name'] = strtoupper(trim($data['name']));
-            $data['code'] = $data['code'] ?? strtoupper(substr(preg_replace('/[^A-Z0-9]/', '', $data['name']), 0, 20));
+            $data['code'] = (!empty($data['code'])) ? strtoupper(trim($data['code'])) : strtoupper(substr(preg_replace('/[^A-Z0-9]/', '', $data['name']), 0, 20));
 
             // Calcular porcentaje de desperdicio si no viene
             if (!isset($data['waste_percentage']) && isset($data['gross_weight']) && isset($data['net_weight'])) {
@@ -293,7 +288,7 @@ class ItemController
                 'id' => $this->conn->lastInsertId()
             ]);
         } catch (PDOException $e) {
-            if ($e->getCode() == 23000) {
+            if ($e->errorInfo[1] == 1062) {
                 http_response_code(409);
                 echo json_encode([
                     'success' => false,
@@ -303,9 +298,15 @@ class ItemController
                 http_response_code(500);
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Error al crear ítem: ' . $e->getMessage()
+                    'message' => 'Error de base de datos (' . $e->errorInfo[1] . '): ' . $e->getMessage()
                 ]);
             }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error al crear ítem: ' . $e->getMessage()
+            ]);
         }
     }
 
@@ -415,6 +416,20 @@ class ItemController
                 echo json_encode([
                     'success' => false,
                     'message' => 'Ítem no encontrado o sin cambios'
+                ]);
+            }
+        } catch (PDOException $e) {
+            if ($e->errorInfo[1] == 1062) {
+                http_response_code(409);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Ya existe un ítem con ese código'
+                ]);
+            } else {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Error de base de datos (' . $e->errorInfo[1] . '): ' . $e->getMessage()
                 ]);
             }
         } catch (Exception $e) {

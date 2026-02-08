@@ -574,8 +574,10 @@ window.ItemsView = {
                 ];
                 if (numericFields.includes(key)) {
                     data[key] = value.replace(/,/g, '');
+                } else if (key === 'code' && !value.trim()) {
+                    data[key] = null;
                 } else {
-                    data[key] = value;
+                    data[key] = typeof value === 'string' ? value.trim() : value;
                 }
             }
         });
@@ -595,15 +597,15 @@ window.ItemsView = {
             }
 
             if (response.success) {
-                Helper.alert(response.message, 'success');
+                Helper.alert('success', response.message);
                 bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
                 await this.loadItems();
             } else {
-                Helper.alert(response.message, 'error');
+                Helper.alert('error', response.message);
             }
         } catch (error) {
             console.error('Error saving item:', error);
-            Helper.alert('error', '');
+            Helper.alert('error', 'Error al procesar la solicitud');
         }
     },
 
