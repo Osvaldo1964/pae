@@ -223,9 +223,12 @@
                     </div>
                 </div>
                 <div class="col-6">
-                    <div class="card action-card p-3 text-center" onclick="window.app.syncData()">
+                    <div class="card action-card p-3 text-center position-relative" onclick="window.app.syncData()">
                         <i class="fas fa-sync card-icon text-info"></i>
                         <span class="fw-bold small">Sincronizar</span>
+                        <span id="sync-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                            0
+                        </span>
                     </div>
                 </div>
             </div>

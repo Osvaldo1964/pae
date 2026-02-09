@@ -59,9 +59,6 @@ $resource = trim($resource);
 // CLEAN IDIOTS FROM URL (Null bytes, vertical tabs, etc)
 $resource = preg_replace('/[\x00-\x1F\x7F]/u', '', $resource);
 
-// DEBUG GLOBAL
-file_put_contents(__DIR__ . '/../debug_data.php', date('Y-m-d H:i:s') . " - ROUTER: " . $_SERVER['REQUEST_METHOD'] . " $full_uri -> Res: [$resource] (" . strlen($resource) . "), Act: $action\n", FILE_APPEND);
-
 if ($resource === 'auth') {
     $controller = new \Controllers\AuthController();
     if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -24,6 +24,12 @@ class MobileApp {
             this.selectedBranch = (b && b !== 'undefined') ? JSON.parse(b) : null;
         } catch (e) { this.selectedBranch = null; }
 
+        // Load pending scans from local storage
+        try {
+            const p = localStorage.getItem('pae_pending');
+            this.pendingScans = (p && p !== 'undefined') ? JSON.parse(p) : [];
+        } catch (e) { this.pendingScans = []; }
+
         this.init();
     }
 
@@ -35,6 +41,7 @@ class MobileApp {
             this.loadUserData();
             this.loadStats();
             this.loadRationTypes();
+            this.updateSyncUI();
         }
     }
 
@@ -172,9 +179,8 @@ class MobileApp {
 
             if (!response.ok) throw new Error('Error cargando sedes');
 
-            const branches = await response.json(); // Assuming standard API wrapper
+            const branches = await response.json();
 
-            // Unwrap if needed (standard API returns {success:true, data: []} usually, OR just array)
             const list = Array.isArray(branches) ? branches : (branches.data || []);
 
             if (list.length === 0) {
@@ -218,12 +224,10 @@ class MobileApp {
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
 
-        // Wait for modal transition
         setTimeout(() => {
             this.startScanner();
         }, 500);
 
-        // Stop scanner on close
         modalEl.addEventListener('hidden.bs.modal', () => {
             if (this.html5QrCode) {
                 this.html5QrCode.stop().then(() => {
@@ -234,17 +238,15 @@ class MobileApp {
     }
 
     startScanner() {
-        // Stop any previous instance
         if (this.html5QrCode) {
             try { this.html5QrCode.clear(); } catch (e) { }
         }
 
-        // Check for HTTPS/Secure Context
         if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             Swal.fire({
                 icon: 'error',
                 title: 'Requiere HTTPS',
-                html: 'El navegador bloquea la cámara en sitios no seguros (HTTP).<br><br><b>Solución:</b><br>1. Use HTTPS o localhost.<br>2. O en Chrome móvil vaya a: <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code> y agregue esta IP.',
+                html: 'El navegador bloquea la cámara en sitios no seguros (HTTP).',
                 confirmButtonText: 'Entendido'
             });
             return;
@@ -259,9 +261,7 @@ class MobileApp {
             (decodedText, decodedResult) => {
                 this.handleScan(decodedText);
             },
-            (errorMessage) => {
-                // ignore
-            }
+            (errorMessage) => { }
         ).catch(err => {
             console.error("Error starting scanner", err);
             let msg = "Error: Cámara no disponible (" + err + ")";
@@ -281,33 +281,32 @@ class MobileApp {
         const parts = qrCode.split(':');
         // Validate format
         if (parts[0] !== 'PAE' || parts.length < 3) {
-            // Fallback: If it's just numbers, treat as document number?
-            // For now strict QR check
             Swal.fire('Error', 'QR inválido. Use el carnet oficial.', 'error')
                 .then(() => this.html5QrCode.resume());
             return;
         }
 
         const beneficiaryId = parts[1];
+        const rationSelect = document.getElementById('current-ration-type');
+        const rationTypeId = rationSelect.value;
+        const rationTypeName = rationSelect.options[rationSelect.selectedIndex]?.text || '';
+
+        if (!rationTypeId) {
+            Swal.fire('Atención', 'Seleccione un momento de entrega primero.', 'warning')
+                .then(() => this.html5QrCode.resume());
+            return;
+        }
+
+        const payload = {
+            beneficiary_id: beneficiaryId,
+            branch_id: this.selectedBranch.id,
+            ration_type_id: rationTypeId,
+            meal_type: rationTypeName,
+            at: new Date().toISOString(), // Local timestamp for reference
+            beneficiary_name: parts[3] || 'Desconocido' // Optional: if QR includes name
+        };
 
         try {
-            const rationSelect = document.getElementById('current-ration-type');
-            const rationTypeId = rationSelect.value;
-            const rationTypeName = rationSelect.options[rationSelect.selectedIndex]?.text || '';
-
-            if (!rationTypeId) {
-                Swal.fire('Error', 'Seleccione un momento de entrega primero.', 'warning')
-                    .then(() => this.html5QrCode.resume());
-                return;
-            }
-
-            const payload = {
-                beneficiary_id: beneficiaryId,
-                branch_id: this.selectedBranch.id,
-                ration_type_id: rationTypeId,
-                meal_type: rationTypeName // Legacy support
-            };
-
             const response = await fetch(`${API_BASE_URL}/consumptions`, {
                 method: 'POST',
                 headers: {
@@ -324,29 +323,113 @@ class MobileApp {
                     icon: 'success',
                     title: '¡Entrega Registrada!',
                     html: `<b>${data.beneficiary_name || ''}</b><br>${rationTypeName}`,
-                    timer: 2000,
+                    timer: 1500,
                     showConfirmButton: false
                 }).then(() => {
-                    this.loadStats(); // Refresh stats
-                    // Resume scanning seamlessly
+                    this.loadStats();
                     this.html5QrCode.resume();
                 });
-            } else {
-                // Determine if it's a duplicate or error
-                const isDuplicate = response.status === 409;
-
+            } else if (response.status === 409) {
                 Swal.fire({
-                    icon: isDuplicate ? 'warning' : 'error',
-                    title: isDuplicate ? 'Ya entregado' : 'Error',
+                    icon: 'warning',
+                    title: 'Ya entregado',
                     text: data.message,
-                    confirmButtonColor: '#d33',
-                    timer: 3000
+                    timer: 2500
                 }).then(() => this.html5QrCode.resume());
+            } else {
+                throw new Error(data.message || 'Error en servidor');
             }
 
         } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'Fallo de conexión', 'error').then(() => this.html5QrCode.resume());
+            console.warn("Offline or Server Error, saving locally:", error);
+            this.saveLocally(payload);
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Guardado Local',
+                html: `Sin conexión. La entrega de <b>${payload.beneficiary_name}</b> se sincronizará luego.`,
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => this.html5QrCode.resume());
+        }
+    }
+
+    saveLocally(payload) {
+        this.pendingScans.push(payload);
+        localStorage.setItem('pae_pending', JSON.stringify(this.pendingScans));
+        this.updateSyncUI();
+    }
+
+    updateSyncUI() {
+        const badge = document.getElementById('sync-badge');
+        if (badge) {
+            if (this.pendingScans.length > 0) {
+                badge.innerText = this.pendingScans.length;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+        }
+    }
+
+    async syncData() {
+        if (this.pendingScans.length === 0) {
+            this.loadStats();
+            Swal.fire({ icon: 'success', title: 'Sincronizado', text: 'No hay datos pendientes.', timer: 1000, showConfirmButton: false });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Sincronizando...',
+            html: `Subiendo <b>${this.pendingScans.length}</b> registros pendientes.`,
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        let successCount = 0;
+        let errors = [];
+
+        // Try to upload each pending scan
+        // We do it sequentially to handle duplicates/errors correctly
+        const toSync = [...this.pendingScans];
+        this.pendingScans = []; // Clear current list temporarily
+
+        for (const item of toSync) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/consumptions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.token}`
+                    },
+                    body: JSON.stringify(item)
+                });
+
+                if (response.ok || response.status === 409) {
+                    successCount++;
+                } else {
+                    const data = await response.json();
+                    errors.push(`${item.beneficiary_name}: ${data.message}`);
+                    this.pendingScans.push(item); // Put back to retry later
+                }
+            } catch (e) {
+                errors.push(`${item.beneficiary_name}: Error de red`);
+                this.pendingScans.push(item); // Put back
+            }
+        }
+
+        localStorage.setItem('pae_pending', JSON.stringify(this.pendingScans));
+        this.updateSyncUI();
+        this.loadStats();
+
+        if (errors.length === 0) {
+            Swal.fire({ icon: 'success', title: '¡Éxito!', text: `Se sincronizaron ${successCount} registros.`, timer: 2000 });
+        } else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sincronización Parcial',
+                html: `Sincronizados: ${successCount}<br>Pendientes: ${this.pendingScans.length}<br><small>Haga clic en sincronizar de nuevo cuando mejore la señal.</small>`,
+            });
         }
     }
 
@@ -359,20 +442,8 @@ class MobileApp {
             confirmButtonText: 'Buscar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Implement manual lookup API here if needed
                 Swal.fire('Info', 'La búsqueda manual estará disponible próximamente.', 'info');
             }
-        });
-    }
-
-    syncData() {
-        this.loadStats();
-        Swal.fire({
-            icon: 'success',
-            title: 'Sincronizado',
-            text: 'Datos actualizados.',
-            timer: 1000,
-            showConfirmButton: false
         });
     }
 }
