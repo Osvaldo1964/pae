@@ -134,7 +134,7 @@ window.SalidasView = {
     async openModal(id = null) {
         this.currentProjections = [];
         const isEdit = !!id;
-        const remission = isEdit ? this.remissions.find(r => r.id === id) : null;
+        const remission = isEdit ? this.remissions.find(r => r.id == id) : null;
         let remissionItems = [];
 
         if (isEdit) {
@@ -187,7 +187,13 @@ window.SalidasView = {
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Fecha Despacho</label>
-                                            <input type="date" class="form-control form-control-lg border-2" id="msg-date" value="${remission ? remission.remission_date : new Date().toISOString().split('T')[0]}" required>
+                                            <div class="d-flex">
+                                                <input type="date" class="form-control form-control-lg border-2 me-2" id="msg-date" value="${remission ? remission.remission_date : new Date().toISOString().split('T')[0]}" required>
+                                                ${isEdit && remission ? `
+                                                <button type="button" class="btn btn-outline-dark shadow-sm" title="Imprimir Salida" onclick="SalidasView.printRemission(${remission.id})">
+                                                    <i class="fas fa-print"></i>
+                                                </button>` : ''}
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="row g-3 mt-2">
@@ -351,7 +357,7 @@ window.SalidasView = {
             </td>
             <td>
                 <input type="text" class="form-control border-0 bg-transparent row-qty text-end" 
-                       value="${data ? Helper.formatNumber(data.quantity, 3) : '1.000'}" 
+                       value="${data ? Helper.formatNumber(data.quantity || data.quantity_sent, 3) : '1.000'}" 
                        onfocus="SalidasView.unformatInput(this)" 
                        onblur="SalidasView.formatInput(this, 3)" required>
             </td>
@@ -464,6 +470,123 @@ window.SalidasView = {
             }
         } catch (error) {
             Helper.alert('error', 'Error al eliminar');
+        }
+    },
+
+    async printRemission(id) {
+        const remission = this.remissions.find(r => r.id == id);
+        if (!remission) return;
+
+        try {
+            const res = await Helper.fetchAPI(`/remissions/${id}/details`);
+            const items = res.success ? res.data : [];
+            const branch = this.branches.find(b => b.id == remission.branch_id);
+            const cycle = this.cycles.find(c => c.id == remission.cycle_id);
+
+            let itemsHtml = '';
+            items.forEach(item => {
+                const itemInfo = this.items.find(i => i.id == item.item_id);
+                // For salidas, backend returns 'quantity' inside details? No, it's 'quantity_sent' in inventory_remission_details
+                // but InventoryController getRemissionDetails selects * from inventory_remission_details.
+                // However, wait, the stored procedure/controller might return generic 'quantity' if aliased?
+                // Let's use fallback.
+                const qtyVal = parseFloat(item.quantity || item.quantity_sent) || 0;
+
+                itemsHtml += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${itemInfo ? itemInfo.name : 'Unknown Item'}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${itemInfo ? (itemInfo.unit_abbr || itemInfo.unit) : ''}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatNumber(qtyVal, 3)}</td>
+                    </tr>
+                `;
+            });
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Salida de Almacén #${remission.remission_number}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.4; font-size: 14px; }
+                        .header { margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+                        .title { font-size: 24px; font-weight: bold; color: #333; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                        th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; }
+                        td { border: 1px solid #ddd; padding: 8px; }
+                        .signature-section { margin-top: 50px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+                        .signature-box { width: 30%; border-top: 1px solid #000; padding-top: 10px; text-align: center; }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="title">SALIDA DE ALMACÉN / DESPACHO</div>
+                            <div style="color: #667;">Ref: ${remission.remission_number}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div><strong>Fecha Despacho:</strong> ${Helper.formatDate(remission.remission_date)}</div>
+                             <div style="font-size: 12px; color: #999;">Generado: ${new Date().toLocaleString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #777; margin-bottom: 4px;">Destino (Sede Educativa)</div>
+                            <div style="font-weight: bold; font-size: 16px;">${branch ? branch.name : 'N/A'}</div>
+                            <div>Ciclo de Menú: ${cycle ? cycle.name : 'N/A'}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div style="margin-bottom: 5px;"><strong>Transportador:</strong> ${remission.carrier_name || 'N/A'}</div>
+                             <div><strong>Vehículo / Placa:</strong> ${remission.vehicle_plate || 'N/A'}</div>
+                             <div style="margin-top: 5px;"><strong>Estado:</strong> ${remission.status}</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ítem / Descripción</th>
+                                <th style="text-align: center; width: 100px;">Unidad</th>
+                                <th style="text-align: right; width: 120px;">Cantidad Despachada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <div>Entregado Por (Almacén)</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 5px;">Firma y Sello</div>
+                        </div>
+                        <div class="signature-box">
+                            <div>Transportador</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 5px;">Firma y Cédula</div>
+                        </div>
+                        <div class="signature-box">
+                            <div>Recibido Por (Sede)</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 5px;">Firma y Sello</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 11px; color: #999; margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+                        <p>Documento generado por PAE Control WebApp</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            Helper.printHTML(html);
+
+        } catch (e) {
+            console.error(e);
+            Helper.alert('error', 'Error al generar impresión');
         }
     },
 

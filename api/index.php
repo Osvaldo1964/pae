@@ -421,6 +421,10 @@ if ($resource === 'auth') {
             $controller->getBranchCycleProjections($id_param, $uri_segments[3]);
         } elseif ($action === 'cycle-projections' && $id_param) {
             $controller->getCycleProjections($id_param);
+        } elseif ($action === 'kardex' && $id_param) {
+            $controller->getKardex($id_param);
+        } elseif ($action === 'cycle-cost-report' && $id_param) {
+            $controller->getCycleCostReport($id_param);
         } else {
             $controller->getStock();
         }

@@ -166,8 +166,6 @@
 - [ ] Reportes gerenciales
 - [ ] Integración con SIMAT
 
-## 🚨 BLOQUEOS PENDIENTES
-- [ ] **Autenticación Móvil:** A pesar de los bypasses (`X-Auth-Token` y `.htaccess`), el servidor sigue retornando "Acceso denegado" al intentar listar sedes desde el móvil. La decodificación del JWT o la extracción del string parece fallar en el entorno local (XAMPP).
 
 ---
 

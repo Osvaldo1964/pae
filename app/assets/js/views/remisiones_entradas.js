@@ -117,7 +117,7 @@ window.RemisionesEntradasView = {
 
     async openModal(id = null) {
         const isEdit = !!id;
-        const remission = isEdit ? this.remissions.find(r => r.id === id) : null;
+        const remission = isEdit ? this.remissions.find(r => r.id == id) : null;
         let details = [];
 
         if (isEdit) {
@@ -163,7 +163,13 @@ window.RemisionesEntradasView = {
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small fw-bold text-muted text-uppercase">Fecha Ingreso</label>
-                                            <input type="date" class="form-control form-control-lg border-2" id="msg-date" value="${remission ? remission.remission_date : new Date().toISOString().split('T')[0]}" required ${isEdit ? 'readonly' : ''}>
+                                            <div class="d-flex">
+                                                <input type="date" class="form-control form-control-lg border-2 me-2" id="msg-date" value="${remission ? remission.remission_date : new Date().toISOString().split('T')[0]}" required ${isEdit ? 'readonly' : ''}>
+                                                ${isEdit && remission ? `
+                                                <button type="button" class="btn btn-outline-dark shadow-sm" title="Imprimir Remisión" onclick="RemisionesEntradasView.printRemission(${remission.id})">
+                                                    <i class="fas fa-print"></i>
+                                                </button>` : ''}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -258,7 +264,7 @@ window.RemisionesEntradasView = {
         const body = document.getElementById('remission-entrada-items-body');
         const row = document.createElement('tr');
 
-        const itemsHtml = this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit})</option>`).join('');
+        const itemsHtml = this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name} (${i.unit_abbr || i.unit})</option>`).join('');
 
         row.innerHTML = `
             <td class="ps-4">
@@ -371,6 +377,116 @@ window.RemisionesEntradasView = {
                 minimumFractionDigits: decimals,
                 maximumFractionDigits: decimals
             }).format(num);
+        }
+    },
+
+    async printRemission(id) {
+        const remission = this.remissions.find(r => r.id == id);
+        if (!remission) return;
+
+        try {
+            const res = await Helper.fetchAPI(`/remissions/${id}/details`);
+            const items = res.success ? res.data : [];
+            const supplier = this.suppliers.find(s => s.id == remission.supplier_id);
+            const po = this.purchaseOrders.find(p => p.id == remission.po_id);
+
+            let itemsHtml = '';
+            items.forEach(item => {
+                const itemInfo = this.items.find(i => i.id == item.item_id);
+                // For remissions, we focus on Quantity Received
+                const qty = parseFloat(item.quantity_sent || item.quantity) || 0;
+
+                itemsHtml += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${itemInfo ? itemInfo.name : 'Unknown Item'}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${itemInfo ? (itemInfo.unit_abbr || itemInfo.unit) : ''}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${Helper.formatNumber(qty, 3)}</td>
+                    </tr>
+                `;
+            });
+
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Remisión de Entrada #${remission.remission_number}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.4; font-size: 14px; }
+                        .header { margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+                        .title { font-size: 24px; font-weight: bold; color: #333; }
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                        th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 10px; text-align: left; font-weight: bold; }
+                        td { border: 1px solid #ddd; padding: 8px; }
+                        .signature-section { margin-top: 50px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+                        .signature-box { width: 45%; border-top: 1px solid #000; padding-top: 10px; text-align: center; }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <div class="title">REMISIÓN DE ENTRADA / INGRESO</div>
+                            <div style="color: #667;">Ref: ${remission.remission_number}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div><strong>Fecha Ingreso:</strong> ${Helper.formatDate(remission.remission_date)}</div>
+                             <div style="font-size: 12px; color: #999;">Generado: ${new Date().toLocaleString()}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #777; margin-bottom: 4px;">Proveedor</div>
+                            <div style="font-weight: bold; font-size: 16px;">${supplier ? supplier.name : 'N/A'}</div>
+                            <div>NIT: ${supplier ? supplier.nit : 'N/A'}</div>
+                            <div>${supplier ? supplier.phone : ''}</div>
+                        </div>
+                        <div style="text-align: right;">
+                             <div style="margin-bottom: 5px;"><strong>Orden de Compra:</strong> ${po ? po.po_number : 'NO APLICA / DIRECTA'}</div>
+                             <div><strong>Estado:</strong> ${remission.status}</div>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ítem / Descripción</th>
+                                <th style="text-align: center; width: 100px;">Unidad</th>
+                                <th style="text-align: right; width: 120px;">Cantidad Recibida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <div>Recibido Por (Almacén)</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 5px;">Firma y Sello</div>
+                        </div>
+                        <div class="signature-box">
+                            <div>Entregado Por (Proveedor)</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 5px;">Firma y Cédula</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 11px; color: #999; margin-top: 40px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+                        <p>Documento generado por PAE Control WebApp</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            Helper.printHTML(html);
+
+        } catch (e) {
+            console.error(e);
+            Helper.alert('error', 'Error al generar impresión');
         }
     }
 };

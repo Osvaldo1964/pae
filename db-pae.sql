@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-02-2026 a las 14:49:26
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Tiempo de generación: 09-02-2026 a las 19:15:15
+-- Versión del servidor: 10.4.28-MariaDB
+-- Versión de PHP: 8.0.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -125,16 +125,6 @@ CREATE TABLE `cycle_projections` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `cycle_projections`
---
-
-INSERT INTO `cycle_projections` (`id`, `cycle_id`, `branch_id`, `item_id`, `total_quantity`, `beneficiary_count`, `created_at`) VALUES
-(1, 104, 9, 278, 90.0000, 30, '2026-02-06 15:57:02'),
-(2, 104, 9, 283, 37.0000, 30, '2026-02-06 15:57:02'),
-(3, 104, 9, 275, 27.4000, 30, '2026-02-06 15:57:02'),
-(4, 104, 9, 265, 28.6000, 30, '2026-02-06 15:57:02');
-
 -- --------------------------------------------------------
 
 --
@@ -245,13 +235,6 @@ CREATE TABLE `daily_consumptions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `synced_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `daily_consumptions`
---
-
-INSERT INTO `daily_consumptions` (`id`, `pae_id`, `branch_id`, `beneficiary_id`, `date`, `meal_type`, `ration_type_id`, `created_at`, `synced_at`) VALUES
-(1, 3, 10, 49, '2026-02-06', 'ALMUERZO', 2, '2026-02-06 13:34:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -406,14 +389,6 @@ CREATE TABLE `inventory` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `inventory`
---
-
-INSERT INTO `inventory` (`id`, `pae_id`, `item_id`, `current_stock`, `minimum_stock`, `last_entry_date`, `last_exit_date`, `updated_at`) VALUES
-(1, 3, 265, 4.000, 0.000, '2026-02-06', NULL, '2026-02-06 17:42:20'),
-(2, 3, 275, 2.000, 0.000, '2026-02-06', NULL, '2026-02-06 17:42:20');
-
 -- --------------------------------------------------------
 
 --
@@ -428,6 +403,7 @@ CREATE TABLE `inventory_movements` (
   `movement_type` enum('ENTRADA','SALIDA','AJUSTE','TRASLADO') NOT NULL,
   `reference_number` varchar(50) DEFAULT NULL,
   `movement_date` date NOT NULL,
+  `cycle_id` int(11) DEFAULT NULL,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -491,13 +467,6 @@ CREATE TABLE `inventory_quote_details` (
   `subtotal` decimal(12,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `inventory_quote_details`
---
-
-INSERT INTO `inventory_quote_details` (`id`, `quote_id`, `item_id`, `quantity`, `unit_price`, `tax_percentage`, `subtotal`) VALUES
-(4, 2, 276, 1.000, 18500.25, 0.00, 18500.25);
-
 -- --------------------------------------------------------
 
 --
@@ -522,13 +491,6 @@ CREATE TABLE `inventory_remissions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `inventory_remissions`
---
-
-INSERT INTO `inventory_remissions` (`id`, `pae_id`, `type`, `cycle_id`, `po_id`, `supplier_id`, `user_id`, `branch_id`, `remission_number`, `remission_date`, `carrier_name`, `vehicle_plate`, `status`, `notes`, `created_at`) VALUES
-(1, 3, 'ENTRADA_OC', NULL, 1, 1, 1, NULL, 'rm-001', '2026-02-07', '', '', 'CAMINO', '', '2026-02-06 17:42:20');
-
 -- --------------------------------------------------------
 
 --
@@ -543,14 +505,6 @@ CREATE TABLE `inventory_remission_details` (
   `quantity_received` decimal(12,3) DEFAULT 0.000,
   `novelty_notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `inventory_remission_details`
---
-
-INSERT INTO `inventory_remission_details` (`id`, `remission_id`, `item_id`, `quantity_sent`, `quantity_received`, `novelty_notes`) VALUES
-(1, 1, 265, 4.000, 0.000, NULL),
-(2, 1, 275, 2.000, 0.000, NULL);
 
 -- --------------------------------------------------------
 
@@ -658,6 +612,24 @@ INSERT INTO `items` (`id`, `pae_id`, `code`, `name`, `description`, `food_group_
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `item_cycle_costs`
+--
+
+CREATE TABLE `item_cycle_costs` (
+  `id` int(11) NOT NULL,
+  `pae_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `cycle_id` int(11) NOT NULL,
+  `average_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total_quantity` decimal(10,3) NOT NULL DEFAULT 0.000,
+  `total_value` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `purchase_count` int(11) DEFAULT 0,
+  `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `measurement_units`
 --
 
@@ -721,31 +693,31 @@ CREATE TABLE `menus` (
 --
 
 INSERT INTO `menus` (`id`, `pae_id`, `cycle_id`, `name`, `day_number`, `meal_type`, `ration_type_id`, `age_group`, `has_dairy`, `has_protein`, `has_cereal`, `has_fruit`, `has_vegetable`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `total_iron`, `total_calcium`, `total_cost`, `preparation_instructions`, `allergen_warnings`, `status`, `created_at`, `updated_at`) VALUES
-(241, 3, 104, 'Día 1 - 2026-02-02', 1, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(242, 3, 104, 'Día 2 - 2026-02-03', 2, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(243, 3, 104, 'Día 3 - 2026-02-04', 3, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(244, 3, 104, 'Día 4 - 2026-02-05', 4, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(245, 3, 104, 'Día 5 - 2026-02-06', 5, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(246, 3, 104, 'Día 6 - 2026-02-09', 6, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(247, 3, 104, 'Día 7 - 2026-02-10', 7, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(248, 3, 104, 'Día 8 - 2026-02-11', 8, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(249, 3, 104, 'Día 9 - 2026-02-12', 9, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(250, 3, 104, 'Día 10 - 2026-02-13', 10, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(251, 3, 104, 'Día 11 - 2026-02-16', 11, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(252, 3, 104, 'Día 12 - 2026-02-17', 12, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(253, 3, 104, 'Día 13 - 2026-02-18', 13, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(254, 3, 104, 'Día 14 - 2026-02-19', 14, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(255, 3, 104, 'Día 15 - 2026-02-20', 15, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(256, 3, 104, 'Día 16 - 2026-02-23', 16, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(257, 3, 104, 'Día 17 - 2026-02-24', 17, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(258, 3, 104, 'Día 18 - 2026-02-25', 18, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(259, 3, 104, 'Día 19 - 2026-02-26', 19, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(260, 3, 104, 'Día 20 - 2026-02-27', 20, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
-(286, 3, 106, 'Día 1 - 2026-03-02', 1, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
-(287, 3, 106, 'Día 2 - 2026-03-03', 2, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
-(288, 3, 106, 'Día 3 - 2026-03-04', 3, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
-(289, 3, 106, 'Día 4 - 2026-03-05', 4, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
-(290, 3, 106, 'Día 5 - 2026-03-06', 5, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44');
+(241, 3, NULL, 'Día 1 - 2026-02-02', 1, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(242, 3, NULL, 'Día 2 - 2026-02-03', 2, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(243, 3, NULL, 'Día 3 - 2026-02-04', 3, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(244, 3, NULL, 'Día 4 - 2026-02-05', 4, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(245, 3, NULL, 'Día 5 - 2026-02-06', 5, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(246, 3, NULL, 'Día 6 - 2026-02-09', 6, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(247, 3, NULL, 'Día 7 - 2026-02-10', 7, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(248, 3, NULL, 'Día 8 - 2026-02-11', 8, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(249, 3, NULL, 'Día 9 - 2026-02-12', 9, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(250, 3, NULL, 'Día 10 - 2026-02-13', 10, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(251, 3, NULL, 'Día 11 - 2026-02-16', 11, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(252, 3, NULL, 'Día 12 - 2026-02-17', 12, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(253, 3, NULL, 'Día 13 - 2026-02-18', 13, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(254, 3, NULL, 'Día 14 - 2026-02-19', 14, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(255, 3, NULL, 'Día 15 - 2026-02-20', 15, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(256, 3, NULL, 'Día 16 - 2026-02-23', 16, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(257, 3, NULL, 'Día 17 - 2026-02-24', 17, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(258, 3, NULL, 'Día 18 - 2026-02-25', 18, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(259, 3, NULL, 'Día 19 - 2026-02-26', 19, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(260, 3, NULL, 'Día 20 - 2026-02-27', 20, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(286, 3, NULL, 'Día 1 - 2026-03-02', 1, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(287, 3, NULL, 'Día 2 - 2026-03-03', 2, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(288, 3, NULL, 'Día 3 - 2026-03-04', 3, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(289, 3, NULL, 'Día 4 - 2026-03-05', 4, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(290, 3, NULL, 'Día 5 - 2026-03-06', 5, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44');
 
 -- --------------------------------------------------------
 
@@ -768,14 +740,6 @@ CREATE TABLE `menu_cycles` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `menu_cycles`
---
-
-INSERT INTO `menu_cycles` (`id`, `pae_id`, `name`, `description`, `start_date`, `end_date`, `total_days`, `is_validated`, `validated_by`, `validated_at`, `status`, `created_at`, `updated_at`) VALUES
-(104, 3, 'CICLO 1 FEBRERO', NULL, '2026-02-01', '2026-02-28', 20, 0, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 15:57:02'),
-(106, 3, 'CICLO 2 - MARZO 2026', NULL, '2026-03-01', '2026-03-07', 5, 0, NULL, NULL, 'BORRADOR', '2026-02-09 13:08:44', '2026-02-09 13:08:44');
 
 -- --------------------------------------------------------
 
@@ -1121,13 +1085,6 @@ CREATE TABLE `purchase_orders` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `purchase_orders`
---
-
-INSERT INTO `purchase_orders` (`id`, `pae_id`, `cycle_id`, `user_id`, `supplier_id`, `quote_id`, `po_number`, `po_date`, `expected_delivery`, `total_amount`, `status`, `notes`, `created_at`) VALUES
-(1, 3, 104, 1, 1, NULL, 'oc-001', '2026-02-06', '2026-02-14', 51127.04, 'PENDIENTE', '', '2026-02-06 16:00:02');
-
 -- --------------------------------------------------------
 
 --
@@ -1143,14 +1100,6 @@ CREATE TABLE `purchase_order_details` (
   `unit_price` decimal(10,2) NOT NULL,
   `subtotal` decimal(12,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Volcado de datos para la tabla `purchase_order_details`
---
-
-INSERT INTO `purchase_order_details` (`id`, `po_id`, `item_id`, `quantity_ordered`, `quantity_received`, `unit_price`, `subtotal`) VALUES
-(7, 1, 265, 5.000, 0.000, 4525.20, 22626.00),
-(8, 1, 275, 2.000, 0.000, 14250.52, 28501.04);
 
 -- --------------------------------------------------------
 
@@ -1515,7 +1464,8 @@ ALTER TABLE `inventory_movements`
   ADD PRIMARY KEY (`id`),
   ADD KEY `pae_id` (`pae_id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `supplier_id` (`supplier_id`);
+  ADD KEY `supplier_id` (`supplier_id`),
+  ADD KEY `idx_cycle` (`cycle_id`);
 
 --
 -- Indices de la tabla `inventory_movement_details`
@@ -1572,6 +1522,16 @@ ALTER TABLE `items`
   ADD KEY `idx_items_pae` (`pae_id`),
   ADD KEY `idx_items_group` (`food_group_id`),
   ADD KEY `idx_items_status` (`status`);
+
+--
+-- Indices de la tabla `item_cycle_costs`
+--
+ALTER TABLE `item_cycle_costs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_item_cycle` (`pae_id`,`item_id`,`cycle_id`),
+  ADD KEY `idx_pae_cycle` (`pae_id`,`cycle_id`),
+  ADD KEY `idx_item` (`item_id`),
+  ADD KEY `idx_cycle` (`cycle_id`);
 
 --
 -- Indices de la tabla `measurement_units`
@@ -1753,7 +1713,7 @@ ALTER TABLE `beneficiaries`
 -- AUTO_INCREMENT de la tabla `cycle_projections`
 --
 ALTER TABLE `cycle_projections`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `cycle_templates`
@@ -1807,7 +1767,7 @@ ALTER TABLE `hr_positions`
 -- AUTO_INCREMENT de la tabla `inventory`
 --
 ALTER TABLE `inventory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_movements`
@@ -1837,19 +1797,25 @@ ALTER TABLE `inventory_quote_details`
 -- AUTO_INCREMENT de la tabla `inventory_remissions`
 --
 ALTER TABLE `inventory_remissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_remission_details`
 --
 ALTER TABLE `inventory_remission_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `items`
 --
 ALTER TABLE `items`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=316;
+
+--
+-- AUTO_INCREMENT de la tabla `item_cycle_costs`
+--
+ALTER TABLE `item_cycle_costs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `measurement_units`
@@ -1861,13 +1827,13 @@ ALTER TABLE `measurement_units`
 -- AUTO_INCREMENT de la tabla `menus`
 --
 ALTER TABLE `menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=291;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=311;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_cycles`
 --
 ALTER TABLE `menu_cycles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=108;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_items`
@@ -1879,7 +1845,7 @@ ALTER TABLE `menu_items`
 -- AUTO_INCREMENT de la tabla `menu_recipes`
 --
 ALTER TABLE `menu_recipes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
 
 --
 -- AUTO_INCREMENT de la tabla `modules`
@@ -1921,13 +1887,13 @@ ALTER TABLE `pae_ration_types`
 -- AUTO_INCREMENT de la tabla `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `purchase_order_details`
 --
 ALTER TABLE `purchase_order_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `recipes`

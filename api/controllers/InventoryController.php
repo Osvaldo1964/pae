@@ -62,6 +62,7 @@ class InventoryController
             $query = "SELECT 
                         i.id as item_id, i.code, i.name, 
                         fg.name as food_group, mu.abbreviation as unit,
+                        i.unit_cost,
                         COALESCE(inv.current_stock, 0) as stock,
                         inv.minimum_stock, inv.last_entry_date, inv.last_exit_date
                       FROM items i
@@ -98,6 +99,79 @@ class InventoryController
         }
     }
 
+    public function getKardex($item_id)
+    {
+        try {
+            $pae_id = $this->getPaeIdFromToken();
+            // Get detailed movements for specific item
+            $query = "SELECT 
+                        m.movement_date, 
+                        m.movement_type, 
+                        m.reference_number, 
+                        m.notes, 
+                        d.quantity, 
+                        d.unit_price, 
+                        s.name as supplier_name, 
+                        u.full_name as user_name 
+                      FROM inventory_movements m 
+                      JOIN inventory_movement_details d ON m.id = d.movement_id 
+                      LEFT JOIN suppliers s ON m.supplier_id = s.id 
+                      JOIN users u ON m.user_id = u.id 
+                      WHERE m.pae_id = ? AND d.item_id = ? 
+                      ORDER BY m.movement_date ASC, m.created_at ASC";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([$pae_id, $item_id]);
+            $movements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Also get Remission details (Outflows/Inflows from Remissions)
+            $queryRem = "SELECT 
+                            r.remission_date as movement_date,
+                            CASE 
+                                WHEN r.type = 'ENTRADA_OC' THEN 'ENTRADA'
+                                ELSE 'SALIDA'
+                            END as movement_type,
+                            r.remission_number as reference_number,
+                            r.notes,
+                            d.quantity_sent as quantity,
+                            0 as unit_price, -- Remissions usually transfer at cost or 0 in this context
+                            s.name as supplier_name,
+                            u.full_name as user_name,
+                            b.name as branch_name
+                         FROM inventory_remissions r
+                         JOIN inventory_remission_details d ON r.id = d.remission_id
+                         LEFT JOIN suppliers s ON r.supplier_id = s.id
+                         LEFT JOIN school_branches b ON r.branch_id = b.id
+                         JOIN users u ON r.user_id = u.id
+                         WHERE r.pae_id = ? AND d.item_id = ?
+                         ORDER BY r.remission_date ASC, r.created_at ASC";
+
+            $stmtRem = $this->conn->prepare($queryRem);
+            $stmtRem->execute([$pae_id, $item_id]);
+            $remissions = $stmtRem->fetchAll(PDO::FETCH_ASSOC);
+
+            // Merge and Sort
+            // Note: In PHP 8 we could use array_merge(...), but standard array_merge works
+            foreach ($remissions as &$rem) {
+                if ($rem['branch_name']) {
+                    $rem['notes'] = ($rem['notes'] ? $rem['notes'] . ' - ' : '') . 'Destino: ' . $rem['branch_name'];
+                }
+            }
+            $all_movements = array_merge($movements, $remissions);
+
+            usort($all_movements, function ($a, $b) {
+                $t1 = strtotime($a['movement_date']);
+                $t2 = strtotime($b['movement_date']);
+                return $t1 - $t2;
+            });
+
+            echo json_encode(['success' => true, 'data' => array_map('array_change_key_case', $all_movements)]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
     public function registerMovement()
     {
         try {
@@ -108,8 +182,8 @@ class InventoryController
             $this->conn->beginTransaction();
 
             // 1. Cabecera
-            $stmt = $this->conn->prepare("INSERT INTO inventory_movements (pae_id, user_id, supplier_id, movement_type, reference_number, movement_date, notes) 
-                                         VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $this->conn->prepare("INSERT INTO inventory_movements (pae_id, user_id, supplier_id, movement_type, reference_number, movement_date, cycle_id, notes) 
+                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $pae_id,
                 $user_id,
@@ -117,6 +191,7 @@ class InventoryController
                 $data['movement_type'],
                 $data['reference'] ?? null,
                 $data['date'] ?? date('Y-m-d'),
+                $data['cycle_id'] ?? null,
                 $data['notes'] ?? ''
             ]);
             $movement_id = $this->conn->lastInsertId();
@@ -134,6 +209,46 @@ class InventoryController
                     $item['batch'] ?? null,
                     $item['expiry'] ?? null
                 ]);
+
+
+                // Actualizar unit_cost con PROMEDIO PONDERADO si es una ENTRADA con precio
+                if (($data['movement_type'] === 'ENTRADA' || $data['movement_type'] === 'ENTRADA_OC') && isset($item['unit_price']) && $item['unit_price'] > 0) {
+                    // Obtener stock y costo actual
+                    $stmtCurrent = $this->conn->prepare("
+                        SELECT COALESCE(inv.current_stock, 0) as stock, COALESCE(i.unit_cost, 0) as cost
+                        FROM items i
+                        LEFT JOIN inventory inv ON i.id = inv.item_id AND inv.pae_id = ?
+                        WHERE i.id = ? AND i.pae_id = ?
+                    ");
+                    $stmtCurrent->execute([$pae_id, $item['item_id'], $pae_id]);
+                    $current = $stmtCurrent->fetch(PDO::FETCH_ASSOC);
+
+                    $current_stock = floatval($current['stock'] ?? 0);
+                    $current_cost = floatval($current['cost'] ?? 0);
+
+                    // Calcular promedio ponderado
+                    $current_value = $current_stock * $current_cost;
+                    $new_value = floatval($item['quantity']) * floatval($item['unit_price']);
+                    $total_stock = $current_stock + floatval($item['quantity']);
+
+                    $weighted_avg_cost = $total_stock > 0 ? ($current_value + $new_value) / $total_stock : floatval($item['unit_price']);
+
+                    // Actualizar items.unit_cost con promedio ponderado
+                    $stmtCost = $this->conn->prepare("UPDATE items SET unit_cost = ? WHERE id = ? AND pae_id = ?");
+                    $stmtCost->execute([$weighted_avg_cost, $item['item_id'], $pae_id]);
+
+                    // Actualizar costo por ciclo si hay cycle_id
+                    if (isset($data['cycle_id']) && $data['cycle_id']) {
+                        $this->updateCycleCost(
+                            $pae_id,
+                            $item['item_id'],
+                            $data['cycle_id'],
+                            floatval($item['quantity']),
+                            floatval($item['unit_price'])
+                        );
+                    }
+                }
+
 
                 // Actualizar Stock
                 $qty = ($data['movement_type'] === 'ENTRADA' || $data['movement_type'] === 'AJUSTE' && $item['quantity'] > 0)
@@ -156,6 +271,87 @@ class InventoryController
         } catch (Exception $e) {
             if ($this->conn->inTransaction())
                 $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update cycle-specific cost tracking
+     * Calculates weighted average cost per item per cycle
+     */
+    private function updateCycleCost($pae_id, $item_id, $cycle_id, $quantity, $unit_price)
+    {
+        try {
+            // Check if record exists
+            $stmt = $this->conn->prepare("
+                SELECT average_cost, total_quantity, total_value, purchase_count 
+                FROM item_cycle_costs 
+                WHERE pae_id = ? AND item_id = ? AND cycle_id = ?
+            ");
+            $stmt->execute([$pae_id, $item_id, $cycle_id]);
+            $current = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($current) {
+                // Update existing record with weighted average
+                $new_total_qty = floatval($current['total_quantity']) + $quantity;
+                $new_total_value = floatval($current['total_value']) + ($quantity * $unit_price);
+                $new_avg = $new_total_qty > 0 ? $new_total_value / $new_total_qty : $unit_price;
+
+                $stmt = $this->conn->prepare("
+                    UPDATE item_cycle_costs 
+                    SET average_cost = ?, total_quantity = ?, total_value = ?, purchase_count = purchase_count + 1
+                    WHERE pae_id = ? AND item_id = ? AND cycle_id = ?
+                ");
+                $stmt->execute([$new_avg, $new_total_qty, $new_total_value, $pae_id, $item_id, $cycle_id]);
+            } else {
+                // Insert new record
+                $stmt = $this->conn->prepare("
+                    INSERT INTO item_cycle_costs (pae_id, item_id, cycle_id, average_cost, total_quantity, total_value, purchase_count)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                ");
+                $stmt->execute([$pae_id, $item_id, $cycle_id, $unit_price, $quantity, $quantity * $unit_price]);
+            }
+        } catch (Exception $e) {
+            // Log error but don't fail the transaction
+            error_log("Error updating cycle cost: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get cost report for a specific cycle
+     * Returns average costs and purchase statistics per item
+     */
+    public function getCycleCostReport($cycle_id)
+    {
+        try {
+            $pae_id = $this->getPaeIdFromToken();
+
+            $query = "
+                SELECT 
+                    i.code, 
+                    i.name, 
+                    fg.name as food_group,
+                    mu.abbreviation as unit,
+                    c.average_cost as cycle_avg_cost,
+                    c.total_quantity as cycle_total_qty,
+                    c.total_value as cycle_total_value,
+                    c.purchase_count,
+                    i.unit_cost as global_avg_cost,
+                    COALESCE(inv.current_stock, 0) as current_stock
+                FROM item_cycle_costs c
+                JOIN items i ON c.item_id = i.id
+                JOIN food_groups fg ON i.food_group_id = fg.id
+                JOIN measurement_units mu ON i.measurement_unit_id = mu.id
+                LEFT JOIN inventory inv ON i.id = inv.item_id AND inv.pae_id = c.pae_id
+                WHERE c.pae_id = ? AND c.cycle_id = ?
+                ORDER BY fg.name, i.name
+            ";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([$pae_id, $cycle_id]);
+            echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
