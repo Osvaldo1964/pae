@@ -1,62 +1,26 @@
-# Implementation Plan - Adaptación Resolución 0003 de 2026 e Inventarios PAE
+# Implementation Plan: Fix Cycle Generation Calculation
 
-Se requiere actualizar el sistema para soportar la nueva segmentación de grupos etarios dictada por la Resolución 0003 de 2026, lo cual impacta el recetario, las minutas y los parámetros nutricionales.
+The user reported that cycle calculation only works for one branch. Investigation revealed that:
+1. Many beneficiaries have `ration_type_id` as NULL, preventing matches with recipes.
+2. `NeedsReportController` uses inconsistent age group naming (`PRIMARIAA` vs `PRIMARIA_A`).
+3. Some beneficiaries are missing both `ration_type` string and ID.
 
 ## Proposed Changes
 
 ### [Database]
+- Update all beneficiaries with `ration_type_id` based on their `ration_type` string.
+- Set a default `ration_type_id` (e.g., ALMUERZO) for those with missing ration types, or alert the user.
 
-#### [NEW] [18_age_groups_2026_migration.sql](file:///c:/xampp/htdocs/pae/sql/18_age_groups_2026_migration.sql)
-- **Actualizar Enums**: Cambiar `ENUM('PREESCOLAR', 'PRIMARIA', 'BACHILLERATO')` por `ENUM('PREESCOLAR', 'PRIMARIA_A', 'PRIMARIA_B', 'SECUNDARIA')` en las tablas:
-    - `nutritional_parameters`
-    - `menus`
-- **Actualizar `recipe_items`**:
-    - Agregar columna `age_group`.
-    - Repetir ítems existentes para los 4 nuevos grupos (migración de datos base).
-    - Actualizar índice único para incluir `age_group`.
+### [API Controllers]
 
----
+#### [MODIFY] [NeedsReportController.php](file:///c:/xampp/htdocs/pae/api/controllers/NeedsReportController.php)
+- Correct age group naming in `classifyAgeGroup` to match the database (`PRIMARIA_A`, `PRIMARIA_B`).
 
-### [Backend API]
-
-#### [MODIFY] [RecipeController.php](file:///c:/xampp/htdocs/pae/api/controllers/RecipeController.php)
-- Ajustar métodos `show`, `store` y `update` para manejar gramajes por grupo etario.
-
-#### [MODIFY] [MenuController.php](file:///c:/xampp/htdocs/pae/api/controllers/MenuController.php)
-- Asegurar que el cálculo de totales nutricionales use el gramaje correspondiente al grupo etario de la minuta.
-
-#### [MODIFY] [BeneficiaryController.php](file:///c:/xampp/htdocs/pae/api/controllers/BeneficiaryController.php)
-- Agregar soporte para el campo `is_overage` (Extraedad).
-
----
-
-### [Frontend]
-
-#### [MODIFY] [recetario.js](file:///c:/xampp/htdocs/pae/app/assets/js/views/recetario.js)
-- Rediseñar el modal de ingredientes para permitir ingresar gramajes para los 4 grupos simultáneamente.
-
-#### [MODIFY] [beneficiaries.js](file:///c:/xampp/htdocs/pae/app/assets/js/views/beneficiaries.js)
-- Agregar checkbox de "Extraedad".
-- Implementar cálculo automático de grupo etario sugerido basado en la fecha de nacimiento.
-- [ ] **Verification**: Ensure that switching schools/branches in the modal correctly updates the corresponding record in the database.
-
----
-
-### Inventarios Module [DONE]
-- **Database**: Schemas for `inventory`, `quotes`, `purchase_orders`, and `remissions` implemented.
-- **Backend**: `InventoryController.php` with full CRUD for the new entities.
-- **Frontend**: `cotizaciones.js`, `compras.js`, `remisiones.js` implemented.
-
-### Attendance Report Module (QR) [DONE]
-- **Database**: Module registered with route `consumos` and permissions granted to all roles.
-- **Backend**: `ConsumptionController.php` with `/report` logic filtering by `pae_id`.
-- **Frontend**: `consumos.js` with printable attendance sheets according to Resolution 0003.
-
----
+#### [MODIFY] [MenuCycleController.php](file:///c:/xampp/htdocs/pae/api/controllers/MenuCycleController.php)
+- Enhance logging or error reporting during approval if beneficiaries are skipped due to missing ration types.
 
 ## Verification Plan
 
-### Manual Verification
-1.  **Recetario**: Crear una receta y asignar gramajes diferentes a "Preescolar" y "Secundaria".
-2.  **Cálculo Nutricional**: Verificar que al agregar una receta a una minuta de "Secundaria", los totales nutricionales se calculen con el gramaje de "Secundaria".
-3.  **Base de Datos**: Verificar que los tipos de datos se actualizaron correctamente sin pérdida de información previa.
+### Automated Tests
+- Run a diagnostic script to count calculateable beneficiaries per branch before and after the fix.
+- Verify that the Requerimientos report now shows data for all branches.

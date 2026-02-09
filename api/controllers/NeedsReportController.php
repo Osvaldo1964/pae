@@ -23,7 +23,8 @@ class NeedsReportController
             $stmt->execute([$cycleId]);
             $cycle = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$cycle) throw new Exception("Ciclo no encontrado");
+            if (!$cycle)
+                throw new Exception("Ciclo no encontrado");
 
             // 2. Get Active Beneficiaries and Classify them by Branch, Ration Type and Age Group
             $sqlBen = "SELECT id, branch_id, ration_type_id, birth_date FROM beneficiaries WHERE status = 'ACTIVO'";
@@ -34,7 +35,8 @@ class NeedsReportController
             $cycleStart = new \DateTime($cycle['start_date']);
 
             foreach ($beneficiaries as $b) {
-                if (!$b['birth_date']) continue;
+                if (!$b['birth_date'])
+                    continue;
 
                 $dob = new \DateTime($b['birth_date']);
                 $age = $cycleStart->diff($dob)->y;
@@ -44,8 +46,8 @@ class NeedsReportController
                 if (!isset($census[$b['branch_id']])) {
                     $census[$b['branch_id']] = [
                         'PREESCOLAR' => 0,
-                        'PRIMARIAA' => 0,
-                        'PRIMARIAB' => 0,
+                        'PRIMARIA_A' => 0,
+                        'PRIMARIA_B' => 0,
                         'SECUNDARIA' => 0
                     ];
                 }
@@ -55,8 +57,8 @@ class NeedsReportController
                     if (!isset($census[$b['branch_id']][$rtid])) {
                         $census[$b['branch_id']][$rtid] = [
                             'PREESCOLAR' => 0,
-                            'PRIMARIAA' => 0,
-                            'PRIMARIAB' => 0,
+                            'PRIMARIA_A' => 0,
+                            'PRIMARIA_B' => 0,
                             'SECUNDARIA' => 0
                         ];
                     }
@@ -154,17 +156,21 @@ class NeedsReportController
 
     private function classifyAgeGroup($age)
     {
-        // Must match normalizeAgeGroup output
-        if ($age >= 4 && $age <= 5) return 'PREESCOLAR';
-        if ($age >= 6 && $age <= 7) return 'PRIMARIAA';
-        if ($age >= 8 && $age <= 10) return 'PRIMARIAB';
-        if ($age >= 11 && $age <= 17) return 'SECUNDARIA';
+        // Must match nomenclature in recipe_items table
+        if ($age >= 4 && $age <= 5)
+            return 'PREESCOLAR';
+        if ($age >= 6 && $age <= 7)
+            return 'PRIMARIA_A';
+        if ($age >= 8 && $age <= 10)
+            return 'PRIMARIA_B';
+        if ($age >= 11 && $age <= 17)
+            return 'SECUNDARIA';
         return null;
     }
 
     private function normalizeAgeGroup($dbString)
     {
-        $clean = preg_replace('/[^a-zA-Z0-9]/', '', $dbString);
+        $clean = preg_replace('/[^a-zA-Z0-9_]/', '', $dbString);
         return strtoupper(trim($clean));
     }
 

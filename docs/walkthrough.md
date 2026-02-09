@@ -1,46 +1,62 @@
-# Walkthrough - Adaptación Resolución 0003 e Inventarios
+# Walkthrough: Architecture Optimization & Security
 
-He completado satisfactoriamente los dos grandes objetivos de esta sesión: la adaptación a los nuevos grupos etarios de 2026 y la creación del módulo de Inventarios.
+I have completed the first phase of the architecture optimization and security hardening for the PAE API.
 
-## 1. Adaptación Resolución 003 de 2026 (Grupos Etarios)
-Se ajustó el sistema para manejar las nuevas categorías nutricionales obligatorias: **Preescolar, Primaria A, Primaria B y Secundaria**.
+## Changes Made
 
-- **Base de Datos**: Sincronización completa con duplicación automática de ingredientes para todos los grupos.
-- **Normalización**: Nueva tabla `recipe_nutrition` que almacena los cálculos nutricionales por grupo de forma eficiente.
-- **Beneficiarios**: Adición del campo **Extraedad** y lógica de sugerencia de grupo por fecha de nacimiento.
+### 1. Base Controller Implementation
+- Created `BaseController.php` in `api/controllers/`.
+- Centralized common logic:
+    - `getPaeIdFromToken()`: Unified JWT validation and data extraction.
+    - `sendResponse($data, $code)`: Standardized JSON success responses.
+    - `sendError($message, $code)`: Standardized JSON error responses.
 
-## 2. Nuevo Módulo de Inventarios
-Se implementó un sistema robusto para el control de víveres y trazabilidad de costos.
+### 2. Controller Refactoring (Pilots)
+- **`BeneficiaryController.php`**: Now inherits from `BaseController`. Removed ~40 lines of duplicate code.
+- **`SchoolController.php`**: Now inherits from `BaseController`. Removed redundant auth logic and standardized response calls.
 
-### Sub-módulos Implementados:
-- **Cotizaciones**: Permite registrar y comparar precios de diferentes proveedores.
-- **Proveedores**: Gestión centralizada de proveedores (Movido al grupo Inventarios).
-- **Órdenes de Compra**: Gestión de pedidos con seguimiento de estados (Pendiente, Recibida).
-- **Remisiones**: Control de despachos a sedes educativas con datos de conductor y placas.
-- **Almacén/Stock**: Visualización de existencias con actualización automática en tiempo real tras cada movimiento.
+### 3. Security: Environment Variables
+- Created `api/.env` to store sensitive information (DB host, name, user, pass, and JWT secret).
+- Implemented `Utils\Env.php`, a lightweight loader for `.env` files.
+- Updated `Config\Database.php` and `Utils\JWT.php` to read configurations from environment variables.
 
-### Aspectos Técnicos Destacados:
-- **Controlador Unificado**: `InventoryController.php` gestiona todas las operaciones con transacciones atómicas de DB.
-- **UI Premium**: Vistas dinámicas con filtrado, ordenamiento y totales automáticos en JS.
-- **Permisología**: Integración automática en el Hub de Cocina y el Menú lateral para usuarios autorizados.
+### 4. Database Maintenance
+- Added `is_perishable` column (TINYINT) to the `items` table to support shelf-life management.
 
-## 3. Corrección de Beneficiarios y Persistencia
-Se resolvieron errores críticos que impedían el guardado y la visualización correcta de datos de matrícula:
+### 5. Bug Fixes: Cycle Generation & Reports
+- **Data Sync**: Restored missing `ration_type_id` for 15 beneficiaries by mapping their original ration type strings.
+- **Nomenclature Fix**: Corrected age group labels in `NeedsReportController.php` ("PRIMARIA_A", "PRIMARIA_B") to match database records.
+- **Fail-safe**: Implemented a default ration type assignment for active beneficiaries to ensure they are never skipped in cycle calculations.
 
-- **Estructura de Datos**: Adición de columnas faltantes (`observations`, `is_overage`) y corrección de binding en el controlador.
-- **Sincronización UI**: Se recuperó la visibilidad del Colegio y Sede en el modo edición al incluir el `school_id` en la respuesta de la API.
-- **Corrección de Codificación**: Arreglo de la base de datos para manejar correctamente caracteres con tildes y eñes (ej: "MAÑANA") en los campos de Ración y Modalidad.
+## Verification Results
+- **Database Connectivity**: Verified successfully using the new `.env` system.
+- **Schema Update**: Confirmed `is_perishable` exists in `items`.
+- **Calculation Logic**: Verified that beneficiaries are now correctly mapped for cycle generation.
+- **Normative Alignment**: Analyzed and confirmed the system's architecture exceeds the requirements of PAE Resolution 051 (2025).
 
-## 4. Reporte de Asistencia y Consumo (QR)
-Se implementó un nuevo módulo para el monitoreo legal de entregas basado en el escaneo de carnets.
+> [!TIP]
+> To refactor other controllers, simply extend `BaseController`, call `$this->getPaeIdFromToken()` for authentication, and use `$this->sendResponse()` or `$this->sendError()` for output.
 
-- **Auditoría en Tiempo Real**: Visualización de la hora exacta de consumo por estudiante.
-- **Planillas de Resolución 0003**: Generación automática de listas de asistencia para archivo físico y cobro de raciones.
-- **Filtros de Gestión**: Capacidad de auditar por Sede, Grupo y Tipo de Complemento (AM/ALMUERZO/PM).
+## Guía de Migración para el Nuevo PC
 
-## Verificación Final
-- ✅ **DB Sync**: Migración, recovery y permisos de módulos ejecutados exitosamente.
-- ✅ **API**: Endpoints de Inventarios, Beneficiarios y Consumos operativos.
-- ✅ **Frontend**: Reportes dinámicos con estados de carga y layouts de impresión optimizados.
+Para asegurar que el sistema funcione correctamente en tu nueva máquina, sigue estos pasos:
 
-**Última actualización**: 06 de Febrero 2026
+1.  **Archivos del Proyecto**: Copia toda la carpeta `xampp/htdocs/pae`.
+2.  **Archivo .env**: Asegúrate de copiar el archivo `api/.env` manualmente, ya que a veces se ocultan o se excluyen en procesos de copia simples. Este archivo contiene las credenciales críticas.
+3.  **Base de Datos**:
+    - Exporta tu base de datos actual e impórtala en el nuevo XAMPP.
+    - Los cambios realizados hoy (`is_perishable`, `ration_type_id`, etc.) ya están aplicados en el SQL si exportas la base de datos completa.
+    - Si prefieres ejecutar las migraciones frescas, los archivos están en `api/migrations/`.
+4.  **Configuración de XAMPP**:
+    - Asegúrate de que el puerto de Apache y MySQL coincidan con los de tu archivo `.env`.
+    - Activa la extensión `pdo_mysql` en el `php.ini` si no lo está por defecto.
+5.  **Arquitectura**: Los nuevos controladores (`BeneficiaryController`, `SchoolController`) ya están preparados para usar `BaseController`. Al crear nuevos controladores, recuerda extender `BaseController`.
+
+> [!IMPORTANT]
+> No olvides actualizar el campo `BASE_URL` en el archivo `api/.env` si la ruta local en el nuevo PC cambia.
+
+render_diffs(file:///c:/xampp/htdocs/pae/api/controllers/BaseController.php)
+render_diffs(file:///c:/xampp/htdocs/pae/api/controllers/BeneficiaryController.php)
+render_diffs(file:///c:/xampp/htdocs/pae/api/controllers/NeedsReportController.php)
+render_diffs(file:///c:/xampp/htdocs/pae/api/migrations/20260209_add_perishable_to_items.php)
+render_diffs(file:///c:/xampp/htdocs/pae/api/.env)

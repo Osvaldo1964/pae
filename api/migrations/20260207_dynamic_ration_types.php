@@ -5,12 +5,14 @@ use Config\Database;
 
 function runQuery($conn, $sql)
 {
-    echo "Running: $sql\n";
+    echo "[DEBUG] Attempting: " . substr($sql, 0, 100) . "...\n";
     try {
         $conn->exec($sql);
         echo "OK\n";
     } catch (Exception $e) {
-        echo "FAILED: " . $e->getMessage() . "\n";
+        $msg = "[ERROR] SQL failed: " . $sql . "\n" . "[ERROR] Message: " . $e->getMessage() . "\n";
+        fwrite(STDERR, $msg);
+        echo $msg;
         throw $e;
     }
 }
@@ -78,7 +80,10 @@ try {
     $conn->commit();
     echo "DONE\n";
 } catch (Exception $e) {
-    if (isset($conn)) $conn->rollBack();
-    echo "CRITICAL ERROR: " . $e->getMessage() . "\n";
+    if (isset($conn))
+        $conn->rollBack();
+    echo "--- FATAL ERROR ---\n";
+    echo "Message: " . $e->getMessage() . "\n";
+    echo "Trace:\n" . $e->getTraceAsString() . "\n";
     exit(1);
 }

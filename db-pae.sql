@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-02-2026 a las 21:46:08
+-- Tiempo de generación: 09-02-2026 a las 14:49:26
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -61,7 +61,8 @@ CREATE TABLE `beneficiaries` (
   `guardian_email` varchar(100) DEFAULT NULL,
   `status` varchar(20) DEFAULT 'ACTIVO',
   `modality` enum('RACION PREPARADA EN SITIO','RACION INDUSTRIALIZADA','BONO ALIMENTARIO') DEFAULT 'RACION PREPARADA EN SITIO',
-  `ration_type` enum('COMPLEMENTO MAÑANA','COMPLEMENTO TARDE','ALMUERZO') DEFAULT 'ALMUERZO',
+  `ration_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') DEFAULT 'ALMUERZO',
+  `ration_type_id` int(11) DEFAULT NULL,
   `data_authorization` tinyint(1) DEFAULT 0,
   `medical_restrictions` text DEFAULT NULL,
   `observations` text DEFAULT NULL,
@@ -76,37 +77,37 @@ CREATE TABLE `beneficiaries` (
 -- Volcado de datos para la tabla `beneficiaries`
 --
 
-INSERT INTO `beneficiaries` (`id`, `pae_id`, `branch_id`, `document_type_id`, `document_number`, `first_name`, `second_name`, `last_name1`, `last_name2`, `birth_date`, `enrollment_date`, `gender`, `shift`, `grade`, `group_name`, `group_letter`, `ethnic_group_id`, `sisben_category`, `is_overage`, `disability_type`, `is_disabled`, `is_victim`, `is_migrant`, `address`, `phone`, `email`, `guardian_name`, `guardian_relationship`, `guardian_phone`, `guardian_address`, `guardian_email`, `status`, `modality`, `ration_type`, `data_authorization`, `medical_restrictions`, `observations`, `simat_id`, `qr_uuid`, `biometric_hash`, `created_at`, `updated_at`) VALUES
-(31, 3, 9, 2, '1098765432', 'JUAN', 'CARLOS', 'PÉREZ', 'GONZÁLEZ', '2012-03-15', '2024-01-15', 'MASCULINO', 'MAÑANA', '6', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(32, 3, 9, 2, '1098765433', 'MARÍA', 'FERNANDA', 'RODRÍGUEZ', 'LÓPEZ', '2012-07-22', '2024-01-15', 'FEMENINO', 'MAÑANA', '6', 'A', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(33, 3, 9, 2, '1098765434', 'CARLOS', 'ANDRÉS', 'MARTÍNEZ', 'RUIZ', '2011-11-08', '2024-01-15', 'MASCULINO', 'MAÑANA', '7', 'B', NULL, 2, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(34, 3, 9, 1, '1234567890', 'ANA', 'SOFÍA', 'GARCÍA', 'HERNÁNDEZ', '2014-05-12', '2024-01-15', 'FEMENINO', 'MAÑANA', '4', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO MAÑANA', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-03 23:04:20'),
-(35, 3, 9, 1, '1234567891', 'LUIS', 'FERNANDO', 'TORRES', 'SÁNCHEZ', '2015-09-30', '2024-01-15', 'MASCULINO', 'MAÑANA', '3', 'B', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO MAÑANA', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-03 23:04:20'),
-(36, 3, 9, 2, '1098765435', 'CAMILA', 'ANDREA', 'DÍAZ', 'MORENO', '2013-02-18', '2024-01-15', 'FEMENINO', 'MAÑANA', '5', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(37, 3, 9, 2, '1098765436', 'DIEGO', 'ALEJANDRO', 'RAMÍREZ', 'CASTRO', '2012-12-05', '2024-01-15', 'MASCULINO', 'MAÑANA', '6', 'B', NULL, 6, 'B2', 0, 'NINGUNA', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(38, 3, 9, 1, '1234567892', 'VALENTINA', '', 'GÓMEZ', 'VARGAS', '2016-04-20', '2024-01-15', 'FEMENINO', 'MAÑANA', '2', 'A', NULL, 2, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO MAÑANA', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-03 23:04:20'),
-(39, 3, 9, 2, '1098765437', 'SANTIAGO', 'JOSÉ', 'MENDOZA', 'ORTIZ', '2011-06-14', '2024-01-15', 'MASCULINO', 'MAÑANA', '7', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(40, 3, 9, 1, '1234567893', 'ISABELLA', 'MARÍA', 'JIMÉNEZ', 'REYES', '2015-01-25', '2024-01-15', 'FEMENINO', 'MAÑANA', '3', 'A', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO MAÑANA', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-03 23:04:20'),
-(41, 3, 9, 2, '1098765438', 'ANDRÉS', 'FELIPE', 'CRUZ', 'NAVARRO', '2013-08-09', '2024-01-15', 'MASCULINO', 'MAÑANA', '5', 'B', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(42, 3, 9, 1, '1234567894', 'SOFÍA', 'ALEJANDRA', 'PARRA', 'SILVA', '2016-10-03', '2024-01-15', 'FEMENINO', 'MAÑANA', '2', 'B', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO MAÑANA', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-03 23:04:20'),
-(43, 3, 9, 2, '1098765439', 'MATEO', 'DAVID', 'ROJAS', 'GUTIÉRREZ', '2012-04-28', '2024-01-15', 'MASCULINO', 'MAÑANA', '6', 'A', NULL, 2, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(44, 3, 9, 1, '1234567895', 'LUCÍA', 'VALENTINA', 'MORALES', 'PEÑA', '2017-02-14', '2024-01-15', 'FEMENINO', 'MAÑANA', '1', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO MAÑANA', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-03 23:04:20'),
-(45, 3, 9, 2, '1098765440', 'NICOLÁS', 'EDUARDO', 'VEGA', 'RÍOS', '2011-09-19', '2024-01-15', 'MASCULINO', 'MAÑANA', '7', 'B', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(46, 3, 10, 2, '1098765441', 'GABRIELA', 'ANDREA', 'CASTRO', 'MUÑOZ', '2012-01-10', '2024-01-15', 'FEMENINO', 'TARDE', '6', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(47, 3, 10, 2, '1098765442', 'DANIEL', 'ESTEBAN', 'HERRERA', 'LEÓN', '2011-05-22', '2024-01-15', 'MASCULINO', 'TARDE', '7', 'A', NULL, 2, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(48, 3, 10, 1, '1234567896', 'PAULA', 'CRISTINA', 'SALAZAR', 'CORTÉS', '2014-11-08', '2024-01-15', 'FEMENINO', 'TARDE', '4', 'B', NULL, 6, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(49, 3, 10, 2, '1098765443', 'SEBASTIÁN', 'CAMILO', 'AGUILAR', 'RAMOS', '2013-03-16', '2024-01-15', 'MASCULINO', 'TARDE', '5', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(50, 3, 10, 1, '1234567897', 'MARIANA', 'ISABEL', 'OSPINA', 'MEJÍA', '2015-07-29', '2024-01-15', 'FEMENINO', 'TARDE', '3', 'A', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(51, 3, 10, 2, '1098765444', 'EMILIO', 'ANTONIO', 'SUÁREZ', 'BLANCO', '2012-09-11', '2024-01-15', 'MASCULINO', 'TARDE', '6', 'B', NULL, 2, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(52, 3, 10, 1, '1234567898', 'CAROLINA', 'SOFÍA', 'MEDINA', 'ROJAS', '2016-12-04', '2024-01-15', 'FEMENINO', 'TARDE', '2', 'A', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(53, 3, 10, 2, '1098765445', 'MIGUEL', 'ÁNGEL', 'VARGAS', 'SANTOS', '2011-02-27', '2024-01-15', 'MASCULINO', 'TARDE', '7', 'B', NULL, 6, 'A2', 0, 'NINGUNA', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(54, 3, 10, 1, '1234567899', 'VALERIA', 'NICOLE', 'RÍOS', 'FERNÁNDEZ', '2017-06-18', '2024-01-15', 'FEMENINO', 'TARDE', '1', 'B', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(55, 3, 10, 2, '1098765446', 'RICARDO', 'JAVIER', 'NÚÑEZ', 'CÁRDENAS', '2013-10-05', '2024-01-15', 'MASCULINO', 'TARDE', '5', 'B', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(56, 3, 10, 1, '1234567900', 'NATALIA', 'PAOLA', 'MOLINA', 'ARANGO', '2015-04-13', '2024-01-15', 'FEMENINO', 'TARDE', '3', 'B', NULL, 2, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(57, 3, 10, 2, '1098765447', 'ALEJANDRO', 'MANUEL', 'QUINTERO', 'PALACIOS', '2012-08-21', '2024-01-15', 'MASCULINO', 'TARDE', '6', 'A', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(58, 3, 10, 1, '1234567901', 'DANIELA', 'MARCELA', 'ESCOBAR', 'GÓMEZ', '2016-01-30', '2024-01-15', 'FEMENINO', 'TARDE', '2', 'B', NULL, 6, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(59, 3, 10, 2, '1098765448', 'FELIPE', 'IGNACIO', 'LARA', 'MENDOZA', '2011-12-17', '2024-01-15', 'MASCULINO', 'TARDE', '7', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28'),
-(60, 3, 10, 1, '1234567902', 'JULIANA', 'BEATRIZ', 'CANO', 'VALENCIA', '2017-05-09', '2024-01-15', 'FEMENINO', 'TARDE', '1', 'A', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO TARDE', 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-01 21:02:28');
+INSERT INTO `beneficiaries` (`id`, `pae_id`, `branch_id`, `document_type_id`, `document_number`, `first_name`, `second_name`, `last_name1`, `last_name2`, `birth_date`, `enrollment_date`, `gender`, `shift`, `grade`, `group_name`, `group_letter`, `ethnic_group_id`, `sisben_category`, `is_overage`, `disability_type`, `is_disabled`, `is_victim`, `is_migrant`, `address`, `phone`, `email`, `guardian_name`, `guardian_relationship`, `guardian_phone`, `guardian_address`, `guardian_email`, `status`, `modality`, `ration_type`, `ration_type_id`, `data_authorization`, `medical_restrictions`, `observations`, `simat_id`, `qr_uuid`, `biometric_hash`, `created_at`, `updated_at`) VALUES
+(31, 3, 9, 2, '1098765432', 'JUAN', 'CARLOS', 'PÉREZ', 'GONZÁLEZ', '2012-03-15', '2024-01-15', 'MASCULINO', 'MAÑANA', '6', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(32, 3, 9, 2, '1098765433', 'MARÍA', 'FERNANDA', 'RODRÍGUEZ', 'LÓPEZ', '2012-07-22', '2024-01-15', 'FEMENINO', 'MAÑANA', '6', 'A', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(33, 3, 9, 2, '1098765434', 'CARLOS', 'ANDRÉS', 'MARTÍNEZ', 'RUIZ', '2011-11-08', '2024-01-15', 'MASCULINO', 'MAÑANA', '7', 'B', NULL, 2, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(34, 3, 9, 1, '1234567890', 'ANA', 'SOFÍA', 'GARCÍA', 'HERNÁNDEZ', '2014-05-12', '2024-01-15', 'FEMENINO', 'MAÑANA', '4', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'DESAYUNO', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(35, 3, 9, 1, '1234567891', 'LUIS', 'FERNANDO', 'TORRES', 'SÁNCHEZ', '2015-09-30', '2024-01-15', 'MASCULINO', 'MAÑANA', '3', 'B', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'DESAYUNO', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(36, 3, 9, 2, '1098765435', 'CAMILA', 'ANDREA', 'DÍAZ', 'MORENO', '2013-02-18', '2024-01-15', 'FEMENINO', 'MAÑANA', '5', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(37, 3, 9, 2, '1098765436', 'DIEGO', 'ALEJANDRO', 'RAMÍREZ', 'CASTRO', '2012-12-05', '2024-01-15', 'MASCULINO', 'MAÑANA', '6', 'B', NULL, 6, 'B2', 0, 'NINGUNA', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(38, 3, 9, 1, '1234567892', 'VALENTINA', '', 'GÓMEZ', 'VARGAS', '2016-04-20', '2024-01-15', 'FEMENINO', 'MAÑANA', '2', 'A', NULL, 2, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'DESAYUNO', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(39, 3, 9, 2, '1098765437', 'SANTIAGO', 'JOSÉ', 'MENDOZA', 'ORTIZ', '2011-06-14', '2024-01-15', 'MASCULINO', 'MAÑANA', '7', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(40, 3, 9, 1, '1234567893', 'ISABELLA', 'MARÍA', 'JIMÉNEZ', 'REYES', '2015-01-25', '2024-01-15', 'FEMENINO', 'MAÑANA', '3', 'A', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'DESAYUNO', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(41, 3, 9, 2, '1098765438', 'ANDRÉS', 'FELIPE', 'CRUZ', 'NAVARRO', '2013-08-09', '2024-01-15', 'MASCULINO', 'MAÑANA', '5', 'B', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(42, 3, 9, 1, '1234567894', 'SOFÍA', 'ALEJANDRA', 'PARRA', 'SILVA', '2016-10-03', '2024-01-15', 'FEMENINO', 'MAÑANA', '2', 'B', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'DESAYUNO', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(43, 3, 9, 2, '1098765439', 'MATEO', 'DAVID', 'ROJAS', 'GUTIÉRREZ', '2012-04-28', '2024-01-15', 'MASCULINO', 'MAÑANA', '6', 'A', NULL, 2, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(44, 3, 9, 1, '1234567895', 'LUCÍA', 'VALENTINA', 'MORALES', 'PEÑA', '2017-02-14', '2024-01-15', 'FEMENINO', 'MAÑANA', '1', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'DESAYUNO', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(45, 3, 9, 2, '1098765440', 'NICOLÁS', 'EDUARDO', 'VEGA', 'RÍOS', '2011-09-19', '2024-01-15', 'MASCULINO', 'MAÑANA', '7', 'B', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'ALMUERZO', 2, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 12:25:40'),
+(46, 3, 10, 2, '1098765441', 'GABRIELA', 'ANDREA', 'CASTRO', 'MUÑOZ', '2012-01-10', '2024-01-15', 'FEMENINO', 'TARDE', '6', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(47, 3, 10, 2, '1098765442', 'DANIEL', 'ESTEBAN', 'HERRERA', 'LEÓN', '2011-05-22', '2024-01-15', 'MASCULINO', 'TARDE', '7', 'A', NULL, 2, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(48, 3, 10, 1, '1234567896', 'PAULA', 'CRISTINA', 'SALAZAR', 'CORTÉS', '2014-11-08', '2024-01-15', 'FEMENINO', 'TARDE', '4', 'B', NULL, 6, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(49, 3, 10, 2, '1098765443', 'SEBASTIÁN', 'CAMILO', 'AGUILAR', 'RAMOS', '2013-03-16', '2024-01-15', 'MASCULINO', 'TARDE', '5', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(50, 3, 10, 1, '1234567897', 'MARIANA', 'ISABEL', 'OSPINA', 'MEJÍA', '2015-07-29', '2024-01-15', 'FEMENINO', 'TARDE', '3', 'A', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(51, 3, 10, 2, '1098765444', 'EMILIO', 'ANTONIO', 'SUÁREZ', 'BLANCO', '2012-09-11', '2024-01-15', 'MASCULINO', 'TARDE', '6', 'B', NULL, 2, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(52, 3, 10, 1, '1234567898', 'CAROLINA', 'SOFÍA', 'MEDINA', 'ROJAS', '2016-12-04', '2024-01-15', 'FEMENINO', 'TARDE', '2', 'A', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(53, 3, 10, 2, '1098765445', 'MIGUEL', 'ÁNGEL', 'VARGAS', 'SANTOS', '2011-02-27', '2024-01-15', 'MASCULINO', 'TARDE', '7', 'B', NULL, 6, 'A2', 0, 'NINGUNA', 0, 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(54, 3, 10, 1, '1234567899', 'VALERIA', 'NICOLE', 'RÍOS', 'FERNÁNDEZ', '2017-06-18', '2024-01-15', 'FEMENINO', 'TARDE', '1', 'B', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(55, 3, 10, 2, '1098765446', 'RICARDO', 'JAVIER', 'NÚÑEZ', 'CÁRDENAS', '2013-10-05', '2024-01-15', 'MASCULINO', 'TARDE', '5', 'B', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(56, 3, 10, 1, '1234567900', 'NATALIA', 'PAOLA', 'MOLINA', 'ARANGO', '2015-04-13', '2024-01-15', 'FEMENINO', 'TARDE', '3', 'B', NULL, 2, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(57, 3, 10, 2, '1098765447', 'ALEJANDRO', 'MANUEL', 'QUINTERO', 'PALACIOS', '2012-08-21', '2024-01-15', 'MASCULINO', 'TARDE', '6', 'A', NULL, 6, 'B2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(58, 3, 10, 1, '1234567901', 'DANIELA', 'MARCELA', 'ESCOBAR', 'GÓMEZ', '2016-01-30', '2024-01-15', 'FEMENINO', 'TARDE', '2', 'B', NULL, 6, 'A2', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(59, 3, 10, 2, '1098765448', 'FELIPE', 'IGNACIO', 'LARA', 'MENDOZA', '2011-12-17', '2024-01-15', 'MASCULINO', 'TARDE', '7', 'A', NULL, 6, 'A1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46'),
+(60, 3, 10, 1, '1234567902', 'JULIANA', 'BEATRIZ', 'CANO', 'VALENCIA', '2017-05-09', '2024-01-15', 'FEMENINO', 'TARDE', '1', 'A', NULL, 6, 'B1', 0, 'NINGUNA', 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ACTIVO', 'RACION PREPARADA EN SITIO', 'COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE', 1, 1, NULL, NULL, NULL, NULL, NULL, '2026-02-01 21:02:28', '2026-02-09 13:05:46');
 
 -- --------------------------------------------------------
 
@@ -165,7 +166,8 @@ CREATE TABLE `cycle_template_days` (
   `id` int(11) NOT NULL,
   `template_id` int(11) NOT NULL,
   `day_number` int(11) NOT NULL,
-  `meal_type` enum('DESAYUNO','ALMUERZO') NOT NULL,
+  `meal_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') NOT NULL,
+  `ration_type_id` int(11) DEFAULT NULL,
   `recipe_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -173,58 +175,58 @@ CREATE TABLE `cycle_template_days` (
 -- Volcado de datos para la tabla `cycle_template_days`
 --
 
-INSERT INTO `cycle_template_days` (`id`, `template_id`, `day_number`, `meal_type`, `recipe_id`) VALUES
-(1, 1, 1, 'DESAYUNO', 1),
-(2, 1, 1, 'ALMUERZO', 2),
-(3, 1, 2, 'DESAYUNO', 4),
-(4, 1, 2, 'ALMUERZO', 3),
-(5, 1, 3, 'DESAYUNO', 1),
-(6, 1, 3, 'ALMUERZO', 3),
-(7, 1, 4, 'DESAYUNO', 1),
-(8, 1, 4, 'ALMUERZO', 2),
-(9, 1, 5, 'DESAYUNO', 1),
-(10, 1, 6, 'DESAYUNO', 4),
-(11, 1, 7, 'DESAYUNO', 4),
-(12, 2, 1, 'DESAYUNO', 1),
-(13, 2, 1, 'ALMUERZO', 3),
-(14, 2, 2, 'DESAYUNO', 4),
-(15, 2, 2, 'ALMUERZO', 2),
-(16, 2, 3, 'DESAYUNO', 4),
-(17, 2, 3, 'ALMUERZO', 3),
-(18, 2, 4, 'DESAYUNO', 1),
-(19, 2, 4, 'ALMUERZO', 2),
-(20, 2, 5, 'DESAYUNO', 4),
-(21, 2, 5, 'ALMUERZO', 3),
-(22, 2, 6, 'DESAYUNO', 1),
-(23, 2, 6, 'ALMUERZO', 2),
-(24, 2, 7, 'DESAYUNO', 4),
-(25, 2, 7, 'ALMUERZO', 3),
-(26, 2, 8, 'DESAYUNO', 1),
-(27, 2, 8, 'ALMUERZO', 2),
-(28, 2, 9, 'DESAYUNO', 4),
-(29, 2, 9, 'ALMUERZO', 3),
-(30, 2, 10, 'DESAYUNO', 1),
-(31, 2, 10, 'ALMUERZO', 2),
-(32, 2, 11, 'DESAYUNO', 4),
-(33, 2, 11, 'ALMUERZO', 3),
-(34, 2, 12, 'DESAYUNO', 1),
-(35, 2, 12, 'ALMUERZO', 2),
-(36, 2, 13, 'DESAYUNO', 4),
-(37, 2, 13, 'ALMUERZO', 3),
-(38, 2, 14, 'DESAYUNO', 1),
-(39, 2, 14, 'ALMUERZO', 2),
-(40, 2, 15, 'DESAYUNO', 4),
-(41, 2, 15, 'ALMUERZO', 3),
-(42, 2, 16, 'DESAYUNO', 1),
-(43, 2, 16, 'ALMUERZO', 2),
-(44, 2, 17, 'DESAYUNO', 4),
-(45, 2, 17, 'ALMUERZO', 3),
-(46, 2, 18, 'DESAYUNO', 1),
-(47, 2, 18, 'ALMUERZO', 2),
-(48, 2, 19, 'DESAYUNO', 4),
-(49, 2, 19, 'ALMUERZO', 3),
-(50, 2, 20, 'DESAYUNO', 1),
-(51, 2, 20, 'ALMUERZO', 2);
+INSERT INTO `cycle_template_days` (`id`, `template_id`, `day_number`, `meal_type`, `ration_type_id`, `recipe_id`) VALUES
+(1, 1, 1, 'DESAYUNO', 1, 1),
+(2, 1, 1, 'ALMUERZO', 2, 2),
+(3, 1, 2, 'DESAYUNO', 1, 4),
+(4, 1, 2, 'ALMUERZO', 2, 3),
+(5, 1, 3, 'DESAYUNO', 1, 1),
+(6, 1, 3, 'ALMUERZO', 2, 3),
+(7, 1, 4, 'DESAYUNO', 1, 1),
+(8, 1, 4, 'ALMUERZO', 2, 2),
+(9, 1, 5, 'DESAYUNO', 1, 1),
+(10, 1, 6, 'DESAYUNO', 1, 4),
+(11, 1, 7, 'DESAYUNO', 1, 4),
+(12, 2, 1, 'DESAYUNO', 1, 1),
+(13, 2, 1, 'ALMUERZO', 2, 3),
+(14, 2, 2, 'DESAYUNO', 1, 4),
+(15, 2, 2, 'ALMUERZO', 2, 2),
+(16, 2, 3, 'DESAYUNO', 1, 4),
+(17, 2, 3, 'ALMUERZO', 2, 3),
+(18, 2, 4, 'DESAYUNO', 1, 1),
+(19, 2, 4, 'ALMUERZO', 2, 2),
+(20, 2, 5, 'DESAYUNO', 1, 4),
+(21, 2, 5, 'ALMUERZO', 2, 3),
+(22, 2, 6, 'DESAYUNO', 1, 1),
+(23, 2, 6, 'ALMUERZO', 2, 2),
+(24, 2, 7, 'DESAYUNO', 1, 4),
+(25, 2, 7, 'ALMUERZO', 2, 3),
+(26, 2, 8, 'DESAYUNO', 1, 1),
+(27, 2, 8, 'ALMUERZO', 2, 2),
+(28, 2, 9, 'DESAYUNO', 1, 4),
+(29, 2, 9, 'ALMUERZO', 2, 3),
+(30, 2, 10, 'DESAYUNO', 1, 1),
+(31, 2, 10, 'ALMUERZO', 2, 2),
+(32, 2, 11, 'DESAYUNO', 1, 4),
+(33, 2, 11, 'ALMUERZO', 2, 3),
+(34, 2, 12, 'DESAYUNO', 1, 1),
+(35, 2, 12, 'ALMUERZO', 2, 2),
+(36, 2, 13, 'DESAYUNO', 1, 4),
+(37, 2, 13, 'ALMUERZO', 2, 3),
+(38, 2, 14, 'DESAYUNO', 1, 1),
+(39, 2, 14, 'ALMUERZO', 2, 2),
+(40, 2, 15, 'DESAYUNO', 1, 4),
+(41, 2, 15, 'ALMUERZO', 2, 3),
+(42, 2, 16, 'DESAYUNO', 1, 1),
+(43, 2, 16, 'ALMUERZO', 2, 2),
+(44, 2, 17, 'DESAYUNO', 1, 4),
+(45, 2, 17, 'ALMUERZO', 2, 3),
+(46, 2, 18, 'DESAYUNO', 1, 1),
+(47, 2, 18, 'ALMUERZO', 2, 2),
+(48, 2, 19, 'DESAYUNO', 1, 4),
+(49, 2, 19, 'ALMUERZO', 2, 3),
+(50, 2, 20, 'DESAYUNO', 1, 1),
+(51, 2, 20, 'ALMUERZO', 2, 2);
 
 -- --------------------------------------------------------
 
@@ -238,7 +240,8 @@ CREATE TABLE `daily_consumptions` (
   `branch_id` int(11) NOT NULL,
   `beneficiary_id` int(11) NOT NULL,
   `date` date NOT NULL,
-  `meal_type` enum('DESAYUNO','ALMUERZO','AM','PM','CENA') NOT NULL,
+  `meal_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') NOT NULL,
+  `ration_type_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `synced_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -247,8 +250,8 @@ CREATE TABLE `daily_consumptions` (
 -- Volcado de datos para la tabla `daily_consumptions`
 --
 
-INSERT INTO `daily_consumptions` (`id`, `pae_id`, `branch_id`, `beneficiary_id`, `date`, `meal_type`, `created_at`, `synced_at`) VALUES
-(1, 3, 10, 49, '2026-02-06', 'ALMUERZO', '2026-02-06 13:34:45', NULL);
+INSERT INTO `daily_consumptions` (`id`, `pae_id`, `branch_id`, `beneficiary_id`, `date`, `meal_type`, `ration_type_id`, `created_at`, `synced_at`) VALUES
+(1, 3, 10, 49, '2026-02-06', 'ALMUERZO', 2, '2026-02-06 13:34:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -328,6 +331,63 @@ INSERT INTO `food_groups` (`id`, `code`, `name`, `description`, `color`, `create
 (7, 'AZUCARES', 'Azúcares y Dulces', 'Azúcar, panela, miel', '#FF69B4', '2026-02-01 21:58:22'),
 (8, 'CONDIMENTOS', 'Condimentos y Especias', 'Sal, ajo, cebolla, especias', '#8B4513', '2026-02-01 21:58:22'),
 (9, 'BEBIDAS', 'Bebidas', 'Jugos, refrescos, infusiones', '#00CED1', '2026-02-01 21:58:22');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `hr_employees`
+--
+
+CREATE TABLE `hr_employees` (
+  `id` int(11) NOT NULL,
+  `pae_id` int(11) NOT NULL,
+  `first_name` varchar(100) NOT NULL,
+  `last_name1` varchar(100) NOT NULL,
+  `last_name2` varchar(100) DEFAULT NULL,
+  `document_number` varchar(20) NOT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `position_id` int(11) DEFAULT NULL,
+  `hire_date` date DEFAULT NULL,
+  `termination_date` date DEFAULT NULL,
+  `eps` varchar(100) DEFAULT NULL,
+  `afp` varchar(100) DEFAULT NULL,
+  `arl` varchar(100) DEFAULT NULL,
+  `salary` decimal(12,2) DEFAULT 0.00,
+  `status` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `hr_employees`
+--
+
+INSERT INTO `hr_employees` (`id`, `pae_id`, `first_name`, `last_name1`, `last_name2`, `document_number`, `address`, `phone`, `email`, `position_id`, `hire_date`, `termination_date`, `eps`, `afp`, `arl`, `salary`, `status`, `created_at`, `updated_at`) VALUES
+(1, 3, 'MARIA CLARA', 'SUAREZ', 'RENDON', '554466', 'Calle 6C No 19-21 Campito', '3003892753', 'rayelcastrohernandez@gmail.com', 1, '2026-02-07', NULL, 'SANITAS', 'COLPENSIONES', 'SURA', 1800000.00, 'ACTIVO', '2026-02-07 13:11:14', '2026-02-07 13:11:14');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `hr_positions`
+--
+
+CREATE TABLE `hr_positions` (
+  `id` int(11) NOT NULL,
+  `pae_id` int(11) NOT NULL,
+  `description` varchar(100) NOT NULL,
+  `status` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `hr_positions`
+--
+
+INSERT INTO `hr_positions` (`id`, `pae_id`, `description`, `status`, `created_at`, `updated_at`) VALUES
+(1, 3, 'MANIPULADORES', 'ACTIVO', '2026-02-07 13:08:35', '2026-02-07 13:08:35');
 
 -- --------------------------------------------------------
 
@@ -413,7 +473,7 @@ CREATE TABLE `inventory_quotes` (
 --
 
 INSERT INTO `inventory_quotes` (`id`, `pae_id`, `user_id`, `supplier_id`, `quote_number`, `quote_date`, `valid_until`, `total_amount`, `status`, `notes`, `created_at`) VALUES
-(2, 3, 1, 1, 'cot001', '2026-02-06', '2026-02-14', 18500.50, 'BORRADOR', '', '2026-02-06 16:33:08');
+(2, 3, 1, 1, 'cot001', '2026-02-06', '2026-02-14', 18500.25, 'BORRADOR', '', '2026-02-06 16:33:08');
 
 -- --------------------------------------------------------
 
@@ -436,7 +496,7 @@ CREATE TABLE `inventory_quote_details` (
 --
 
 INSERT INTO `inventory_quote_details` (`id`, `quote_id`, `item_id`, `quantity`, `unit_price`, `tax_percentage`, `subtotal`) VALUES
-(3, 2, 276, 1.000, 18500.50, 0.00, 18500.50);
+(4, 2, 276, 1.000, 18500.25, 0.00, 18500.25);
 
 -- --------------------------------------------------------
 
@@ -534,64 +594,66 @@ CREATE TABLE `items` (
   `last_purchase_date` date DEFAULT NULL,
   `status` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `is_perishable` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `items`
 --
 
-INSERT INTO `items` (`id`, `pae_id`, `code`, `name`, `description`, `food_group_id`, `measurement_unit_id`, `gross_weight`, `net_weight`, `waste_percentage`, `calories`, `proteins`, `carbohydrates`, `fats`, `fiber`, `iron`, `calcium`, `sodium`, `vitamin_a`, `vitamin_c`, `contains_gluten`, `contains_lactose`, `contains_peanuts`, `contains_seafood`, `contains_eggs`, `contains_soy`, `is_local_purchase`, `local_producer`, `sanitary_registry`, `requires_refrigeration`, `shelf_life_days`, `unit_cost`, `last_purchase_date`, `status`, `created_at`, `updated_at`) VALUES
-(265, 3, 'ARROZ', 'ARROZ BLANCO', NULL, 1, 1, 1000.00, 1000.00, 0.00, 130.00, 2.70, 28.00, 0.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(266, 3, 'PASTA', 'PASTA ESPAGUETI', NULL, 1, 1, 1000.00, 1000.00, 0.00, 157.00, 5.80, 30.00, 0.90, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(267, 3, 'PAPA', 'PAPA SABANERA', NULL, 1, 1, 1000.00, 850.00, 15.00, 77.00, 2.00, 17.00, 0.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(268, 3, 'YUCA', 'YUCA FRESCA', NULL, 1, 1, 1000.00, 750.00, 25.00, 160.00, 1.40, 38.00, 0.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(269, 3, 'PLATANO', 'PLATANO MADURO', NULL, 1, 1, 1000.00, 650.00, 35.00, 122.00, 1.30, 32.00, 0.40, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(270, 3, 'AREPA', 'AREPA DE MAIZ', NULL, 1, 5, 1.00, 1.00, 0.00, 218.00, 4.50, 45.00, 1.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(271, 3, 'PAN', 'PAN TAJADO INTEGRAL', NULL, 1, 5, 1.00, 1.00, 0.00, 247.00, 8.50, 41.00, 3.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(272, 3, 'AVENA', 'AVENA EN HOJUELAS', NULL, 1, 1, 1000.00, 1000.00, 0.00, 389.00, 16.00, 66.00, 6.90, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(273, 3, 'GALLETA', 'GALLETA INTEGRAL', NULL, 1, 5, 1.00, 1.00, 0.00, 450.00, 7.00, 70.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(274, 3, 'TOSTADA', 'TOSTADA DE ARROZ', NULL, 1, 5, 1.00, 1.00, 0.00, 380.00, 8.00, 80.00, 2.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(275, 3, 'POLLO', 'PECHUGA DE POLLO', NULL, 2, 1, 1000.00, 850.00, 15.00, 165.00, 31.00, 0.00, 3.60, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(276, 3, 'CARNE', 'CARNE DE RES (MURILLO)', NULL, 2, 1, 1000.00, 950.00, 5.00, 250.00, 26.00, 0.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(277, 3, 'CERDO', 'LOMO DE CERDO', NULL, 2, 1, 1000.00, 950.00, 5.00, 242.00, 27.00, 0.00, 14.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(278, 3, 'HUEVO', 'HUEVO AA FRESCO', NULL, 2, 5, 60.00, 50.00, 16.00, 155.00, 13.00, 1.10, 11.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 1, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(279, 3, 'FRIJOL', 'FRIJOL CARGAMANTO', NULL, 2, 1, 1000.00, 1000.00, 0.00, 333.00, 23.00, 60.00, 1.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(280, 3, 'LENTEJA', 'LENTEJA SECA', NULL, 2, 1, 1000.00, 1000.00, 0.00, 352.00, 25.00, 63.00, 1.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(281, 3, 'GARBANZO', 'GARBANZO SECO', NULL, 2, 1, 1000.00, 1000.00, 0.00, 364.00, 19.00, 61.00, 6.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(282, 3, 'PESCADO', 'FILETE DE TILAPIA', NULL, 2, 1, 1000.00, 900.00, 10.00, 96.00, 20.00, 0.00, 1.70, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(283, 3, 'ATUN', 'ATUN EN AGUA (LATA)', NULL, 2, 1, 170.00, 120.00, 30.00, 116.00, 25.00, 0.00, 0.80, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(284, 3, 'ARVEJA', 'ARVEJA SECA', NULL, 2, 1, 1000.00, 1000.00, 0.00, 341.00, 24.00, 60.00, 1.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(285, 3, 'BLANQUILLO', 'FRIJOL BLANQUILLO', NULL, 2, 1, 1000.00, 1000.00, 0.00, 337.00, 23.00, 60.00, 1.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(286, 3, 'QUESO', 'QUESO CAMPESINO', NULL, 3, 1, 1000.00, 1000.00, 0.00, 264.00, 18.00, 3.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(287, 3, 'LECHE', 'LECHE ENTERA PASTEURIZADA', NULL, 3, 3, 100.00, 100.00, 0.00, 61.00, 3.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(288, 3, 'YOGURT', 'YOGURT NATURAL', NULL, 3, 3, 100.00, 100.00, 0.00, 59.00, 3.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(289, 3, 'KUMIS', 'KUMIS FRESCO', NULL, 3, 3, 100.00, 100.00, 0.00, 78.00, 3.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(290, 3, 'AVENALAC', 'AVENA CON LECHE PREPARADA', NULL, 3, 3, 100.00, 100.00, 0.00, 120.00, 4.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(291, 3, 'MATANTE', 'BIENESTARINA MASAMORRA', NULL, 3, 3, 100.00, 100.00, 0.00, 110.00, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(292, 3, 'ZANAHORIA', 'ZANAHORIA FRESCA', NULL, 5, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(293, 3, 'TOMATE', 'TOMATE CHONTO', NULL, 5, 1, 100.00, 100.00, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(294, 3, 'CEBOLLA', 'CEBOLLA CABEZONA', NULL, 5, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(295, 3, 'HABICHUELA', 'HABICHUELA VERDE', NULL, 5, 1, 100.00, 100.00, 8.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(296, 3, 'REPOLLO', 'REPOLLO BLANCO', NULL, 5, 1, 100.00, 100.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(297, 3, 'TOMATEA', 'TOMATE DE ARBOL', NULL, 4, 1, 100.00, 100.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(298, 3, 'GUAYABA', 'GUAYABA PERA', NULL, 4, 1, 100.00, 100.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(299, 3, 'NARANJA', 'NARANJA TANGERINA', NULL, 4, 1, 100.00, 100.00, 40.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(300, 3, 'MANZANA', 'MANZANA ROJA', NULL, 4, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(301, 3, 'BANANO', 'BANANO URABA', NULL, 4, 1, 100.00, 100.00, 35.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(302, 3, 'PAPAYA', 'PAPAYA MELON', NULL, 4, 1, 100.00, 100.00, 25.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(303, 3, 'AHUYAMA', 'AHUYAMA BOLO', NULL, 5, 1, 100.00, 100.00, 25.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(304, 3, 'ESPINACA', 'ESPINACA BOGOTANA', NULL, 5, 1, 100.00, 100.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(305, 3, 'LECHUGA', 'LECHUGA BATAVIA', NULL, 5, 1, 100.00, 100.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(306, 3, 'PEPINO', 'PEPINO COHOMBRO', NULL, 5, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(307, 3, 'PI├æA', 'PI├æA ORO MIEL', NULL, 4, 1, 100.00, 100.00, 45.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(308, 3, 'MORA', 'MORA DE CASTILLA', NULL, 4, 1, 100.00, 100.00, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(309, 3, 'LIMON', 'LIMON TAHITI', NULL, 4, 1, 100.00, 100.00, 50.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(310, 3, 'ACEITE', 'ACEITE VEGETAL DE GIRASOL', NULL, 6, 3, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(311, 3, 'SAL', 'SAL REFINADA YODADA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(312, 3, 'AZUCAR', 'AZUCAR BLANCA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(313, 3, 'PANELA', 'PANELA REDONDA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(314, 3, 'AJO', 'AJO EN PASTA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58');
+INSERT INTO `items` (`id`, `pae_id`, `code`, `name`, `description`, `food_group_id`, `measurement_unit_id`, `gross_weight`, `net_weight`, `waste_percentage`, `calories`, `proteins`, `carbohydrates`, `fats`, `fiber`, `iron`, `calcium`, `sodium`, `vitamin_a`, `vitamin_c`, `contains_gluten`, `contains_lactose`, `contains_peanuts`, `contains_seafood`, `contains_eggs`, `contains_soy`, `is_local_purchase`, `local_producer`, `sanitary_registry`, `requires_refrigeration`, `shelf_life_days`, `unit_cost`, `last_purchase_date`, `status`, `created_at`, `updated_at`, `is_perishable`) VALUES
+(265, 3, 'ARROZ', 'ARROZ BLANCO', NULL, 1, 1, 1000.00, 1000.00, 0.00, 130.00, 2.70, 28.00, 0.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(266, 3, 'PASTA', 'PASTA ESPAGUETI', NULL, 1, 1, 1000.00, 1000.00, 0.00, 157.00, 5.80, 30.00, 0.90, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(267, 3, 'PAPA', 'PAPA SABANERA', NULL, 1, 1, 1000.00, 850.00, 15.00, 77.00, 2.00, 17.00, 0.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(268, 3, 'YUCA', 'YUCA FRESCA', NULL, 1, 1, 1000.00, 750.00, 25.00, 160.00, 1.40, 38.00, 0.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(269, 3, 'PLATANO', 'PLATANO MADURO', NULL, 1, 1, 1000.00, 650.00, 35.00, 122.00, 1.30, 32.00, 0.40, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(270, 3, 'AREPA', 'AREPA DE MAIZ', NULL, 1, 5, 1.00, 1.00, 0.00, 218.00, 4.50, 45.00, 1.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(271, 3, 'PAN', 'PAN TAJADO INTEGRAL', NULL, 1, 5, 1.00, 1.00, 0.00, 247.00, 8.50, 41.00, 3.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(272, 3, 'AVENA', 'AVENA EN HOJUELAS', NULL, 1, 1, 1000.00, 1000.00, 0.00, 389.00, 16.00, 66.00, 6.90, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(273, 3, 'GALLETA', 'GALLETA INTEGRAL', NULL, 1, 5, 1.00, 1.00, 0.00, 450.00, 7.00, 70.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(274, 3, 'TOSTADA', 'TOSTADA DE ARROZ', NULL, 1, 5, 1.00, 1.00, 0.00, 380.00, 8.00, 80.00, 2.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(275, 3, 'POLLO', 'PECHUGA DE POLLO', NULL, 2, 1, 1000.00, 850.00, 15.00, 165.00, 31.00, 0.00, 3.60, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(276, 3, 'CARNE', 'CARNE DE RES (MURILLO)', NULL, 2, 1, 1000.00, 950.00, 5.00, 250.00, 26.00, 0.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(277, 3, 'CERDO', 'LOMO DE CERDO', NULL, 2, 1, 1000.00, 950.00, 5.00, 242.00, 27.00, 0.00, 14.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(278, 3, 'HUEVO', 'HUEVO AA FRESCO', NULL, 2, 5, 60.00, 50.00, 16.00, 155.00, 13.00, 1.10, 11.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 1, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(279, 3, 'FRIJOL', 'FRIJOL CARGAMANTO', NULL, 2, 1, 1000.00, 1000.00, 0.00, 333.00, 23.00, 60.00, 1.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(280, 3, 'LENTEJA', 'LENTEJA SECA', NULL, 2, 1, 1000.00, 1000.00, 0.00, 352.00, 25.00, 63.00, 1.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(281, 3, 'GARBANZO', 'GARBANZO SECO', NULL, 2, 1, 1000.00, 1000.00, 0.00, 364.00, 19.00, 61.00, 6.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(282, 3, 'PESCADO', 'FILETE DE TILAPIA', NULL, 2, 1, 1000.00, 900.00, 10.00, 96.00, 20.00, 0.00, 1.70, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(283, 3, 'ATUN', 'ATUN EN AGUA (LATA)', NULL, 2, 1, 170.00, 120.00, 30.00, 116.00, 25.00, 0.00, 0.80, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(284, 3, 'ARVEJA', 'ARVEJA SECA', NULL, 2, 1, 1000.00, 1000.00, 0.00, 341.00, 24.00, 60.00, 1.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(285, 3, 'BLANQUILLO', 'FRIJOL BLANQUILLO', NULL, 2, 1, 1000.00, 1000.00, 0.00, 337.00, 23.00, 60.00, 1.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(286, 3, 'QUESO', 'QUESO CAMPESINO', NULL, 3, 1, 1000.00, 1000.00, 0.00, 264.00, 18.00, 3.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(287, 3, 'LECHE', 'LECHE ENTERA PASTEURIZADA', NULL, 3, 3, 100.00, 100.00, 0.00, 61.00, 3.20, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(288, 3, 'YOGURT', 'YOGURT NATURAL', NULL, 3, 3, 100.00, 100.00, 0.00, 59.00, 3.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(289, 3, 'KUMIS', 'KUMIS FRESCO', NULL, 3, 3, 100.00, 100.00, 0.00, 78.00, 3.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(290, 3, 'AVENALAC', 'AVENA CON LECHE PREPARADA', NULL, 3, 3, 100.00, 100.00, 0.00, 120.00, 4.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 1, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(291, 3, 'MATANTE', 'BIENESTARINA MASAMORRA', NULL, 3, 3, 100.00, 100.00, 0.00, 110.00, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(292, 3, 'ZANAHORIA', 'ZANAHORIA FRESCA', NULL, 5, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(293, 3, 'TOMATE', 'TOMATE CHONTO', NULL, 5, 1, 100.00, 100.00, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(294, 3, 'CEBOLLA', 'CEBOLLA CABEZONA', NULL, 5, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(295, 3, 'HABICHUELA', 'HABICHUELA VERDE', NULL, 5, 1, 100.00, 100.00, 8.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(296, 3, 'REPOLLO', 'REPOLLO BLANCO', NULL, 5, 1, 100.00, 100.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(297, 3, 'TOMATEA', 'TOMATE DE ARBOL', NULL, 4, 1, 100.00, 100.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(298, 3, 'GUAYABA', 'GUAYABA PERA', NULL, 4, 1, 100.00, 100.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(299, 3, 'NARANJA', 'NARANJA TANGERINA', NULL, 4, 1, 100.00, 100.00, 40.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(300, 3, 'MANZANA', 'MANZANA ROJA', NULL, 4, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(301, 3, 'BANANO', 'BANANO URABA', '', 4, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, 0, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-09 12:44:05', 1),
+(302, 3, 'PAPAYA', 'PAPAYA MELON', NULL, 4, 1, 100.00, 100.00, 25.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(303, 3, 'AHUYAMA', 'AHUYAMA BOLO', NULL, 5, 1, 100.00, 100.00, 25.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(304, 3, 'ESPINACA', 'ESPINACA BOGOTANA', NULL, 5, 1, 100.00, 100.00, 15.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(305, 3, 'LECHUGA', 'LECHUGA BATAVIA', NULL, 5, 1, 100.00, 100.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(306, 3, 'PEPINO', 'PEPINO COHOMBRO', NULL, 5, 1, 100.00, 100.00, 10.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(307, 3, 'PI├æA', 'PI├æA ORO MIEL', NULL, 4, 1, 100.00, 100.00, 45.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(308, 3, 'MORA', 'MORA DE CASTILLA', NULL, 4, 1, 100.00, 100.00, 5.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(309, 3, 'LIMON', 'LIMON TAHITI', NULL, 4, 1, 100.00, 100.00, 50.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(310, 3, 'ACEITE', 'ACEITE VEGETAL DE GIRASOL', NULL, 6, 3, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(311, 3, 'SAL', 'SAL REFINADA YODADA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(312, 3, 'AZUCAR', 'AZUCAR BLANCA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(313, 3, 'PANELA', 'PANELA REDONDA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(314, 3, 'AJO', 'AJO EN PASTA', NULL, 7, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, 0, NULL, 0.00, NULL, 'ACTIVO', '2026-02-03 23:29:58', '2026-02-03 23:29:58', 0),
+(315, 3, 'GUINEO', 'GUINEO', '', 1, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 12:44:32', '2026-02-09 12:44:51', 1);
 
 -- --------------------------------------------------------
 
@@ -632,7 +694,8 @@ CREATE TABLE `menus` (
   `cycle_id` int(11) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `day_number` int(11) DEFAULT NULL,
-  `meal_type` enum('DESAYUNO','MEDIA MAÑANA','ALMUERZO','ONCES','CENA') DEFAULT 'ALMUERZO',
+  `meal_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') DEFAULT 'ALMUERZO',
+  `ration_type_id` int(11) DEFAULT NULL,
   `age_group` enum('PREESCOLAR','PRIMARIA_A','PRIMARIA_B','SECUNDARIA','TODOS') DEFAULT 'TODOS',
   `has_dairy` tinyint(1) DEFAULT 0,
   `has_protein` tinyint(1) DEFAULT 0,
@@ -657,27 +720,32 @@ CREATE TABLE `menus` (
 -- Volcado de datos para la tabla `menus`
 --
 
-INSERT INTO `menus` (`id`, `pae_id`, `cycle_id`, `name`, `day_number`, `meal_type`, `age_group`, `has_dairy`, `has_protein`, `has_cereal`, `has_fruit`, `has_vegetable`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `total_iron`, `total_calcium`, `total_cost`, `preparation_instructions`, `allergen_warnings`, `status`, `created_at`, `updated_at`) VALUES
-(241, 3, 104, 'Día 1 - 2026-02-02', 1, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(242, 3, 104, 'Día 2 - 2026-02-03', 2, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(243, 3, 104, 'Día 3 - 2026-02-04', 3, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(244, 3, 104, 'Día 4 - 2026-02-05', 4, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(245, 3, 104, 'Día 5 - 2026-02-06', 5, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(246, 3, 104, 'Día 6 - 2026-02-09', 6, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(247, 3, 104, 'Día 7 - 2026-02-10', 7, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(248, 3, 104, 'Día 8 - 2026-02-11', 8, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(249, 3, 104, 'Día 9 - 2026-02-12', 9, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(250, 3, 104, 'Día 10 - 2026-02-13', 10, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(251, 3, 104, 'Día 11 - 2026-02-16', 11, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(252, 3, 104, 'Día 12 - 2026-02-17', 12, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(253, 3, 104, 'Día 13 - 2026-02-18', 13, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(254, 3, 104, 'Día 14 - 2026-02-19', 14, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(255, 3, 104, 'Día 15 - 2026-02-20', 15, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(256, 3, 104, 'Día 16 - 2026-02-23', 16, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(257, 3, 104, 'Día 17 - 2026-02-24', 17, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(258, 3, 104, 'Día 18 - 2026-02-25', 18, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(259, 3, 104, 'Día 19 - 2026-02-26', 19, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44'),
-(260, 3, 104, 'Día 20 - 2026-02-27', 20, 'ALMUERZO', 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 00:19:44');
+INSERT INTO `menus` (`id`, `pae_id`, `cycle_id`, `name`, `day_number`, `meal_type`, `ration_type_id`, `age_group`, `has_dairy`, `has_protein`, `has_cereal`, `has_fruit`, `has_vegetable`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `total_iron`, `total_calcium`, `total_cost`, `preparation_instructions`, `allergen_warnings`, `status`, `created_at`, `updated_at`) VALUES
+(241, 3, 104, 'Día 1 - 2026-02-02', 1, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(242, 3, 104, 'Día 2 - 2026-02-03', 2, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(243, 3, 104, 'Día 3 - 2026-02-04', 3, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(244, 3, 104, 'Día 4 - 2026-02-05', 4, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(245, 3, 104, 'Día 5 - 2026-02-06', 5, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(246, 3, 104, 'Día 6 - 2026-02-09', 6, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(247, 3, 104, 'Día 7 - 2026-02-10', 7, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(248, 3, 104, 'Día 8 - 2026-02-11', 8, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(249, 3, 104, 'Día 9 - 2026-02-12', 9, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(250, 3, 104, 'Día 10 - 2026-02-13', 10, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(251, 3, 104, 'Día 11 - 2026-02-16', 11, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(252, 3, 104, 'Día 12 - 2026-02-17', 12, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(253, 3, 104, 'Día 13 - 2026-02-18', 13, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(254, 3, 104, 'Día 14 - 2026-02-19', 14, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(255, 3, 104, 'Día 15 - 2026-02-20', 15, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(256, 3, 104, 'Día 16 - 2026-02-23', 16, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(257, 3, 104, 'Día 17 - 2026-02-24', 17, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(258, 3, 104, 'Día 18 - 2026-02-25', 18, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(259, 3, 104, 'Día 19 - 2026-02-26', 19, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(260, 3, 104, 'Día 20 - 2026-02-27', 20, 'ALMUERZO', 2, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-09 12:25:41'),
+(286, 3, 106, 'Día 1 - 2026-03-02', 1, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(287, 3, 106, 'Día 2 - 2026-03-03', 2, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(288, 3, 106, 'Día 3 - 2026-03-04', 3, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(289, 3, 106, 'Día 4 - 2026-03-05', 4, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(290, 3, 106, 'Día 5 - 2026-03-06', 5, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44');
 
 -- --------------------------------------------------------
 
@@ -706,7 +774,8 @@ CREATE TABLE `menu_cycles` (
 --
 
 INSERT INTO `menu_cycles` (`id`, `pae_id`, `name`, `description`, `start_date`, `end_date`, `total_days`, `is_validated`, `validated_by`, `validated_at`, `status`, `created_at`, `updated_at`) VALUES
-(104, 3, 'CICLO 1 FEBRERO', NULL, '2026-02-01', '2026-02-28', 20, 0, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 15:57:02');
+(104, 3, 'CICLO 1 FEBRERO', NULL, '2026-02-01', '2026-02-28', 20, 0, NULL, NULL, 'ACTIVO', '2026-02-06 00:19:44', '2026-02-06 15:57:02'),
+(106, 3, 'CICLO 2 - MARZO 2026', NULL, '2026-03-01', '2026-03-07', 5, 0, NULL, NULL, 'BORRADOR', '2026-02-09 13:08:44', '2026-02-09 13:08:44');
 
 -- --------------------------------------------------------
 
@@ -736,54 +805,64 @@ CREATE TABLE `menu_recipes` (
   `id` int(11) NOT NULL,
   `menu_id` int(11) NOT NULL,
   `recipe_id` int(11) NOT NULL,
-  `meal_type` enum('DESAYUNO','MEDIA MA??ANA','ALMUERZO','ONCES','CENA') NOT NULL
+  `meal_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') NOT NULL,
+  `ration_type_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `menu_recipes`
 --
 
-INSERT INTO `menu_recipes` (`id`, `menu_id`, `recipe_id`, `meal_type`) VALUES
-(41, 241, 1, 'DESAYUNO'),
-(42, 241, 3, 'ALMUERZO'),
-(43, 242, 4, 'DESAYUNO'),
-(44, 242, 2, 'ALMUERZO'),
-(45, 243, 3, 'ALMUERZO'),
-(46, 243, 4, 'DESAYUNO'),
-(47, 244, 1, 'DESAYUNO'),
-(48, 244, 2, 'ALMUERZO'),
-(49, 245, 4, 'DESAYUNO'),
-(50, 245, 3, 'ALMUERZO'),
-(51, 246, 2, 'ALMUERZO'),
-(52, 246, 1, 'DESAYUNO'),
-(53, 247, 4, 'DESAYUNO'),
-(54, 247, 3, 'ALMUERZO'),
-(55, 248, 1, 'DESAYUNO'),
-(56, 248, 2, 'ALMUERZO'),
-(57, 249, 3, 'ALMUERZO'),
-(58, 249, 4, 'DESAYUNO'),
-(59, 250, 1, 'DESAYUNO'),
-(60, 250, 2, 'ALMUERZO'),
-(61, 251, 3, 'ALMUERZO'),
-(62, 251, 4, 'DESAYUNO'),
-(63, 252, 1, 'DESAYUNO'),
-(64, 252, 2, 'ALMUERZO'),
-(65, 253, 4, 'DESAYUNO'),
-(66, 253, 3, 'ALMUERZO'),
-(67, 254, 2, 'ALMUERZO'),
-(68, 254, 1, 'DESAYUNO'),
-(69, 255, 4, 'DESAYUNO'),
-(70, 255, 3, 'ALMUERZO'),
-(71, 256, 2, 'ALMUERZO'),
-(72, 256, 1, 'DESAYUNO'),
-(73, 257, 4, 'DESAYUNO'),
-(74, 257, 3, 'ALMUERZO'),
-(75, 258, 1, 'DESAYUNO'),
-(76, 258, 2, 'ALMUERZO'),
-(77, 259, 4, 'DESAYUNO'),
-(78, 259, 3, 'ALMUERZO'),
-(79, 260, 1, 'DESAYUNO'),
-(80, 260, 2, 'ALMUERZO');
+INSERT INTO `menu_recipes` (`id`, `menu_id`, `recipe_id`, `meal_type`, `ration_type_id`) VALUES
+(41, 241, 1, 'DESAYUNO', 1),
+(42, 241, 3, 'ALMUERZO', 2),
+(43, 242, 4, 'DESAYUNO', 1),
+(44, 242, 2, 'ALMUERZO', 2),
+(45, 243, 3, 'ALMUERZO', 2),
+(46, 243, 4, 'DESAYUNO', 1),
+(47, 244, 1, 'DESAYUNO', 1),
+(48, 244, 2, 'ALMUERZO', 2),
+(49, 245, 4, 'DESAYUNO', 1),
+(50, 245, 3, 'ALMUERZO', 2),
+(51, 246, 2, 'ALMUERZO', 2),
+(52, 246, 1, 'DESAYUNO', 1),
+(53, 247, 4, 'DESAYUNO', 1),
+(54, 247, 3, 'ALMUERZO', 2),
+(55, 248, 1, 'DESAYUNO', 1),
+(56, 248, 2, 'ALMUERZO', 2),
+(57, 249, 3, 'ALMUERZO', 2),
+(58, 249, 4, 'DESAYUNO', 1),
+(59, 250, 1, 'DESAYUNO', 1),
+(60, 250, 2, 'ALMUERZO', 2),
+(61, 251, 3, 'ALMUERZO', 2),
+(62, 251, 4, 'DESAYUNO', 1),
+(63, 252, 1, 'DESAYUNO', 1),
+(64, 252, 2, 'ALMUERZO', 2),
+(65, 253, 4, 'DESAYUNO', 1),
+(66, 253, 3, 'ALMUERZO', 2),
+(67, 254, 2, 'ALMUERZO', 2),
+(68, 254, 1, 'DESAYUNO', 1),
+(69, 255, 4, 'DESAYUNO', 1),
+(70, 255, 3, 'ALMUERZO', 2),
+(71, 256, 2, 'ALMUERZO', 2),
+(72, 256, 1, 'DESAYUNO', 1),
+(73, 257, 4, 'DESAYUNO', 1),
+(74, 257, 3, 'ALMUERZO', 2),
+(75, 258, 1, 'DESAYUNO', 1),
+(76, 258, 2, 'ALMUERZO', 2),
+(77, 259, 4, 'DESAYUNO', 1),
+(78, 259, 3, 'ALMUERZO', 2),
+(79, 260, 1, 'DESAYUNO', 1),
+(80, 260, 2, 'ALMUERZO', 2),
+(122, 286, 1, 'DESAYUNO', 1),
+(123, 286, 2, 'ALMUERZO', 2),
+(124, 287, 4, 'DESAYUNO', 1),
+(125, 287, 3, 'ALMUERZO', 2),
+(126, 288, 1, 'DESAYUNO', 1),
+(127, 288, 3, 'ALMUERZO', 2),
+(128, 289, 1, 'DESAYUNO', 1),
+(129, 289, 2, 'ALMUERZO', 2),
+(130, 290, 1, 'DESAYUNO', 1);
 
 -- --------------------------------------------------------
 
@@ -821,7 +900,9 @@ INSERT INTO `modules` (`id`, `group_id`, `name`, `description`, `route_key`, `ic
 (22, 6, 'Cotizaciones', 'Gestión de precios de proveedores', 'cotizaciones', 'fas fa-file-invoice-dollar', 2),
 (23, 6, 'Órdenes de Compra', 'Gestión de pedidos a proveedores', 'compras', 'fas fa-shopping-cart', 3),
 (24, 6, 'Remisiones (Entradas)', 'Ingreso de mercancÝa desde proveedores (OC)', 'remisiones', 'fas fa-file-import', 4),
-(25, 3, 'Reporte de Asistencia (QR)', 'Registro de entregas capturadas por escáner', 'consumos', 'fas fa-id-card-alt', 10);
+(25, 3, 'Reporte de Asistencia (QR)', 'Registro de entregas capturadas por escáner', 'consumos', 'fas fa-id-card-alt', 10),
+(26, 7, 'Cargos', 'Gestión de cargos y perfiles', 'hr-positions', 'fas fa-briefcase', 1),
+(27, 7, 'Empleados', 'Maestro de empleados y nómina', 'hr-employees', 'fas fa-user-tie', 2);
 
 -- --------------------------------------------------------
 
@@ -845,8 +926,9 @@ INSERT INTO `module_groups` (`id`, `name`, `icon`, `order_index`) VALUES
 (2, 'Instituciones', 'fas fa-map-marked-alt', 2),
 (3, 'Beneficiarios', 'fas fa-users', 3),
 (4, 'Cocina', 'fas fa-utensils', 4),
-(5, 'Reportes', 'fas fa-chart-line', 6),
-(6, 'Inventarios', 'fas fa-boxes', 5);
+(5, 'Reportes', 'fas fa-chart-line', 7),
+(6, 'Inventarios', 'fas fa-boxes', 5),
+(7, 'Recurso Humano', 'fas fa-id-card', 6);
 
 -- --------------------------------------------------------
 
@@ -929,8 +1011,10 @@ INSERT INTO `module_permissions` (`id`, `role_id`, `pae_id`, `module_id`, `can_c
 
 CREATE TABLE `nutritional_parameters` (
   `id` int(11) NOT NULL,
+  `pae_id` int(11) DEFAULT NULL,
   `age_group` enum('PREESCOLAR','PRIMARIA_A','PRIMARIA_B','SECUNDARIA') NOT NULL,
-  `meal_type` enum('DESAYUNO','MEDIA MAÑANA','ALMUERZO','ONCES','CENA') NOT NULL,
+  `meal_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') NOT NULL,
+  `ration_type_id` int(11) DEFAULT NULL,
   `min_calories` decimal(10,2) NOT NULL,
   `max_calories` decimal(10,2) NOT NULL,
   `min_proteins` decimal(10,2) NOT NULL,
@@ -948,15 +1032,15 @@ CREATE TABLE `nutritional_parameters` (
 -- Volcado de datos para la tabla `nutritional_parameters`
 --
 
-INSERT INTO `nutritional_parameters` (`id`, `age_group`, `meal_type`, `min_calories`, `max_calories`, `min_proteins`, `max_proteins`, `min_iron`, `min_calcium`, `max_sodium`, `max_egg_frequency`, `max_fried_frequency`, `created_at`, `updated_at`) VALUES
-(1, 'PREESCOLAR', 'ALMUERZO', 300.00, 400.00, 10.00, 15.00, 2.50, 150.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-01 21:58:22'),
-(2, 'PRIMARIA_A', 'ALMUERZO', 450.00, 550.00, 15.00, 20.00, 3.50, 200.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-03 23:02:42'),
-(3, 'SECUNDARIA', 'ALMUERZO', 550.00, 700.00, 20.00, 30.00, 4.50, 250.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-03 23:02:42'),
-(4, 'PREESCOLAR', 'MEDIA MAÑANA', 150.00, 200.00, 5.00, 8.00, 1.00, 100.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-01 21:58:22'),
-(5, 'PRIMARIA_A', 'MEDIA MAÑANA', 200.00, 250.00, 8.00, 12.00, 1.50, 150.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-03 23:02:42'),
-(6, 'SECUNDARIA', 'MEDIA MAÑANA', 250.00, 300.00, 10.00, 15.00, 2.00, 200.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-03 23:02:42'),
-(7, 'PRIMARIA_B', 'ALMUERZO', 500.00, 600.00, 18.00, 25.00, 4.00, 220.00, NULL, 2, 1, '2026-02-03 23:29:58', '2026-02-03 23:29:58'),
-(8, 'PRIMARIA_B', '', 220.00, 270.00, 9.00, 13.00, 1.80, 170.00, NULL, 2, 1, '2026-02-03 23:29:58', '2026-02-03 23:29:58');
+INSERT INTO `nutritional_parameters` (`id`, `pae_id`, `age_group`, `meal_type`, `ration_type_id`, `min_calories`, `max_calories`, `min_proteins`, `max_proteins`, `min_iron`, `min_calcium`, `max_sodium`, `max_egg_frequency`, `max_fried_frequency`, `created_at`, `updated_at`) VALUES
+(1, 3, 'PREESCOLAR', 'ALMUERZO', 2, 300.00, 400.00, 10.00, 15.00, 2.50, 150.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-09 12:25:41'),
+(2, 3, 'PRIMARIA_A', 'ALMUERZO', 2, 450.00, 550.00, 15.00, 20.00, 3.50, 200.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-09 12:25:41'),
+(3, 3, 'SECUNDARIA', 'ALMUERZO', 2, 550.00, 700.00, 20.00, 30.00, 4.50, 250.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-09 12:25:41'),
+(4, 3, 'PREESCOLAR', 'REFRIGERIO', 3, 150.00, 200.00, 5.00, 8.00, 1.00, 100.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-09 12:25:41'),
+(5, 3, 'PRIMARIA_A', 'REFRIGERIO', 3, 200.00, 250.00, 8.00, 12.00, 1.50, 150.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-09 12:25:41'),
+(6, 3, 'SECUNDARIA', 'REFRIGERIO', 3, 250.00, 300.00, 10.00, 15.00, 2.00, 200.00, NULL, 2, 1, '2026-02-01 21:58:22', '2026-02-09 12:25:41'),
+(7, 3, 'PRIMARIA_B', 'ALMUERZO', 2, 500.00, 600.00, 18.00, 25.00, 4.00, 220.00, NULL, 2, 1, '2026-02-03 23:29:58', '2026-02-09 12:25:41'),
+(8, 3, 'PRIMARIA_B', 'REFRIGERIO', 3, 220.00, 270.00, 9.00, 13.00, 1.80, 170.00, NULL, 2, 1, '2026-02-03 23:29:58', '2026-02-09 12:25:41');
 
 -- --------------------------------------------------------
 
@@ -989,6 +1073,31 @@ CREATE TABLE `pae_programs` (
 
 INSERT INTO `pae_programs` (`id`, `name`, `operator_name`, `operator_nit`, `operator_address`, `operator_phone`, `operator_email`, `entity_name`, `nit`, `email`, `city`, `department`, `entity_logo_path`, `operator_logo_path`, `logo_path`, `created_at`) VALUES
 (3, 'PAE SANTA MARTA', 'OPERADOR DE PRUEBA', '90090900-1', 'Calle 6C No 19-21 Campito', '3003892753', 'admin@pae.gov.co', 'ALCALDIA DE SANTA MARTA', '95655', 'paestamta@mail.com', 'SANTA MARTA', 'MAGDALENA', 'assets/img/logos/entity_1769954711.jpg', 'assets/img/logos/operator_1769954711.jpeg', NULL, '2026-02-01 13:50:33');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `pae_ration_types`
+--
+
+CREATE TABLE `pae_ration_types` (
+  `id` int(11) NOT NULL,
+  `pae_id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `status` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `pae_ration_types`
+--
+
+INSERT INTO `pae_ration_types` (`id`, `pae_id`, `name`, `description`, `status`, `created_at`, `updated_at`) VALUES
+(1, 3, 'DESAYUNO', NULL, 'ACTIVO', '2026-02-09 12:25:40', '2026-02-09 12:25:40'),
+(2, 3, 'ALMUERZO', NULL, 'ACTIVO', '2026-02-09 12:25:40', '2026-02-09 12:25:40'),
+(3, 3, 'REFRIGERIO', NULL, 'ACTIVO', '2026-02-09 12:25:40', '2026-02-09 12:25:40');
 
 -- --------------------------------------------------------
 
@@ -1053,7 +1162,8 @@ CREATE TABLE `recipes` (
   `id` int(11) NOT NULL,
   `pae_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
-  `meal_type` enum('DESAYUNO','MEDIA MAÑANA','ALMUERZO','ONCES','CENA') NOT NULL,
+  `meal_type` enum('DESAYUNO','COMPLEMENTO ALIMENTARIO JORNADA DE LA TARDE','ALMUERZO','REFRIGERIO','REFRIGERIO REFORZADO INDUSTRIALIZADO','DESAYUNO INDUSTRIALIZADO PARA EMERGENCIAS') NOT NULL,
+  `ration_type_id` int(11) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `total_calories` decimal(10,2) DEFAULT 0.00,
   `total_proteins` decimal(10,2) DEFAULT 0.00,
@@ -1068,11 +1178,11 @@ CREATE TABLE `recipes` (
 -- Volcado de datos para la tabla `recipes`
 --
 
-INSERT INTO `recipes` (`id`, `pae_id`, `name`, `meal_type`, `description`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, 'HUEVOS REVUELTOS CON TOMATE Y CEBOLLA', 'DESAYUNO', 'HUEVOS REVUELTOS CON TOMATE Y CEBOLLA - CAFE CON LECHE - FRUTA', 2.79, 0.23, 0.02, 0.20, 'ACTIVO', '2026-02-01 23:27:08', '2026-02-03 23:49:10'),
-(2, 3, 'Arroz con Pollo y Ensalada', 'ALMUERZO', 'ARROZ CON POLLO - ENSALADA - JUGO DE NARANJA', 0.72, 0.05, 0.11, 0.01, 'ACTIVO', '2026-02-02 01:00:26', '2026-02-03 23:48:36'),
-(3, 3, 'SOPA DE POLLO', 'ALMUERZO', 'SOPA DE POLLO', 0.33, 0.06, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:06:00', '2026-02-06 00:19:07'),
-(4, 3, 'MOTE DE GUINEO VERDE', 'DESAYUNO', 'MOTE DE GUINEO - MANZANA - CAFE CON LECHE', 0.93, 0.20, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:07:36', '2026-02-06 00:18:46');
+INSERT INTO `recipes` (`id`, `pae_id`, `name`, `meal_type`, `ration_type_id`, `description`, `total_calories`, `total_proteins`, `total_carbohydrates`, `total_fats`, `status`, `created_at`, `updated_at`) VALUES
+(1, 3, 'HUEVOS REVUELTOS CON TOMATE Y CEBOLLA', 'DESAYUNO', 1, 'HUEVOS REVUELTOS CON TOMATE Y CEBOLLA - CAFE CON LECHE - FRUTA', 2.79, 0.23, 0.02, 0.20, 'ACTIVO', '2026-02-01 23:27:08', '2026-02-09 12:25:40'),
+(2, 3, 'Arroz con Pollo y Ensalada', 'ALMUERZO', 2, 'ARROZ CON POLLO - ENSALADA - JUGO DE NARANJA', 0.72, 0.05, 0.11, 0.01, 'ACTIVO', '2026-02-02 01:00:26', '2026-02-09 12:25:40'),
+(3, 3, 'SOPA DE POLLO', 'ALMUERZO', 2, 'SOPA DE POLLO', 0.33, 0.06, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:06:00', '2026-02-09 12:25:40'),
+(4, 3, 'MOTE DE GUINEO VERDE', 'DESAYUNO', 1, 'MOTE DE GUINEO - MANZANA - CAFE CON LECHE', 0.93, 0.20, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:07:36', '2026-02-09 12:25:40');
 
 -- --------------------------------------------------------
 
@@ -1270,7 +1380,7 @@ CREATE TABLE `suppliers` (
 --
 
 INSERT INTO `suppliers` (`id`, `pae_id`, `nit`, `name`, `contact_person`, `phone`, `email`, `address`, `city`, `type`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, '900900900-1', 'PROVEEDOR UNO', 'JUAN MARIA ORTEGA', '5566', 'provee@mail.com', 'Calle 1 No 2', 'SANTA MARTA', 'JURIDICA', 'active', '2026-02-01 15:58:43', '2026-02-04 00:05:39');
+(1, 3, '900900900-1', 'PROVEEDOR UNO', 'JUAN MARIA ORTEGA', '5566', 'provee@mail.com', 'Calle 1 No 2', 'SANTA MARTA', 'JURIDICA', 'active', '2026-02-01 15:58:43', '2026-02-09 12:45:25');
 
 -- --------------------------------------------------------
 
@@ -1374,6 +1484,21 @@ ALTER TABLE `ethnic_groups`
 ALTER TABLE `food_groups`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `code` (`code`);
+
+--
+-- Indices de la tabla `hr_employees`
+--
+ALTER TABLE `hr_employees`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pae_id` (`pae_id`),
+  ADD KEY `position_id` (`position_id`);
+
+--
+-- Indices de la tabla `hr_positions`
+--
+ALTER TABLE `hr_positions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pae_id` (`pae_id`);
 
 --
 -- Indices de la tabla `inventory`
@@ -1526,6 +1651,13 @@ ALTER TABLE `pae_programs`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indices de la tabla `pae_ration_types`
+--
+ALTER TABLE `pae_ration_types`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pae_id` (`pae_id`);
+
+--
 -- Indices de la tabla `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
@@ -1660,6 +1792,18 @@ ALTER TABLE `food_groups`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- AUTO_INCREMENT de la tabla `hr_employees`
+--
+ALTER TABLE `hr_employees`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `hr_positions`
+--
+ALTER TABLE `hr_positions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT de la tabla `inventory`
 --
 ALTER TABLE `inventory`
@@ -1681,13 +1825,13 @@ ALTER TABLE `inventory_movement_details`
 -- AUTO_INCREMENT de la tabla `inventory_quotes`
 --
 ALTER TABLE `inventory_quotes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_quote_details`
 --
 ALTER TABLE `inventory_quote_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory_remissions`
@@ -1705,7 +1849,7 @@ ALTER TABLE `inventory_remission_details`
 -- AUTO_INCREMENT de la tabla `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=315;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=316;
 
 --
 -- AUTO_INCREMENT de la tabla `measurement_units`
@@ -1717,13 +1861,13 @@ ALTER TABLE `measurement_units`
 -- AUTO_INCREMENT de la tabla `menus`
 --
 ALTER TABLE `menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=261;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=291;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_cycles`
 --
 ALTER TABLE `menu_cycles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_items`
@@ -1735,19 +1879,19 @@ ALTER TABLE `menu_items`
 -- AUTO_INCREMENT de la tabla `menu_recipes`
 --
 ALTER TABLE `menu_recipes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT de la tabla `modules`
 --
 ALTER TABLE `modules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de la tabla `module_groups`
 --
 ALTER TABLE `module_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `module_permissions`
@@ -1765,6 +1909,12 @@ ALTER TABLE `nutritional_parameters`
 -- AUTO_INCREMENT de la tabla `pae_programs`
 --
 ALTER TABLE `pae_programs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `pae_ration_types`
+--
+ALTER TABLE `pae_ration_types`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
@@ -1862,6 +2012,12 @@ ALTER TABLE `daily_consumptions`
   ADD CONSTRAINT `daily_consumptions_ibfk_1` FOREIGN KEY (`pae_id`) REFERENCES `pae_programs` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `daily_consumptions_ibfk_2` FOREIGN KEY (`branch_id`) REFERENCES `school_branches` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `daily_consumptions_ibfk_3` FOREIGN KEY (`beneficiary_id`) REFERENCES `beneficiaries` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `hr_employees`
+--
+ALTER TABLE `hr_employees`
+  ADD CONSTRAINT `hr_employees_ibfk_1` FOREIGN KEY (`position_id`) REFERENCES `hr_positions` (`id`) ON DELETE SET NULL;
 
 --
 -- Filtros para la tabla `inventory`

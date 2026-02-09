@@ -8,47 +8,9 @@ use Utils\JWT;
 use PDO;
 use Exception;
 
-class BeneficiaryController
+class BeneficiaryController extends BaseController
 {
-    private $conn;
     private $table_name = "beneficiaries";
-
-    public function __construct()
-    {
-        $this->conn = Database::getInstance()->getConnection();
-    }
-
-    private function getPaeIdFromToken()
-    {
-        $headers = null;
-        if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER["Authorization"]);
-        } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
-        } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
-            }
-        }
-
-        if (!$headers)
-            return null;
-
-        $arr = explode(" ", $headers);
-        $jwt = isset($arr[1]) ? $arr[1] : "";
-
-        if ($jwt) {
-            try {
-                $decoded = JWT::decode($jwt);
-                return $decoded['data']['pae_id'] ?? null;
-            } catch (Exception $e) {
-                return null;
-            }
-        }
-        return null;
-    }
 
     /**
      * List all beneficiaries for the current PAE program
@@ -57,9 +19,7 @@ class BeneficiaryController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $query = "SELECT b.*, br.name as branch_name, s.name as school_name, br.school_id as school_id, 
@@ -79,7 +39,7 @@ class BeneficiaryController
         $stmt->execute();
 
         $beneficiaries = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($beneficiaries);
+        $this->sendResponse($beneficiaries);
     }
 
     /**
@@ -89,17 +49,13 @@ class BeneficiaryController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $data = json_decode(file_get_contents("php://input"), true);
 
         if (empty($data['document_number']) || empty($data['first_name']) || empty($data['last_name1']) || empty($data['branch_id'])) {
-            http_response_code(400);
-            echo json_encode(["message" => "Campos obligatorios faltantes (Documento, Nombres, Apellidos, Sede)."]);
-            return;
+            return $this->sendError("Campos obligatorios faltantes (Documento, Nombres, Apellidos, Sede).");
         }
 
         // Check for duplicates within the same PAE program
@@ -109,9 +65,7 @@ class BeneficiaryController
         $check_stmt->bindParam(":pae", $pae_id);
         $check_stmt->execute();
         if ($check_stmt->rowCount() > 0) {
-            http_response_code(400);
-            echo json_encode(["message" => "Ya existe un beneficiario registrado con este número de documento en su programa."]);
-            return;
+            return $this->sendError("Ya existe un beneficiario registrado con este número de documento en su programa.");
         }
 
         // Process data (Standard Casing)
@@ -174,10 +128,9 @@ class BeneficiaryController
         $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Beneficiario registrado exitosamente.", "id" => $this->conn->lastInsertId()]);
+            $this->sendResponse(["message" => "Beneficiario registrado exitosamente.", "id" => $this->conn->lastInsertId()]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al registrar beneficiario."]);
+            $this->sendError("Error al registrar beneficiario.", 500);
         }
     }
 
@@ -188,9 +141,7 @@ class BeneficiaryController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $data = json_decode(file_get_contents("php://input"), true);
@@ -202,9 +153,7 @@ class BeneficiaryController
         $security_stmt->bindParam(":pae_id", $pae_id);
         $security_stmt->execute();
         if ($security_stmt->rowCount() == 0) {
-            http_response_code(404);
-            echo json_encode(["message" => "Beneficiario no encontrado o acceso denegado."]);
-            return;
+            return $this->sendError("Beneficiario no encontrado o acceso denegado.", 404);
         }
 
         // Process data
@@ -297,10 +246,9 @@ class BeneficiaryController
         $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Beneficiario actualizado exitosamente."]);
+            $this->sendResponse(["message" => "Beneficiario actualizado exitosamente."]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al actualizar beneficiario."]);
+            $this->sendError("Error al actualizar beneficiario.", 500);
         }
     }
 
@@ -311,9 +259,7 @@ class BeneficiaryController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :id AND pae_id = :pae_id";
@@ -322,10 +268,9 @@ class BeneficiaryController
         $stmt->bindParam(":pae_id", $pae_id);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Beneficiario eliminado exitosamente."]);
+            $this->sendResponse(["message" => "Beneficiario eliminado exitosamente."]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al eliminar beneficiario."]);
+            $this->sendError("Error al eliminar beneficiario.", 500);
         }
     }
 
@@ -337,7 +282,7 @@ class BeneficiaryController
         $query = "SELECT * FROM document_types ORDER BY name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $this->sendResponse($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
@@ -348,7 +293,7 @@ class BeneficiaryController
         $query = "SELECT * FROM ethnic_groups ORDER BY name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
-        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $this->sendResponse($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     /**
@@ -358,9 +303,7 @@ class BeneficiaryController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $branch_id = $_GET['branch_id'] ?? null;
@@ -368,9 +311,7 @@ class BeneficiaryController
         $group_name = $_GET['group_name'] ?? null;
 
         if (!$branch_id) {
-            http_response_code(400);
-            echo json_encode(["message" => "La sede es requerida."]);
-            return;
+            return $this->sendError("La sede es requerida.", 400);
         }
 
         $query = "SELECT b.document_number, b.first_name, b.second_name, b.last_name1, b.last_name2, 
@@ -408,7 +349,7 @@ class BeneficiaryController
         $stmtBranch->execute([$branch_id]);
         $branchInfo = $stmtBranch->fetch(PDO::FETCH_ASSOC);
 
-        echo json_encode([
+        $this->sendResponse([
             "success" => true,
             "branch" => $branchInfo,
             "data" => $list

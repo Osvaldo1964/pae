@@ -8,54 +8,15 @@ use Utils\JWT;
 use PDO;
 use Exception;
 
-class SchoolController
+class SchoolController extends BaseController
 {
-    private $conn;
     private $table_name = "schools";
-
-    public function __construct()
-    {
-        $this->conn = Database::getInstance()->getConnection();
-    }
-
-    private function getPaeIdFromToken()
-    {
-        $headers = null;
-        if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER["Authorization"]);
-        } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
-        } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
-            }
-        }
-
-        if (!$headers) return null;
-
-        $arr = explode(" ", $headers);
-        $jwt = isset($arr[1]) ? $arr[1] : "";
-
-        if ($jwt) {
-            try {
-                $decoded = JWT::decode($jwt);
-                return $decoded['data']['pae_id'] ?? null;
-            } catch (Exception $e) {
-                return null;
-            }
-        }
-        return null;
-    }
 
     public function index()
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $query = "SELECT * FROM " . $this->table_name . " WHERE pae_id = :pae_id ORDER BY name ASC";
@@ -64,33 +25,32 @@ class SchoolController
         $stmt->execute();
 
         $schools = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($schools);
+        $this->sendResponse($schools);
     }
 
     public function create()
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         // Support both JSON or FormData (for logo upload)
         $data = $_POST;
         // Enforce casing
-        if (isset($data['name'])) $data['name'] = mb_strtoupper($data['name'], 'UTF-8');
-        if (isset($data['rector'])) $data['rector'] = mb_strtoupper($data['rector'], 'UTF-8');
-        if (isset($data['email'])) $data['email'] = strtolower($data['email']);
+        if (isset($data['name']))
+            $data['name'] = mb_strtoupper($data['name'], 'UTF-8');
+        if (isset($data['rector']))
+            $data['rector'] = mb_strtoupper($data['rector'], 'UTF-8');
+        if (isset($data['email']))
+            $data['email'] = strtolower($data['email']);
 
         if (empty($data)) {
             $data = (array) json_decode(file_get_contents("php://input"));
         }
 
         if (empty($data['name'])) {
-            http_response_code(400);
-            echo json_encode(["message" => "Nombre del colegio es requerido."]);
-            return;
+            return $this->sendError("Nombre del colegio es requerido.");
         }
 
         $logo_path = $this->uploadLogo($_FILES['logo'] ?? null);
@@ -135,15 +95,13 @@ class SchoolController
                 $stmtBranch->execute();
 
                 $this->conn->commit();
-                http_response_code(201);
-                echo json_encode(["message" => "Colegio y sede principal creados exitosamente.", "id" => $school_id]);
+                $this->sendResponse(["message" => "Colegio y sede principal creados exitosamente.", "id" => $school_id], 201);
             } else {
                 throw new Exception("Error al insertar colegio.");
             }
         } catch (Exception $e) {
             $this->conn->rollBack();
-            http_response_code(500);
-            echo json_encode(["message" => "Error al crear colegio: " . $e->getMessage()]);
+            $this->sendError("Error al crear colegio: " . $e->getMessage(), 500);
         }
     }
 
@@ -151,16 +109,17 @@ class SchoolController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $data = $_POST;
         // Enforce casing
-        if (isset($data['name'])) $data['name'] = mb_strtoupper($data['name'], 'UTF-8');
-        if (isset($data['rector'])) $data['rector'] = mb_strtoupper($data['rector'], 'UTF-8');
-        if (isset($data['email'])) $data['email'] = strtolower($data['email']);
+        if (isset($data['name']))
+            $data['name'] = mb_strtoupper($data['name'], 'UTF-8');
+        if (isset($data['rector']))
+            $data['rector'] = mb_strtoupper($data['rector'], 'UTF-8');
+        if (isset($data['email']))
+            $data['email'] = strtolower($data['email']);
 
         if (empty($data)) {
             $data = (array) json_decode(file_get_contents("php://input"));
@@ -170,9 +129,7 @@ class SchoolController
         $check = $this->conn->prepare("SELECT id FROM schools WHERE id = :id AND pae_id = :pae_id");
         $check->execute(['id' => $id, 'pae_id' => $pae_id]);
         if ($check->rowCount() == 0) {
-            http_response_code(404);
-            echo json_encode(["message" => "Colegio no encontrado."]);
-            return;
+            return $this->sendError("Colegio no encontrado.", 404);
         }
 
         $query = "UPDATE " . $this->table_name . " 
@@ -206,10 +163,9 @@ class SchoolController
         }
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Colegio actualizado exitosamente."]);
+            $this->sendResponse(["message" => "Colegio actualizado exitosamente."]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al actualizar colegio."]);
+            $this->sendError("Error al actualizar colegio.", 500);
         }
     }
 
@@ -217,9 +173,7 @@ class SchoolController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :id AND pae_id = :pae_id";
@@ -228,10 +182,9 @@ class SchoolController
         $stmt->bindParam(":pae_id", $pae_id);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Colegio eliminado exitosamente."]);
+            $this->sendResponse(["message" => "Colegio eliminado exitosamente."]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al eliminar colegio."]);
+            $this->sendError("Error al eliminar colegio.", 500);
         }
     }
 

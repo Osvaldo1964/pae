@@ -4,8 +4,13 @@ namespace Utils;
 
 class JWT
 {
-    private static $secret_key = "PAE_SECRET_KEY_CHANGE_ME_IN_PROD"; // Change this!
     private static $algorithm = 'HS256';
+
+    private static function getSecret()
+    {
+        Env::load(__DIR__ . '/../.env');
+        return Env::get('JWT_SECRET', 'PAE_SECRET_KEY_CHANGE_ME_IN_PROD');
+    }
 
     public static function encode($payload)
     {
@@ -15,7 +20,7 @@ class JWT
         $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
         $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
 
-        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, self::$secret_key, true);
+        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, self::getSecret(), true);
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
 
         return $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
@@ -24,7 +29,8 @@ class JWT
     public static function decode($token)
     {
         $tokenParts = explode('.', $token);
-        if (count($tokenParts) != 3) return null;
+        if (count($tokenParts) != 3)
+            return null;
 
         $header = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[0]));
         $payload = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[1]));
@@ -33,7 +39,7 @@ class JWT
         // Verify Signature
         $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
         $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
-        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, self::$secret_key, true);
+        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, self::getSecret(), true);
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
 
         if ($base64UrlSignature === $signature_provided) {
