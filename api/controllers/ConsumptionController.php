@@ -76,7 +76,7 @@ class ConsumptionController
         // 1. Verify Beneficiary exists in this PAE and Branch
         // Note: We allow consuming in a different branch? Usually yes, PAE is the boundary.
         // But for strict control, maybe warn? For now, just check PAE.
-        $stmtCheck = $this->conn->prepare("SELECT id, first_name, last_name1 FROM beneficiaries WHERE id = ? AND pae_id = ?");
+        $stmtCheck = $this->conn->prepare("SELECT id, first_name, last_name1, modality_id FROM beneficiaries WHERE id = ? AND pae_id = ?");
         $stmtCheck->execute([$data['beneficiary_id'], $auth['pae_id']]);
         $beneficiary = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
@@ -84,6 +84,17 @@ class ConsumptionController
             http_response_code(404);
             echo json_encode(["message" => "Beneficiario no encontrado en este programa."]);
             return;
+        }
+
+        // 1.5 Verify Ration is allowed for Beneficiary's Modality
+        if (!empty($beneficiary['modality_id'])) {
+            $stmtMod = $this->conn->prepare("SELECT 1 FROM pae_modality_rations WHERE modality_id = ? AND ration_type_id = ? limit 1");
+            $stmtMod->execute([$beneficiary['modality_id'], $data['ration_type_id']]);
+            if ($stmtMod->rowCount() == 0) {
+                http_response_code(400);
+                echo json_encode(["message" => "Ración no autorizada para la modalidad del beneficiario."]);
+                return;
+            }
         }
 
         // 2. Check for Duplicate

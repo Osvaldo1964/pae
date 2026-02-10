@@ -398,12 +398,19 @@ var BeneficiariesView = {
     },
 
     async init() {
-        await Promise.all([
-            this.loadBeneficiaries(),
-            this.loadMasterData()
-        ]);
-        this.renderTable(); // Ensure table is rendered after data is loaded
-        this.renderFilters();
+        Helper.loading(true, 'Cargando beneficiarios...');
+        try {
+            await Promise.all([
+                this.loadBeneficiaries(),
+                this.loadMasterData()
+            ]);
+            this.renderFilters();
+        } catch (err) {
+            console.error("Error initializing view:", err);
+            Helper.alert('error', 'Error al inicializar la vista');
+        } finally {
+            Helper.loading(false);
+        }
     },
 
     async loadMasterData() {
@@ -476,32 +483,34 @@ var BeneficiariesView = {
         const tbody = document.getElementById('beneficiaries-table-body');
         if (!tbody) return;
 
-        tbody.innerHTML = '';
-        this.beneficiaries.forEach(b => {
+        const htmlRows = this.beneficiaries.map(b => {
             const statusClass = b.status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
-            tbody.innerHTML += `
+            const fullName = `${b.last_name1} ${b.last_name2 || ''}`.trim();
+            const firstNames = `${b.first_name} ${b.second_name || ''}`.trim();
+
+            return `
                 <tr>
                     <td>
-                        <small class="text-muted d-block">${b.document_type_name}</small>
+                        <small class="text-muted d-block">${b.document_type_name || 'DOC'}</small>
                         <span class="fw-bold">${b.document_number}</span>
                     </td>
                     <td>
-                        <div class="fw-bold text-primary">${b.last_name1} ${b.last_name2}</div>
-                        <div>${b.first_name} ${b.second_name || ''}</div>
+                        <div class="fw-bold text-primary">${fullName}</div>
+                        <div>${firstNames}</div>
                     </td>
                     <td>
                         <div class="text-truncate" style="max-width: 250px;">
-                            <i class="fas fa-university me-1 text-muted small"></i><strong>${b.school_name}</strong><br>
-                            <span class="text-muted small"><i class="fas fa-map-marker-alt me-1"></i>${b.branch_name}</span>
+                            <i class="fas fa-university me-1 text-muted small"></i><strong>${b.school_name || 'N/A'}</strong><br>
+                            <span class="text-muted small"><i class="fas fa-map-marker-alt me-1"></i>${b.branch_name || 'N/A'}</span>
                         </div>
                     </td>
                     <td>
-                        <span class="badge bg-light text-dark border">${b.grade}Â°</span>
+                        <span class="badge bg-light text-dark border">${b.grade || ''}°</span>
                         <span class="badge bg-light text-dark border">${b.group_name || 'N/A'}</span>
-                        <br><small class="text-muted">${b.shift}</small>
-                        <br><span class="badge bg-primary-light text-primary border" style="font-size: 0.65rem;">${b.ration_type_name || b.ration_type}</span>
+                        <br><small class="text-muted">${b.shift || ''}</small>
+                        <br><span class="badge bg-primary-light text-primary border" style="font-size: 0.65rem;">${b.ration_type_name || b.ration_type || 'N/A'}</span>
                     </td>
-                    <td><span class="badge ${statusClass}">${b.status}</span></td>
+                    <td><span class="badge ${statusClass}">${b.status || 'ACTIVO'}</span></td>
                     <td class="text-end">
                         <div class="btn-group">
                             <button class="btn btn-sm btn-outline-info" title="Generar Carnet" onclick="BeneficiariesView.generateCarnet(${b.id})">
@@ -518,6 +527,8 @@ var BeneficiariesView = {
                 </tr>
             `;
         });
+
+        tbody.innerHTML = htmlRows.join('');
 
 
         // Initialize DataTable if not already or destroy and re-init

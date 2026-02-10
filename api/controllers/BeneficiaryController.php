@@ -18,19 +18,25 @@ class BeneficiaryController extends BaseController
     public function index()
     {
         $pae_id = $this->getPaeIdFromToken();
-        if (!$pae_id) {
-            return $this->sendError("Acceso denegado.", 403);
+
+        if (is_null($pae_id)) {
+            $this->sendError("Debe seleccionar un programa PAE");
+            return;
         }
 
         $query = "SELECT b.*, br.name as branch_name, s.name as school_name, br.school_id as school_id, 
                          dt.name as document_type_name, eg.name as ethnic_group_name,
-                         rt.name as ration_type_name
+                         rt.name as ration_type_name,
+                         pm.name as modality_name,
+                         png.name as nutritional_group_name
                   FROM " . $this->table_name . " b
                   LEFT JOIN school_branches br ON b.branch_id = br.id
                   LEFT JOIN schools s ON br.school_id = s.id
                   LEFT JOIN document_types dt ON b.document_type_id = dt.id
                   LEFT JOIN ethnic_groups eg ON b.ethnic_group_id = eg.id
                   LEFT JOIN pae_ration_types rt ON b.ration_type_id = rt.id
+                  LEFT JOIN pae_modalities pm ON b.modality_id = pm.id
+                  LEFT JOIN pae_nutritional_groups png ON b.nutritional_group_id = png.id
                   WHERE b.pae_id = :pae_id 
                   ORDER BY b.last_name1 ASC, b.first_name ASC";
 
