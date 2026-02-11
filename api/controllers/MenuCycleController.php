@@ -212,9 +212,16 @@ class MenuCycleController
 
             // 4. Obtener la explosión de recetas vinculadas al ciclo
             // Buscamos: Ciclo -> Menús -> Recetas -> ItemsReceta
-            $queryExplosion = "SELECT mr.ration_type_id, ri.age_group, ri.item_id, ri.quantity 
+            $queryExplosion = "SELECT 
+                                mr.ration_type_id, 
+                                ri.age_group, 
+                                ri.item_id, 
+                                ri.quantity,
+                                mu.conversion_factor
                                FROM menu_recipes mr
                                JOIN recipe_items ri ON mr.recipe_id = ri.recipe_id
+                               JOIN items i ON ri.item_id = i.id
+                               JOIN measurement_units mu ON i.measurement_unit_id = mu.id
                                WHERE mr.menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)";
             $stmtExp = $this->conn->prepare($queryExplosion);
             $stmtExp->execute([$id]);
@@ -241,7 +248,13 @@ class MenuCycleController
                     // Y el grupo etario coincide con el gramaje de la receta
                     if ($ration_type_id == $targetRationId && $age_group === $recipe['age_group']) {
                         $item_id = $recipe['item_id'];
-                        $quantity = $recipe['quantity'] * $pop['total'];
+                        // Convertir de Gramos (receta) a la Unidad del Ítem (ej: KG) usando el factor
+                        $conversion_factor = (isset($recipe['conversion_factor']) && $recipe['conversion_factor'] > 0)
+                            ? $recipe['conversion_factor']
+                            : 1;
+                        $quantity = ($recipe['quantity'] * $pop['total']) / $conversion_factor;
+
+                        error_log("DEBUG: Item $item_id, RecipeQty: {$recipe['quantity']}, Pop: {$pop['total']}, Factor: $conversion_factor, Result: $quantity");
 
                         if (!isset($projections[$branch_id]))
                             $projections[$branch_id] = [];

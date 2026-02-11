@@ -27,8 +27,11 @@ class NeedsReportController
                 throw new Exception("Ciclo no encontrado");
 
             // 2. Get Active Beneficiaries and Classify them by Branch, Ration Type and Age Group
-            $sqlBen = "SELECT id, branch_id, ration_type_id, birth_date FROM beneficiaries WHERE status = 'ACTIVO'";
-            $beneficiaries = $this->conn->query($sqlBen)->fetchAll(PDO::FETCH_ASSOC);
+            $pae_id = $cycle['pae_id'];
+            $sqlBen = "SELECT id, branch_id, ration_type_id, birth_date FROM beneficiaries WHERE status = 'ACTIVO' AND pae_id = :pae_id";
+            $stmtBen = $this->conn->prepare($sqlBen);
+            $stmtBen->execute([':pae_id' => $pae_id]);
+            $beneficiaries = $stmtBen->fetchAll(PDO::FETCH_ASSOC);
 
             // Structure: $census[branch_id][age_group] = count
             $census = [];
@@ -75,12 +78,14 @@ class NeedsReportController
                             i.name as item_name,
                             mu.name as unit,
                             ri.age_group,
-                            ri.quantity
+                            ri.quantity,
+                            mu.conversion_factor,
+                            mu.abbreviation as unit_abbr
                          FROM menus m
                          JOIN menu_recipes mr ON m.id = mr.menu_id
                          JOIN recipe_items ri ON mr.recipe_id = ri.recipe_id
                          JOIN items i ON ri.item_id = i.id
-                         LEFT JOIN measurement_units mu ON i.measurement_unit_id = mu.id
+                         JOIN measurement_units mu ON i.measurement_unit_id = mu.id
                          WHERE m.cycle_id = ?";
 
             $stmt = $this->conn->prepare($sqlMenus);
@@ -100,7 +105,7 @@ class NeedsReportController
                 if (!isset($demand[$itemId])) {
                     $demand[$itemId] = [
                         'name' => $row['item_name'],
-                        'unit' => $row['unit'],
+                        'unit' => $row['unit_abbr'],
                         'branches' => [],
                         'grand_total' => 0
                     ];
@@ -110,13 +115,15 @@ class NeedsReportController
                     }
                 }
 
-                // For each branch, calculate raw need: (Census[Ration][Group] * Qty)
+                // For each branch, calculate raw need: (Census[Ration][Group] * Qty) / ConversionFactor
+                $factor = (isset($row['conversion_factor']) && $row['conversion_factor'] > 0) ? floatval($row['conversion_factor']) : 1;
+
                 foreach ($census as $branchId => $rations) {
                     $targetRtId = $row['ration_type_id'];
                     if (isset($rations[$targetRtId])) {
                         $groups = $rations[$targetRtId];
                         if (isset($groups[$ageGroup]) && $groups[$ageGroup] > 0) {
-                            $totalForBranch = $groups[$ageGroup] * $qtyPerPerson;
+                            $totalForBranch = ($groups[$ageGroup] * $qtyPerPerson) / $factor;
 
                             if (!isset($demand[$itemId]['branches'][$branchId])) {
                                 $demand[$itemId]['branches'][$branchId] = 0;

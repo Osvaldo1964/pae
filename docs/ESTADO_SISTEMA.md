@@ -1,4 +1,3 @@
-# Estado del Sistema PAE Control - 07 de Febrero 2026
 
 ## ✅ Módulos Completados
 
@@ -17,8 +16,11 @@
   - ✅ **Nuevo:** Lógica de Perecederos (Iconografía 🕒/❄️ en Stock e Ítems).
 - ✅ Recetario Maestro (Estandarización de platos base)
 - ✅ Tipos de Ración (Configuración de momentos de consumo)
-- ✅ Minutas y Ciclos (Planeación automática de 20 días)
-  - ✅ **Reporte de Explosión de Insumos:** Cálculo de compras exactas vs censo.
+- ✅ Minutas y Ciclos (Planeación flexible y modular)
+  - ✅ **Nuevo:** Ciclos de duración variable (Añadir días manualmente).
+  - ✅ **Mapeo Circular:** Inteligencia para adaptar plantillas de cualquier duración al calendario elegido.
+- ✅ **Calculadora de Conversión:** Motor automático de Gramos a Kilogramos/Litros.
+  - ✅ **Reporte de Explosión de Insumos:** Proyección corregida con factores de conversión (`1000g = 1KG`).
 
 ### 4. **Beneficiarios**
 - ✅ Estudiantes (Gestión de matrícula con Resolución 0003)
@@ -62,4 +64,4 @@
 
 ---
 
-**Última actualización**: 08 de Febrero 2026, 13:15 PM
+**Última actualización**: 10 de Febrero 2026, 19:38 PM

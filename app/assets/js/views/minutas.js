@@ -39,7 +39,7 @@ window.MinutasView = {
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <div>
                         <h2 class="mb-1 text-primary-custom fw-bold"><i class="fas fa-calendar-alt me-2"></i>Gestión de Minutas</h2>
-                        <p class="text-muted mb-0">Planeación de ciclos de 20 días y plantillas reutilizables</p>
+                        <p class="text-muted mb-0">Planeación de ciclos y plantillas maestras flexibles</p>
                     </div>
                 </div>
 
@@ -77,7 +77,7 @@ window.MinutasView = {
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold mb-0">Catálogo de Plantillas Standard</h5>
                             <button class="btn btn-outline-primary btn-sm rounded-pill px-4" onclick="MinutasView.openNewTemplateModal()">
-                                <i class="fas fa-plus me-1"></i> Crear Plantilla 20 Días
+                                <i class="fas fa-plus me-1"></i> Crear Plantilla Flexible
                             </button>
                         </div>
                         <div class="row g-4" id="templates-list-container">
@@ -333,7 +333,7 @@ window.MinutasView = {
                                 </ul>
                             </div>
                         </div>
-                        <p class="text-muted small mb-3">Plantilla estándar de 20 días para regímenes regulares.</p>
+                        <p class="text-muted small mb-3">Plantilla maestra para periodos de alimentación regular.</p>
                         <button class="btn btn-primary btn-xs w-100 fw-bold shadow-sm" onclick="MinutasView.applyTemplate(${t.id})">
                             <i class="fas fa-magic me-1"></i> Aplicar a Nuevo Ciclo
                         </button>
@@ -370,9 +370,11 @@ window.MinutasView = {
         modalDiv.className = 'modal fade';
         modalDiv.id = modalId;
 
-        // Generate 20 days rows
+        // Generate days based on input or default to 20
+        const numDays = template ? Math.max(20, template.days.reduce((max, d) => Math.max(max, d.day_number), 0)) : 20;
+
         let rowsHtml = '';
-        for (let i = 1; i <= 20; i++) {
+        for (let i = 1; i <= numDays; i++) {
             let cellsHtml = '';
             this.rationTypes.forEach(rt => {
                 const existing = template ? template.days.find(d => d.day_number == i && d.ration_type_id == rt.id) : null;
@@ -386,7 +388,7 @@ window.MinutasView = {
             });
 
             rowsHtml += `
-                <tr>
+                <tr id="template-day-row-${i}">
                     <td class="fw-bold text-center bg-light" style="width: 60px;">${i}</td>
                     ${cellsHtml}
                 </tr>
@@ -426,11 +428,18 @@ window.MinutasView = {
                             </table>
                         </div>
                     </div>
-                    <div class="modal-footer bg-white border-top shadow-sm">
-                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary px-5 fw-bold shadow" onclick="MinutasView.saveTemplate()">
-                            <i class="fas fa-save me-2"></i>${isEdit ? 'Actualizar Plantilla' : 'Guardar Plantilla'}
-                        </button>
+                    <div class="modal-footer bg-white border-top shadow-sm justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-outline-info fw-bold" onclick="MinutasView.addDayToTemplate()">
+                                <i class="fas fa-plus me-1"></i> Añadir un día
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary px-5 fw-bold shadow" onclick="MinutasView.saveTemplate()">
+                                <i class="fas fa-save me-2"></i>${isEdit ? 'Actualizar Plantilla' : 'Guardar Plantilla'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -444,6 +453,34 @@ window.MinutasView = {
     getRecipeOptions(selectedId = null) {
         return `<option value="">-- Seleccionar --</option>` +
             this.recipes.map(r => `<option value="${r.id}" ${r.id == selectedId ? 'selected' : ''}>${r.name} (${r.kcal || 0} kcal)</option>`).join('');
+    },
+
+    addDayToTemplate() {
+        const tbody = document.querySelector('#templateEditorModal tbody');
+        const nextDay = tbody.children.length + 1;
+
+        let cellsHtml = '';
+        this.rationTypes.forEach(rt => {
+            cellsHtml += `
+                <td>
+                    <select class="form-select form-select-sm" data-day="${nextDay}" data-ration-id="${rt.id}" data-type="${rt.name}">
+                        ${this.getRecipeOptions()}
+                    </select>
+                </td>
+            `;
+        });
+
+        const tr = document.createElement('tr');
+        tr.id = `template-day-row-${nextDay}`;
+        tr.innerHTML = `
+            <td class="fw-bold text-center bg-light" style="width: 60px;">${nextDay}</td>
+            ${cellsHtml}
+        `;
+        tbody.appendChild(tr);
+
+        // Scroll to bottom
+        const container = document.querySelector('#templateEditorModal .table-responsive');
+        container.scrollTop = container.scrollHeight;
     },
 
     async saveTemplate() {

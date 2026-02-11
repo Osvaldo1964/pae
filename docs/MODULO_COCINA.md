@@ -137,6 +137,13 @@ Productor: Avícola Santa Marta SAS
 4. **Ciclos de Menú** - Integración del recetario con el calendario de 20 días.
 5. **Novedades y Entregas** - Registro de asistencia y consumo.
 
+### ⚖️ Conversión Automática de Unidades
+El sistema ahora maneja automáticamente la conversión entre las **Cantidades Patrón** de la receta y las **Unidades de Almacén**:
+- **Recetas:** Se configuran siempre en la unidad mínima (Gramos para peso, Mililitros para volumen).
+- **Almacén:** Puede usar Kilogramos (KG), Litros (L) o Libras (LB).
+- **Lógica:** Al aprobar un ciclo, el sistema utiliza el `conversion_factor` de la tabla `measurement_units` para generar proyecciones de compra correctas (ej: 50,000g se proyectan como 50kg).
+
+
 ### 📁 Archivos Creados
 
 ```

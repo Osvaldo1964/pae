@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 10-02-2026 a las 21:14:08
--- Versión del servidor: 10.4.28-MariaDB
--- Versión de PHP: 8.0.28
+-- Tiempo de generación: 11-02-2026 a las 04:35:18
+-- Versión del servidor: 10.4.32-MariaDB
+-- Versión de PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -2126,7 +2126,8 @@ CREATE TABLE `cycle_templates` (
 
 INSERT INTO `cycle_templates` (`id`, `pae_id`, `name`, `created_at`) VALUES
 (1, 3, 'ciclo regular', '2026-02-02 02:38:13'),
-(2, 3, 'PLANTILLA GENERAL', '2026-02-05 23:14:49');
+(2, 3, 'PLANTILLA GENERAL', '2026-02-05 23:14:49'),
+(3, 4, 'MENU ESTANDAR 001', '2026-02-10 23:32:23');
 
 -- --------------------------------------------------------
 
@@ -2198,7 +2199,17 @@ INSERT INTO `cycle_template_days` (`id`, `template_id`, `day_number`, `meal_type
 (48, 2, 19, 'DESAYUNO', 1, 4),
 (49, 2, 19, 'ALMUERZO', 2, 3),
 (50, 2, 20, 'DESAYUNO', 1, 1),
-(51, 2, 20, 'ALMUERZO', 2, 2);
+(51, 2, 20, 'ALMUERZO', 2, 2),
+(56, 3, 1, 'ALMUERZO', 5, 7),
+(57, 3, 1, 'DESAYUNO', 4, 5),
+(58, 3, 2, 'ALMUERZO', 5, 7),
+(59, 3, 2, 'DESAYUNO', 4, 6),
+(60, 3, 3, 'ALMUERZO', 5, 7),
+(61, 3, 3, 'DESAYUNO', 4, 7),
+(62, 3, 4, 'ALMUERZO', 5, 7),
+(63, 3, 4, 'DESAYUNO', 4, 6),
+(64, 3, 5, 'ALMUERZO', 5, 7),
+(65, 3, 5, 'DESAYUNO', 4, 7);
 
 -- --------------------------------------------------------
 
@@ -2597,7 +2608,7 @@ INSERT INTO `items` (`id`, `pae_id`, `code`, `name`, `description`, `food_group_
 (327, 4, 'TOMATE', 'TOMATE ROJO', 'TOMATE ROJO', 5, 1, 100.00, 100.00, 0.00, 19.00, 0.90, 3.80, 0.20, 1.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:32:36', '2026-02-09 21:32:36', 0),
 (328, 4, 'AGUA', 'AGUA', 'AGUA ', 9, 3, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:33:16', '2026-02-09 21:33:16', 0),
 (329, 4, 'CEBOLLA', 'CEBOLLA ROJA', 'CEBOLLA ROJA', 5, 1, 100.00, 100.00, 0.00, 40.00, 1.10, 9.20, 0.10, 1.70, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:34:48', '2026-02-09 21:34:48', 0),
-(330, 4, 'AJO', 'AJO', 'AJO', 5, 1, 100.00, 100.00, 0.00, 148.00, 6.40, 33.00, 0.50, 2.10, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:35:23', '2026-02-09 21:35:23', 0),
+(330, 4, 'AJO', 'AJO', 'AJO', 5, 1, 100.00, 100.00, 0.00, 148.00, 6.40, 33.00, 0.50, 2.10, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:35:23', '2026-02-11 00:31:46', NULL),
 (331, 4, 'PIMIENTA', 'PIMIENTA', 'PIMIENTA', 8, 1, 100.00, 100.00, 0.00, 250.00, 10.00, 64.00, 3.30, 25.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:36:09', '2026-02-09 21:36:09', 0),
 (332, 4, 'COLOR', 'COLOR', 'COLOR - ACHIOTE', 8, 1, 100.00, 100.00, 0.00, 185.00, 10.00, 28.00, 4.00, 20.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:37:39', '2026-02-09 21:37:39', 0),
 (333, 4, 'CARNE', 'CARNE DE RES', 'CARNE DE RES', 2, 1, 100.00, 100.00, 0.00, 170.00, 25.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:38:18', '2026-02-09 21:38:18', 0),
@@ -2607,7 +2618,18 @@ INSERT INTO `items` (`id`, `pae_id`, `code`, `name`, `description`, `food_group_
 (337, 4, 'MANGO', 'MANGO', 'MANGO', 4, 5, 100.00, 100.00, 0.00, 64.00, 0.80, 15.00, 0.40, 1.50, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:42:15', '2026-02-09 21:42:15', 0),
 (338, 4, 'POLLO', 'POLLO', 'POLLO', 2, 1, 100.00, 100.00, 0.00, 110.00, 23.00, 0.00, 2.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 1, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:43:43', '2026-02-09 21:43:43', 1),
 (339, 4, 'YUCA', 'YUCA', 'YUCA', 1, 1, 100.00, 100.00, 0.00, 160.00, 1.40, 38.00, 0.30, 1.80, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:44:17', '2026-02-09 21:44:17', 0),
-(340, 4, 'ARROZ', 'ARROZ', 'ARROZ BLANCO', 1, 1, 100.00, 100.00, 0.00, 360.00, 7.00, 78.00, 0.60, 1.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:44:52', '2026-02-09 21:44:52', 0);
+(340, 4, 'ARROZ', 'ARROZ', 'ARROZ BLANCO', 1, 1, 100.00, 100.00, 0.00, 360.00, 7.00, 78.00, 0.60, 1.30, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-09 21:44:52', '2026-02-09 21:44:52', 0),
+(341, 4, 'MANDARINA', 'MANDARINA', 'MANDARINA', 4, 5, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:40:42', '2026-02-10 23:40:42', 0),
+(342, 4, 'TOMATEARBOL', 'TOMATE DE ARBOL', 'TOMATE DE ARBOL', 4, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:41:10', '2026-02-10 23:41:10', 0),
+(343, 4, 'ZANAHORIA', 'ZANAHORIA', 'ZANAHORIA', 1, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:41:41', '2026-02-10 23:41:41', 0),
+(344, 4, 'CEBOLLIN', 'CEBOLLIN', 'CEBOLLIN', 5, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:42:26', '2026-02-10 23:42:26', 0),
+(345, 4, 'PLATANO', 'PLATANO', 'PLATANO', 1, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:42:59', '2026-02-10 23:42:59', 0),
+(346, 4, 'QUESO', 'QUESO', 'QUESO', 3, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:43:33', '2026-02-10 23:43:33', 0),
+(347, 4, 'GUAYABA', 'GUAYABA', 'GUAYABA', 4, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:44:00', '2026-02-10 23:44:00', 0),
+(348, 4, 'PALOMITOS', 'PALOMITOS', 'PALOMITOS', 1, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:44:58', '2026-02-10 23:44:58', 0),
+(349, 4, 'LECHUGA', 'LECHUGA', 'LECHUGA', 5, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:45:23', '2026-02-10 23:45:23', 0),
+(350, 4, 'MARACUYA', 'MARACUYA', 'MARACUYA', 4, 1, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:45:45', '2026-02-10 23:45:45', 0),
+(351, 4, 'PIÑA', 'PIÑA', 'PIÑA', 4, 5, 100.00, 100.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, NULL, '', 0, 0, 0.00, NULL, 'ACTIVO', '2026-02-10 23:46:54', '2026-02-10 23:46:54', 0);
 
 -- --------------------------------------------------------
 
@@ -2638,6 +2660,7 @@ CREATE TABLE `measurement_units` (
   `code` varchar(20) NOT NULL,
   `name` varchar(50) NOT NULL,
   `abbreviation` varchar(10) NOT NULL,
+  `conversion_factor` decimal(10,4) DEFAULT 1.0000,
   `type` enum('PESO','VOLUMEN','UNIDAD') DEFAULT 'PESO',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2646,13 +2669,13 @@ CREATE TABLE `measurement_units` (
 -- Volcado de datos para la tabla `measurement_units`
 --
 
-INSERT INTO `measurement_units` (`id`, `code`, `name`, `abbreviation`, `type`, `created_at`) VALUES
-(1, 'KG', 'Kilogramos', 'kg', 'PESO', '2026-02-01 21:58:22'),
-(2, 'G', 'Gramos', 'g', 'PESO', '2026-02-01 21:58:22'),
-(3, 'L', 'Litros', 'L', 'VOLUMEN', '2026-02-01 21:58:22'),
-(4, 'ML', 'Mililitros', 'ml', 'VOLUMEN', '2026-02-01 21:58:22'),
-(5, 'UND', 'Unidades', 'und', 'UNIDAD', '2026-02-01 21:58:22'),
-(6, 'LB', 'Libras', 'lb', 'PESO', '2026-02-01 21:58:22');
+INSERT INTO `measurement_units` (`id`, `code`, `name`, `abbreviation`, `conversion_factor`, `type`, `created_at`) VALUES
+(1, 'KG', 'Kilogramos', 'kg', 1000.0000, 'PESO', '2026-02-01 21:58:22'),
+(2, 'G', 'Gramos', 'g', 1.0000, 'PESO', '2026-02-01 21:58:22'),
+(3, 'L', 'Litros', 'L', 1000.0000, 'VOLUMEN', '2026-02-01 21:58:22'),
+(4, 'ML', 'Mililitros', 'ml', 1.0000, 'VOLUMEN', '2026-02-01 21:58:22'),
+(5, 'UND', 'Unidades', 'und', 1.0000, 'UNIDAD', '2026-02-01 21:58:22'),
+(6, 'LB', 'Libras', 'lb', 500.0000, 'PESO', '2026-02-01 21:58:22');
 
 -- --------------------------------------------------------
 
@@ -2717,7 +2740,32 @@ INSERT INTO `menus` (`id`, `pae_id`, `cycle_id`, `name`, `day_number`, `meal_typ
 (287, 3, NULL, 'Día 2 - 2026-03-03', 2, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
 (288, 3, NULL, 'Día 3 - 2026-03-04', 3, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
 (289, 3, NULL, 'Día 4 - 2026-03-05', 4, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
-(290, 3, NULL, 'Día 5 - 2026-03-06', 5, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44');
+(290, 3, NULL, 'Día 5 - 2026-03-06', 5, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-09 13:08:44', '2026-02-09 13:08:44'),
+(416, 4, 113, 'Día 1 - 2026-02-09', 1, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(417, 4, 113, 'Día 2 - 2026-02-10', 2, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(418, 4, 113, 'Día 3 - 2026-02-11', 3, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(419, 4, 113, 'Día 4 - 2026-02-12', 4, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(420, 4, 113, 'Día 5 - 2026-02-13', 5, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(421, 4, 113, 'Día 6 - 2026-02-16', 6, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(422, 4, 113, 'Día 7 - 2026-02-17', 7, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(423, 4, 113, 'Día 8 - 2026-02-18', 8, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(424, 4, 113, 'Día 9 - 2026-02-19', 9, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(425, 4, 113, 'Día 10 - 2026-02-20', 10, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(426, 4, 113, 'Día 11 - 2026-02-23', 11, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(427, 4, 113, 'Día 12 - 2026-02-24', 12, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(428, 4, 113, 'Día 13 - 2026-02-25', 13, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(429, 4, 113, 'Día 14 - 2026-02-26', 14, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(430, 4, 113, 'Día 15 - 2026-02-27', 15, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(431, 4, 113, 'Día 16 - 2026-03-02', 16, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(432, 4, 113, 'Día 17 - 2026-03-03', 17, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(433, 4, 113, 'Día 18 - 2026-03-04', 18, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(434, 4, 113, 'Día 19 - 2026-03-05', 19, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(435, 4, 113, 'Día 20 - 2026-03-06', 20, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(436, 4, 113, 'Día 21 - 2026-03-09', 21, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(437, 4, 113, 'Día 22 - 2026-03-10', 22, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(438, 4, 113, 'Día 23 - 2026-03-11', 23, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(439, 4, 113, 'Día 24 - 2026-03-12', 24, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02'),
+(440, 4, 113, 'Día 25 - 2026-03-13', 25, 'ALMUERZO', NULL, 'TODOS', 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, 'ACTIVO', '2026-02-11 00:32:02', '2026-02-11 00:32:02');
 
 -- --------------------------------------------------------
 
@@ -2740,6 +2788,13 @@ CREATE TABLE `menu_cycles` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `menu_cycles`
+--
+
+INSERT INTO `menu_cycles` (`id`, `pae_id`, `name`, `description`, `start_date`, `end_date`, `total_days`, `is_validated`, `validated_by`, `validated_at`, `status`, `created_at`, `updated_at`) VALUES
+(113, 4, 'CICLO 01 FEBRERO', NULL, '2026-02-09', '2026-03-13', 25, 0, NULL, NULL, 'BORRADOR', '2026-02-11 00:32:02', '2026-02-11 00:32:02');
 
 -- --------------------------------------------------------
 
@@ -2826,7 +2881,57 @@ INSERT INTO `menu_recipes` (`id`, `menu_id`, `recipe_id`, `meal_type`, `ration_t
 (127, 288, 3, 'ALMUERZO', 2),
 (128, 289, 1, 'DESAYUNO', 1),
 (129, 289, 2, 'ALMUERZO', 2),
-(130, 290, 1, 'DESAYUNO', 1);
+(130, 290, 1, 'DESAYUNO', 1),
+(327, 416, 5, 'DESAYUNO', 4),
+(328, 416, 7, 'ALMUERZO', 5),
+(329, 417, 6, 'DESAYUNO', 4),
+(330, 417, 7, 'ALMUERZO', 5),
+(331, 418, 7, 'DESAYUNO', 4),
+(332, 418, 7, 'ALMUERZO', 5),
+(333, 419, 6, 'DESAYUNO', 4),
+(334, 419, 7, 'ALMUERZO', 5),
+(335, 420, 7, 'DESAYUNO', 4),
+(336, 420, 7, 'ALMUERZO', 5),
+(337, 421, 5, 'DESAYUNO', 4),
+(338, 421, 7, 'ALMUERZO', 5),
+(339, 422, 6, 'DESAYUNO', 4),
+(340, 422, 7, 'ALMUERZO', 5),
+(341, 423, 7, 'DESAYUNO', 4),
+(342, 423, 7, 'ALMUERZO', 5),
+(343, 424, 6, 'DESAYUNO', 4),
+(344, 424, 7, 'ALMUERZO', 5),
+(345, 425, 7, 'DESAYUNO', 4),
+(346, 425, 7, 'ALMUERZO', 5),
+(347, 426, 5, 'DESAYUNO', 4),
+(348, 426, 7, 'ALMUERZO', 5),
+(349, 427, 6, 'DESAYUNO', 4),
+(350, 427, 7, 'ALMUERZO', 5),
+(351, 428, 7, 'DESAYUNO', 4),
+(352, 428, 7, 'ALMUERZO', 5),
+(353, 429, 6, 'DESAYUNO', 4),
+(354, 429, 7, 'ALMUERZO', 5),
+(355, 430, 7, 'DESAYUNO', 4),
+(356, 430, 7, 'ALMUERZO', 5),
+(357, 431, 5, 'DESAYUNO', 4),
+(358, 431, 7, 'ALMUERZO', 5),
+(359, 432, 6, 'DESAYUNO', 4),
+(360, 432, 7, 'ALMUERZO', 5),
+(361, 433, 7, 'DESAYUNO', 4),
+(362, 433, 7, 'ALMUERZO', 5),
+(363, 434, 6, 'DESAYUNO', 4),
+(364, 434, 7, 'ALMUERZO', 5),
+(365, 435, 7, 'DESAYUNO', 4),
+(366, 435, 7, 'ALMUERZO', 5),
+(367, 436, 5, 'DESAYUNO', 4),
+(368, 436, 7, 'ALMUERZO', 5),
+(369, 437, 6, 'DESAYUNO', 4),
+(370, 437, 7, 'ALMUERZO', 5),
+(371, 438, 7, 'DESAYUNO', 4),
+(372, 438, 7, 'ALMUERZO', 5),
+(373, 439, 6, 'DESAYUNO', 4),
+(374, 439, 7, 'ALMUERZO', 5),
+(375, 440, 7, 'DESAYUNO', 4),
+(376, 440, 7, 'ALMUERZO', 5);
 
 -- --------------------------------------------------------
 
@@ -3234,7 +3339,9 @@ INSERT INTO `recipes` (`id`, `pae_id`, `name`, `meal_type`, `ration_type_id`, `d
 (2, 3, 'Arroz con Pollo y Ensalada', 'ALMUERZO', 2, 'ARROZ CON POLLO - ENSALADA - JUGO DE NARANJA', 0.72, 0.05, 0.11, 0.01, 'ACTIVO', '2026-02-02 01:00:26', '2026-02-09 12:25:40'),
 (3, 3, 'SOPA DE POLLO', 'ALMUERZO', 2, 'SOPA DE POLLO', 0.33, 0.06, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:06:00', '2026-02-09 12:25:40'),
 (4, 3, 'MOTE DE GUINEO VERDE', 'DESAYUNO', 1, 'MOTE DE GUINEO - MANZANA - CAFE CON LECHE', 0.93, 0.20, 0.00, 0.01, 'ACTIVO', '2026-02-02 01:07:36', '2026-02-09 12:25:40'),
-(5, 4, 'DESAYUNO 01', 'DESAYUNO', 4, 'AGUA DE PANELA - HUEVOS - GUINEO', 0.11, 0.00, 0.00, 0.00, 'ACTIVO', '2026-02-10 18:29:44', '2026-02-10 18:29:44');
+(5, 4, 'DESAYUNO 01', 'DESAYUNO', 4, 'AGUA DE PANELA - HUEVOS - GUINEO', 225.80, 5.82, 25.83, 10.34, 'ACTIVO', '2026-02-10 18:29:44', '2026-02-11 00:05:56'),
+(6, 4, 'DESAYUNO 02', 'DESAYUNO', 4, 'CAFE CON LECHE - BOLLO DE MAIZ - FRUTA', 280.13, 8.31, 47.20, 6.91, 'ACTIVO', '2026-02-10 23:38:26', '2026-02-11 00:07:08'),
+(7, 4, 'ALMUERZO 01', 'ALMUERZO', 5, 'POLLO FRITO - ARROZ - GUINEO - ENSALADA - GUARAPO DE PANELA', 56.48, 11.56, 0.33, 1.01, 'ACTIVO', '2026-02-10 23:50:18', '2026-02-11 00:03:52');
 
 -- --------------------------------------------------------
 
@@ -3276,10 +3383,78 @@ INSERT INTO `recipe_items` (`id`, `recipe_id`, `item_id`, `age_group`, `quantity
 (87, 3, 275, 'PRIMARIA_A', 0.140, 'Caliente'),
 (88, 3, 275, 'PRIMARIA_B', 0.150, 'Caliente'),
 (89, 3, 275, 'SECUNDARIA', 0.200, 'Caliente'),
-(90, 5, 316, 'PREESCOLAR', 0.030, 'Caliente'),
-(91, 5, 316, 'PRIMARIA_A', 0.030, 'Caliente'),
-(92, 5, 316, 'PRIMARIA_B', 0.030, 'Caliente'),
-(93, 5, 316, 'SECUNDARIA', 0.030, 'Caliente');
+(226, 7, 330, 'PREESCOLAR', 1.000, ''),
+(227, 7, 330, 'PRIMARIA_A', 1.000, ''),
+(228, 7, 330, 'PRIMARIA_B', 1.000, ''),
+(229, 7, 330, 'SECUNDARIA', 1.000, ''),
+(230, 7, 338, 'PREESCOLAR', 50.000, ''),
+(231, 7, 338, 'PRIMARIA_A', 50.000, ''),
+(232, 7, 338, 'PRIMARIA_B', 50.000, ''),
+(233, 7, 338, 'SECUNDARIA', 50.000, ''),
+(234, 7, 320, 'PREESCOLAR', 3.500, ''),
+(235, 7, 320, 'PRIMARIA_A', 3.500, ''),
+(236, 7, 320, 'PRIMARIA_B', 3.500, ''),
+(237, 7, 320, 'SECUNDARIA', 3.500, ''),
+(238, 5, 321, 'PREESCOLAR', 5.000, ''),
+(239, 5, 321, 'PRIMARIA_A', 5.000, ''),
+(240, 5, 321, 'PRIMARIA_B', 5.000, ''),
+(241, 5, 321, 'SECUNDARIA', 5.000, ''),
+(242, 5, 328, 'PREESCOLAR', 250.000, ''),
+(243, 5, 328, 'PRIMARIA_A', 250.000, ''),
+(244, 5, 328, 'PRIMARIA_B', 250.000, ''),
+(245, 5, 328, 'SECUNDARIA', 250.000, ''),
+(246, 5, 317, 'PREESCOLAR', 1.000, 'Caliente'),
+(247, 5, 317, 'PRIMARIA_A', 1.000, 'Caliente'),
+(248, 5, 317, 'PRIMARIA_B', 1.000, 'Caliente'),
+(249, 5, 317, 'SECUNDARIA', 1.000, 'Caliente'),
+(250, 5, 322, 'PREESCOLAR', 70.000, ''),
+(251, 5, 322, 'PRIMARIA_A', 70.000, ''),
+(252, 5, 322, 'PRIMARIA_B', 70.000, ''),
+(253, 5, 322, 'SECUNDARIA', 80.000, ''),
+(254, 5, 319, 'PREESCOLAR', 1.000, ''),
+(255, 5, 319, 'PRIMARIA_A', 1.000, ''),
+(256, 5, 319, 'PRIMARIA_B', 1.000, ''),
+(257, 5, 319, 'SECUNDARIA', 1.000, ''),
+(258, 5, 318, 'PREESCOLAR', 150.000, ''),
+(259, 5, 318, 'PRIMARIA_A', 150.000, ''),
+(260, 5, 318, 'PRIMARIA_B', 150.000, ''),
+(261, 5, 318, 'SECUNDARIA', 150.000, ''),
+(262, 5, 316, 'PREESCOLAR', 3.000, 'Caliente'),
+(263, 5, 316, 'PRIMARIA_A', 3.000, 'Caliente'),
+(264, 5, 316, 'PRIMARIA_B', 3.000, 'Caliente'),
+(265, 5, 316, 'SECUNDARIA', 3.000, 'Caliente'),
+(266, 5, 320, 'PREESCOLAR', 2.000, ''),
+(267, 5, 320, 'PRIMARIA_A', 2.000, ''),
+(268, 5, 320, 'PRIMARIA_B', 2.000, ''),
+(269, 5, 320, 'SECUNDARIA', 2.000, ''),
+(270, 6, 317, 'PREESCOLAR', 1.000, ''),
+(271, 6, 317, 'PRIMARIA_A', 1.000, ''),
+(272, 6, 317, 'PRIMARIA_B', 1.000, ''),
+(273, 6, 317, 'SECUNDARIA', 1.000, ''),
+(274, 6, 325, 'PREESCOLAR', 3.000, ''),
+(275, 6, 325, 'PRIMARIA_A', 3.000, ''),
+(276, 6, 325, 'PRIMARIA_B', 3.000, ''),
+(277, 6, 325, 'SECUNDARIA', 3.000, ''),
+(278, 6, 323, 'PREESCOLAR', 45.000, ''),
+(279, 6, 323, 'PRIMARIA_A', 45.000, ''),
+(280, 6, 323, 'PRIMARIA_B', 45.000, ''),
+(281, 6, 323, 'SECUNDARIA', 50.000, ''),
+(282, 6, 318, 'PREESCOLAR', 150.000, ''),
+(283, 6, 318, 'PRIMARIA_A', 150.000, ''),
+(284, 6, 318, 'PRIMARIA_B', 150.000, ''),
+(285, 6, 318, 'SECUNDARIA', 150.000, ''),
+(286, 6, 324, 'PREESCOLAR', 1.000, ''),
+(287, 6, 324, 'PRIMARIA_A', 1.000, ''),
+(288, 6, 324, 'PRIMARIA_B', 1.000, ''),
+(289, 6, 324, 'SECUNDARIA', 1.000, ''),
+(290, 6, 320, 'PREESCOLAR', 1.000, ''),
+(291, 6, 320, 'PRIMARIA_A', 1.000, ''),
+(292, 6, 320, 'PRIMARIA_B', 1.000, ''),
+(293, 6, 320, 'SECUNDARIA', 1.000, ''),
+(294, 6, 328, 'PREESCOLAR', 10.000, ''),
+(295, 6, 328, 'PRIMARIA_A', 10.000, ''),
+(296, 6, 328, 'PRIMARIA_B', 10.000, ''),
+(297, 6, 328, 'SECUNDARIA', 10.000, '');
 
 -- --------------------------------------------------------
 
@@ -3317,10 +3492,18 @@ INSERT INTO `recipe_nutrition` (`recipe_id`, `age_group`, `total_calories`, `tot
 (4, 'PRIMARIA_A', 0.70, 0.15, 0.00, 0.00),
 (4, 'PRIMARIA_B', 0.81, 0.18, 0.00, 0.01),
 (4, 'SECUNDARIA', 0.93, 0.20, 0.00, 0.01),
-(5, 'PREESCOLAR', 0.11, 0.00, 0.00, 0.00),
-(5, 'PRIMARIA_A', 0.11, 0.00, 0.00, 0.00),
-(5, 'PRIMARIA_B', 0.11, 0.00, 0.00, 0.00),
-(5, 'SECUNDARIA', 0.11, 0.00, 0.00, 0.00);
+(5, 'PREESCOLAR', 216.60, 5.71, 23.63, 10.31),
+(5, 'PRIMARIA_A', 216.60, 5.71, 23.63, 10.31),
+(5, 'PRIMARIA_B', 216.60, 5.71, 23.63, 10.31),
+(5, 'SECUNDARIA', 225.80, 5.82, 25.83, 10.34),
+(6, 'PREESCOLAR', 262.38, 7.96, 43.30, 6.81),
+(6, 'PRIMARIA_A', 262.38, 7.96, 43.30, 6.81),
+(6, 'PRIMARIA_B', 262.38, 7.96, 43.30, 6.81),
+(6, 'SECUNDARIA', 280.13, 8.31, 47.20, 6.91),
+(7, 'PREESCOLAR', 56.48, 11.56, 0.33, 1.01),
+(7, 'PRIMARIA_A', 56.48, 11.56, 0.33, 1.01),
+(7, 'PRIMARIA_B', 56.48, 11.56, 0.33, 1.01),
+(7, 'SECUNDARIA', 56.48, 11.56, 0.33, 1.01);
 
 -- --------------------------------------------------------
 
@@ -3882,13 +4065,13 @@ ALTER TABLE `cycle_projections`
 -- AUTO_INCREMENT de la tabla `cycle_templates`
 --
 ALTER TABLE `cycle_templates`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `cycle_template_days`
 --
 ALTER TABLE `cycle_template_days`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT de la tabla `daily_consumptions`
@@ -3972,7 +4155,7 @@ ALTER TABLE `inventory_remission_details`
 -- AUTO_INCREMENT de la tabla `items`
 --
 ALTER TABLE `items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=341;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=352;
 
 --
 -- AUTO_INCREMENT de la tabla `item_cycle_costs`
@@ -3990,13 +4173,13 @@ ALTER TABLE `measurement_units`
 -- AUTO_INCREMENT de la tabla `menus`
 --
 ALTER TABLE `menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=311;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=441;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_cycles`
 --
 ALTER TABLE `menu_cycles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=108;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT de la tabla `menu_items`
@@ -4008,7 +4191,7 @@ ALTER TABLE `menu_items`
 -- AUTO_INCREMENT de la tabla `menu_recipes`
 --
 ALTER TABLE `menu_recipes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=163;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=377;
 
 --
 -- AUTO_INCREMENT de la tabla `modules`
@@ -4080,13 +4263,13 @@ ALTER TABLE `purchase_order_details`
 -- AUTO_INCREMENT de la tabla `recipes`
 --
 ALTER TABLE `recipes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `recipe_items`
 --
 ALTER TABLE `recipe_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=298;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`

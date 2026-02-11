@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 09 de Febrero 2026, 13:50 PM  
-**Versión:** 1.7.0 (Fase 4 - Operación: Almacén Profesional con Costos por Ciclo)
+**Última actualización**: 10 de Febrero 2026, 19:35 PM  
+**Versión:** 1.7.5 (Fase 4 - Operación: Conversión de Unidades y Ciclos Flexibles)
 
 ---
 
@@ -65,6 +65,10 @@
   - Tabla principal: `beneficiaries` (30+ campos)
   - Migraciones de refinamiento aplicadas
 - [x] **Cumplimiento Resolución 0003 de 2026**
+### v1.7.5 (10 Feb 2026)
+- **Implementación**: Motor de conversión de unidades (`measurement_units` con `conversion_factor`).
+- **Mejora**: Flexibilización de plantillas de minutas (duración variable y mapeo circular corregido).
+- **Corrección**: Reporte de requerimientos (Explosión de víveres) ahora muestra unidades de almacén (KG) en lugar de gramos.
 - [x] Validación de duplicados por documento
 - [x] Filtros personalizados (Documento, Colegio, Grado)
 - [x] Integración con códigos DANE
@@ -173,6 +177,8 @@
 
 ## 🚧 EN DESARROLLO
 
+- [x] **Conversión de Unidades:** Motor automático de Gramos (receta) a Kilogramos (almacén).
+- [x] **Ciclos Flexibles:** Generación de ciclos basada en calendario real, eliminando restricción de 20 días.
 ### Dashboard Principal 🟡
 - [ ] Widgets de estadísticas operativas
 - [ ] Integración de gráficos de gestión
