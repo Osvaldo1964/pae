@@ -918,8 +918,10 @@ var BeneficiariesView = {
         }
 
         if (grade) {
-            // Use exact match regex to avoid "1" matching "10" or "11"
-            table.column(3).search('^' + grade + '°', true, false).draw();
+            // Use regex: Starts with Grade followed by a non-digit character (like the degree symbol, space, or separator) or end of string
+            // This avoids hardcoding '°' which can cause encoding issues on some servers (Linux/Hostinger)
+            // It also ensures "1" doesn't match "10" or "11"
+            table.column(3).search('^' + grade + '([^0-9]|$)', true, false).draw();
         } else {
             table.column(3).search('').draw();
         }
