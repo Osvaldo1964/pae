@@ -2,7 +2,7 @@
 
 **Sistema de Gestión Integral para Programas de Alimentación Escolar**
 
-Versión: 1.7.5  
+Versión: 1.6.2 (Hotfix)
 Última actualización: 12 de Febrero 2026
 
 ---
@@ -213,6 +213,10 @@ Ver [SEGURIDAD_USUARIOS.md](SEGURIDAD_USUARIOS.md) para detalles.
 ---
 
 ## 📝 Notas de Versión
+
+### v1.6.2 (12 Feb 2026)
+- ✅ Corrección bug filtro beneficiarios (Encoding)
+- ✅ Force Cache Refresh
 
 ### v1.7.0 (09 Feb 2026)
 - ✅ Sistema de costos por ciclo (promedio ponderado)

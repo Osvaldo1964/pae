@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 12 de Febrero 2026, 08:30 AM  
-**Versión:** 1.7.5 (Fase 4 - Operación: Conversión de Unidades y Ciclos Flexibles)
+**Última actualización**: 12 de Febrero 2026, 09:55 AM
+**Versión Doc:** 1.7.5 | **Versión Código:** 1.6.2 (Hotfix Prod)
 
 ---
 
@@ -207,6 +207,10 @@
 ---
 
 ## 🔧 CORRECCIONES RECIENTES (v1.7.0)
+
+### v1.6.2 Hotfix (12 Feb 2026)
+- ✅ **Beneficiarios:** Corrección crítica en filtro por grado (Soporte Linux/Hostinger).
+- ✅ **Sistema:** Limpieza de caché forzada mediante versionado (`Config::APP_VERSION`).
 
 ### Módulo de Almacén - Sistema de Costos
 - ✅ **Promedio Ponderado:** Implementado cálculo correcto de valoración de inventario

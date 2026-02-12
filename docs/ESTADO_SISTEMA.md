@@ -26,6 +26,7 @@
 - ✅ Estudiantes (Gestión de matrícula con Resolución 0003)
 - ✅ **Carnetización Digital:** Generación de carnet con QR (`PAE:ID:DOC`).
   - *Refinamiento:* Layout optimizado para evitar cortes en impresión.
+- ✅ **Corrección (Hotfix):** Filtro por grado optimizado para servidores Linux.
 
 ### 5. **Operación / Reportes** 🟢 ⭐ FASE AVANZADA
 - ✅ **Almacén:** Inventario actual y movimientos de entradas/salidas.
