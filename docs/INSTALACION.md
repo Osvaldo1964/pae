@@ -1,7 +1,7 @@
 # Guía de Instalación - PAE Control WebApp
 
-**Versión:** 1.0  
-**Última Actualización:** 31 de Enero de 2026
+**Versión:** 1.7.5  
+**Última Actualización:** 12 de Febrero de 2026
 
 ---
 
