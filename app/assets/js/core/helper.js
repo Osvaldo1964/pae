@@ -12,7 +12,7 @@ const Helper = {
 
         const defaults = {
             language: {
-                url: '/pae/app/assets/plugins/datatables/es-ES.json' // Load from local
+                url: Config.asset('plugins/datatables/es-ES.json') // Load dynamically
             },
             responsive: true,
             // Bootstrap 5 Friendly Layout: Search (f) top, Table (t) middle, Info (i) & Pagination (p) bottom

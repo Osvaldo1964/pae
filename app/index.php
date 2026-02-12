@@ -9,6 +9,8 @@
     $base_path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/';
     $assets_path = $base_path . 'assets/';
     ?>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="<?= $assets_path ?>img/logo_ovc.png">
     <!-- Bootstrap 5 -->
     <link href="<?= $assets_path ?>plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->

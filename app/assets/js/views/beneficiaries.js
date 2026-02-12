@@ -918,7 +918,8 @@ var BeneficiariesView = {
         }
 
         if (grade) {
-            table.column(3).search(grade + 'Â°').draw();
+            // Use exact match regex to avoid "1" matching "10" or "11"
+            table.column(3).search('^' + grade + '°', true, false).draw();
         } else {
             table.column(3).search('').draw();
         }
