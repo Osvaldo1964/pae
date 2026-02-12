@@ -36,9 +36,14 @@ window.RecetarioView = {
                         <h2 class="mb-1 text-primary-custom fw-bold"><i class="fas fa-utensils me-2"></i>Recetario Maestro</h2>
                         <p class="text-muted mb-0">Estandarización de minutas y platos base para planeación rápida</p>
                     </div>
-                    <button class="btn btn-primary fw-bold px-4" onclick="RecetarioView.openRecipeModal()">
-                        <i class="fas fa-plus-circle me-2"></i>Nueva Receta Maestra
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-success fw-bold px-3" onclick="RecetarioView.showReportModal()">
+                            <i class="fas fa-file-export me-2"></i>Generar Reporte
+                        </button>
+                        <button class="btn btn-primary fw-bold px-4" onclick="RecetarioView.openRecipeModal()">
+                            <i class="fas fa-plus-circle me-2"></i>Nueva Receta Maestra
+                        </button>
+                    </div>
                 </div>
 
                 <div class="recipe-container custom-scrollbar px-2" style="max-height: calc(100vh - 200px); overflow-y: auto; overflow-x: hidden;">
@@ -88,6 +93,8 @@ window.RecetarioView = {
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="RecetarioView.editRecipe(${r.id})"><i class="fas fa-edit me-2 text-primary"></i>Editar</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="RecetarioView.exportRecipe(${r.id}, 'print')"><i class="fas fa-print me-2 text-secondary"></i>Imprimir</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="RecetarioView.exportRecipe(${r.id}, 'excel')"><i class="fas fa-file-excel me-2 text-success"></i>Enviar a Excel</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="RecetarioView.deleteRecipe(${r.id})"><i class="fas fa-trash me-2"></i>Eliminar</a></li>
                                 </ul>
@@ -342,6 +349,374 @@ window.RecetarioView = {
             <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="fas fa-minus-circle"></i></button></td>
         `;
         tbody.appendChild(tr);
+    },
+
+    async saveRecipe() {
+        // ... (existing saveRecipe code)
+    },
+
+    showReportModal() {
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal fade';
+        modalDiv.id = 'reportModal';
+        modalDiv.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-file-export me-2"></i>Reporte del Recetario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Filtrar por Tipo de Ración</label>
+                            <select class="form-select" id="report-ration-type">
+                                <option value="">Todos los tipos...</option>
+                                ${this.rationTypes.map(rt => `<option value="${rt.id}">${rt.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="bg-light p-3 rounded border mb-3">
+                            <p class="small text-muted mb-0"><i class="fas fa-info-circle me-1"></i> Seleccione el formato de salida para el listado de recetas seleccionadas.</p>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary fw-bold" onclick="RecetarioView.exportRecipes('print')">
+                                <i class="fas fa-print me-2"></i>Vista de Impresión (PDF)
+                            </button>
+                            <button class="btn btn-outline-success fw-bold" onclick="RecetarioView.exportRecipes('excel')">
+                                <i class="fas fa-file-excel me-2"></i>Exportar a Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        const modal = new bootstrap.Modal(modalDiv);
+        modal.show();
+        modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+    },
+
+    async exportRecipes(type) {
+        const rationTypeId = document.getElementById('report-ration-type')?.value;
+        try {
+            Helper.loading();
+            const url = `/recipes?include_items=1${rationTypeId ? `&ration_type_id=${rationTypeId}` : ''}`;
+            const res = await Helper.fetchAPI(url);
+
+            if (res.success) {
+                const recipes = res.data;
+                if (recipes.length === 0) {
+                    Helper.alert('warning', 'No hay recetas que coincidan con el filtro');
+                    return;
+                }
+
+                if (type === 'excel') {
+                    this._generateRecipesExcel(recipes);
+                } else {
+                    this._generateRecipesPrintView(recipes);
+                }
+            }
+            Swal.close();
+        } catch (error) {
+            Helper.alert('error', 'Error al generar el reporte');
+        }
+    },
+
+    async exportRecipe(id, type) {
+        try {
+            Helper.loading();
+            const res = await Helper.fetchAPI(`/recipes/${id}`);
+            if (res.success) {
+                const recipe = res.data;
+                if (type === 'excel') {
+                    this._generateSingleRecipeExcel(recipe);
+                } else {
+                    this._generateSingleRecipePrintView(recipe);
+                }
+            }
+            Swal.close();
+        } catch (error) {
+            Helper.alert('error', 'Error al obtener datos de la receta');
+        }
+    },
+
+    _generateRecipesExcel(recipes) {
+        let rows = '';
+        recipes.forEach(r => {
+            // First row for the recipe basic info
+            rows += `
+                <tr style="background:#f9f9f9; font-weight:bold;">
+                    <td colspan="2">${r.name}</td>
+                    <td>${r.ration_type_name || r.meal_type}</td>
+                    <td>${Math.round(r.total_calories)}</td>
+                    <td>${parseFloat(r.total_proteins).toFixed(1)}</td>
+                    <td>${parseFloat(r.total_carbohydrates).toFixed(1)}</td>
+                    <td>${parseFloat(r.total_fats).toFixed(1)}</td>
+                    <td>RECETA PADRE</td>
+                </tr>
+            `;
+
+            // Sub-header for ingredients
+            rows += `
+                <tr style="font-size: 0.8em; background:#eeeeee;">
+                    <th style="width: 250px;">Ingrediente</th>
+                    <th>Unid</th>
+                    <th>Preesc.</th>
+                    <th>Prim. A</th>
+                    <th>Prim. B</th>
+                    <th>Secund.</th>
+                    <th colspan="2">Observaciones</th>
+                </tr>
+            `;
+
+            // Ingredient rows
+            r.items.forEach(i => {
+                rows += `
+                    <tr>
+                        <td>${i.item_name}</td>
+                        <td style="text-align:center;">${i.unit}</td>
+                        <td>${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
+                        <td>${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
+                        <td>${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
+                        <td>${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                        <td colspan="2">${i.preparation || '-'}</td>
+                    </tr>
+                `;
+            });
+            // Spacer
+            rows += `<tr><td colspan="8" style="background:#ffffff; border:none; height:15px;"></td></tr>`;
+        });
+
+        const html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h3>CONSOLIDADO DE RECETAS CON COMPOSICIÓN</h3>
+                <table border="1" cellspacing="0" cellpadding="5">
+                    <tr style="background:#333; color:white; font-weight:bold;">
+                        <th colspan="2">NOMBRE RECETA / INGREDIENTE</th>
+                        <th>TIPO</th>
+                        <th>KCAL</th>
+                        <th>PROT</th>
+                        <th>HC</th>
+                        <th>GRAS</th>
+                        <th>NOTAS</th>
+                    </tr>
+                    ${rows}
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Recetario_Detallado_${new Date().toISOString().split('T')[0]}.xls`;
+        a.click();
+        Helper.alert('success', 'Excel generado');
+    },
+
+    _generateRecipesPrintView(recipes) {
+        const printWindow = window.open('', '_blank');
+        let tablesHtml = recipes.map(r => {
+            let itemRows = r.items.map(i => `
+                <tr class="small">
+                    <td>${i.item_name}</td>
+                    <td class="text-center">${i.unit}</td>
+                    <td class="text-center">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
+                    <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
+                    <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
+                    <td class="text-center">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="recipe-block mb-4" style="break-inside: avoid;">
+                    <div class="d-flex justify-content-between align-items-center mb-2 bg-light p-2 border">
+                        <h5 class="mb-0 fw-bold">${r.name}</h5>
+                        <span class="badge bg-primary">${r.ration_type_name || r.meal_type}</span>
+                    </div>
+                    <table class="table table-sm table-bordered">
+                        <thead class="bg-light small">
+                            <tr>
+                                <th>Ingrediente</th>
+                                <th>Unid</th>
+                                <th>Preesc</th>
+                                <th>Prim A</th>
+                                <th>Prim B</th>
+                                <th>Secund</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemRows}</tbody>
+                    </table>
+                </div>
+            `;
+        }).join('');
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Consolidado de Recetas</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                    @media print { .no-print { display: none; } .recipe-block { page-break-inside: avoid; } }
+                </style>
+            </head>
+            <body>
+                <div class="no-print mb-3 text-center">
+                    <button class="btn btn-primary" onclick="window.print()">Imprimir PDF</button>
+                    <button class="btn btn-secondary" onclick="window.close()">Cerrar</button>
+                </div>
+                <div class="header">
+                    <h2>CONSOLIDADO DE RECETAS MAESTRAS</h2>
+                    <p>Reporte detallado de insumos por grupo etario</p>
+                </div>
+                ${tablesHtml}
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    },
+
+    _generateSingleRecipeExcel(r) {
+        let itemRows = r.items.map(i => `
+            <tr>
+                <td>${i.item_name}</td>
+                <td>${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
+                <td>${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
+                <td>${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
+                <td>${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                <td>${i.preparation || '-'}</td>
+            </tr>
+        `).join('');
+
+        const html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h3>RECETA: ${r.name}</h3>
+                <p><b>Tipo:</b> ${r.ration_type_name || r.meal_type}</p>
+                <p><b>Descripción:</b> ${r.description || '-'}</p>
+                <table border="1" cellspacing="0" cellpadding="5">
+                    <tr style="background:#f0f0f0; font-weight:bold;">
+                        <th>INGREDIENTE</th>
+                        <th>PREESCOLAR</th>
+                        <th>PRIMARIA A</th>
+                        <th>PRIMARIA B</th>
+                        <th>SECUNDARIA</th>
+                        <th>OBSERVACIONES</th>
+                    </tr>
+                    ${itemRows}
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Receta_${r.name.replace(/\s+/g, '_')}.xls`;
+        a.click();
+        Helper.alert('success', 'Excel generado');
+    },
+
+    _generateSingleRecipePrintView(r) {
+        const printWindow = window.open('', '_blank');
+        let itemRows = r.items.map(i => `
+            <tr>
+                <td class="fw-bold">${i.item_name}</td>
+                <td class="text-center">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
+                <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
+                <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
+                <td class="text-center">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                <td>${i.preparation || '-'}</td>
+            </tr>
+        `).join('');
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Ficha Técnica: ${r.name}</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; font-size: 13px; }
+                    .header { border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px; }
+                    .title { font-weight: bold; font-size: 20px; text-transform: uppercase; }
+                    .meta-box { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ddd; }
+                    @media print { .no-print { display: none; } @page { margin: 1cm; } }
+                </style>
+            </head>
+            <body>
+                <div class="no-print text-center mb-4">
+                    <button class="btn btn-primary px-5" onclick="window.print()">IMPRIMIR FICHA</button>
+                    <button class="btn btn-secondary" onclick="window.close()">CERRAR</button>
+                </div>
+                <div class="header d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="title">${r.name}</div>
+                        <div class="text-muted">Ficha Técnica de Receta Estándar</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-primary text-uppercase">${r.ration_type_name || r.meal_type}</div>
+                    </div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="row">
+                        <div class="col-8">
+                            <label class="small fw-bold text-muted text-uppercase d-block">Descripción / Preparación</label>
+                            <p class="mb-0">${r.description || 'Sin descripción adicional'}</p>
+                        </div>
+                        <div class="col-4 border-start">
+                            <label class="small fw-bold text-muted text-uppercase d-block">Aporte Nutricional (Secundaria)</label>
+                            <div class="d-flex justify-content-between small">
+                                <span>Calorías:</span> <b>${Math.round(r.total_calories)} kcal</b>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span>Proteínas:</span> <b>${r.total_proteins}g</b>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span>Carbos:</span> <b>${r.total_carbohydrates}g</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3 text-uppercase"><i class="fas fa-list me-2"></i>Composición por Grupo Etario (Gramos/Unid)</h6>
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light text-center small">
+                        <tr>
+                            <th rowspan="2" class="align-middle">INGREDIENTE</th>
+                            <th colspan="4">GRAMAJE SEGÚN GRUPO</th>
+                            <th rowspan="2" class="align-middle">OBSERVACIONES</th>
+                        </tr>
+                        <tr>
+                            <th>PREESC.</th>
+                            <th>PRIM. A</th>
+                            <th>PRIM. B</th>
+                            <th>SECUND.</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemRows}</tbody>
+                </table>
+                
+                <div class="mt-5 pt-5 row">
+                    <div class="col-6 text-center">
+                        <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto;"></div>
+                        <p class="small">Responsable de Nutrición</p>
+                    </div>
+                    <div class="col-6 text-center">
+                        <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto;"></div>
+                        <p class="small">Control de Calidad</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     },
 
     async saveRecipe() {

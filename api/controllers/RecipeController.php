@@ -40,6 +40,8 @@ class RecipeController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
+            $ration_type_id = $_GET['ration_type_id'] ?? null;
+            $include_items = isset($_GET['include_items']) && $_GET['include_items'] == '1';
 
             // Auto-recalculación para recetas con valores en 0 (corrección de legacy)
             $stmtFixed = $this->conn->prepare("SELECT id FROM recipes WHERE pae_id = :pae AND total_calories = 0");
@@ -51,12 +53,53 @@ class RecipeController
             $query = "SELECT r.*, rt.name as ration_type_name 
                       FROM recipes r
                       LEFT JOIN pae_ration_types rt ON r.ration_type_id = rt.id
-                      WHERE r.pae_id = :pae_id 
-                      ORDER BY r.name";
+                      WHERE r.pae_id = :pae_id";
+
+            if ($ration_type_id) {
+                $query .= " AND r.ration_type_id = :rtid";
+            }
+
+            $query .= " ORDER BY r.name";
+
             $stmt = $this->conn->prepare($query);
             $stmt->bindValue(':pae_id', $pae_id);
+            if ($ration_type_id) {
+                $stmt->bindValue(':rtid', $ration_type_id);
+            }
+
             $stmt->execute();
-            echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($include_items && count($recipes) > 0) {
+                foreach ($recipes as &$recipe) {
+                    $queryItems = "SELECT ri.*, i.name as item_name, i.code as item_code, mu.abbreviation as unit 
+                                   FROM recipe_items ri 
+                                   JOIN items i ON ri.item_id = i.id 
+                                   JOIN measurement_units mu ON i.measurement_unit_id = mu.id
+                                   WHERE ri.recipe_id = :rid";
+                    $stmtItems = $this->conn->prepare($queryItems);
+                    $stmtItems->execute([':rid' => $recipe['id']]);
+                    $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+                    $groupedItems = [];
+                    foreach ($items as $it) {
+                        $iid = $it['item_id'];
+                        if (!isset($groupedItems[$iid])) {
+                            $groupedItems[$iid] = [
+                                'item_id' => $iid,
+                                'item_name' => $it['item_name'],
+                                'unit' => $it['unit'],
+                                'preparation' => $it['preparation_method'],
+                                'quantities' => ['PREESCOLAR' => 0, 'PRIMARIA_A' => 0, 'PRIMARIA_B' => 0, 'SECUNDARIA' => 0]
+                            ];
+                        }
+                        $groupedItems[$iid]['quantities'][$it['age_group']] = $it['quantity'];
+                    }
+                    $recipe['items'] = array_values($groupedItems);
+                }
+            }
+
+            echo json_encode(['success' => true, 'data' => $recipes]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
