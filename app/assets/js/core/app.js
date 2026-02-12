@@ -345,7 +345,7 @@ const App = {
                             </form>
                         </div>
                         <div class="card-footer text-center">
-                            <small class="text-muted">PAE Control v1.0</small>
+                            <small class="text-muted">PAE Control v1.7.5</small>
                         </div>
                     </div>
                 </div>

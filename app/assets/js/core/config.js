@@ -6,7 +6,7 @@
 const Config = {
     // Unified source of truth - Always use server version
     get VERSION() {
-        return window.APP_VERSION || '1.4.3';
+        return window.APP_VERSION || '1.7.5';
     },
 
     // Dynamic Base URL detection
