@@ -101,7 +101,7 @@ class PresupuestoController
         try {
             $this->conn->beginTransaction();
 
-            // 1. Insert/Update Item
+            // 1. Insert Rubro
             $query = "INSERT INTO presupuesto_items 
                       (pae_id, codigo, nombre, descripcion, padre_id, unidad_medida, cantidad_global, tiempo_global, valor_unitario_oficial, valor_total_oficial) 
                       VALUES (:pae_id, :codigo, :nombre, :descripcion, :padre_id, :unidad_medida, :cantidad_global, :tiempo_global, :valor_unitario_oficial, :valor_total_oficial)";
@@ -151,5 +151,115 @@ class PresupuestoController
             http_response_code(500);
             echo json_encode(["message" => $e->getMessage()]);
         }
+    }
+
+    public function show($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        $query = "SELECT * FROM presupuesto_items WHERE id_item = :id AND pae_id = :pae_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([":id" => $id, ":pae_id" => $pae_id]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($item) {
+            // Get distribution
+            $queryDist = "SELECT * FROM presupuesto_asignacion WHERE item_id = :id";
+            $stmtDist = $this->conn->prepare($queryDist);
+            $stmtDist->execute([":id" => $id]);
+            $item['distribucion'] = $stmtDist->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        echo json_encode($item);
+    }
+
+    public function update($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        $data = json_decode(file_get_contents("php://input"));
+
+        try {
+            $this->conn->beginTransaction();
+
+            $query = "UPDATE presupuesto_items SET 
+                      codigo = :codigo, nombre = :nombre, descripcion = :descripcion, 
+                      padre_id = :padre_id, unidad_medida = :unidad_medida, 
+                      cantidad_global = :cantidad_global, tiempo_global = :tiempo_global, 
+                      valor_unitario_oficial = :valor_unitario_oficial, valor_total_oficial = :valor_total_oficial
+                      WHERE id_item = :id AND pae_id = :pae_id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([
+                ":id" => $id,
+                ":pae_id" => $pae_id,
+                ":codigo" => $data->codigo,
+                ":nombre" => $data->nombre,
+                ":descripcion" => $data->descripcion ?? '',
+                ":padre_id" => !empty($data->padre_id) ? $data->padre_id : null,
+                ":unidad_medida" => $data->unidad_medida ?? '',
+                ":cantidad_global" => $data->cantidad_global ?? 0,
+                ":tiempo_global" => $data->tiempo_global ?? 0,
+                ":valor_unitario_oficial" => $data->valor_unitario_oficial ?? 0,
+                ":valor_total_oficial" => $data->valor_total_oficial ?? 0
+            ]);
+
+            // Sync distribution without deleting existing records (to avoid FK errors with movements)
+            if (!empty($data->distribucion)) {
+                $checkStmt = $this->conn->prepare("SELECT id_asignacion FROM presupuesto_asignacion WHERE item_id = :item_id AND branch_id = :branch_id");
+
+                $queryInsert = "INSERT INTO presupuesto_asignacion 
+                                (pae_id, item_id, branch_id, cantidad, meses, valor_unitario, valor_inicial) 
+                                VALUES (:pae_id, :item_id, :branch_id, :cantidad, :meses, :valor_unitario, :valor_inicial)";
+
+                $queryUpdate = "UPDATE presupuesto_asignacion SET 
+                                cantidad = :cantidad, meses = :meses, valor_unitario = :valor_unitario, valor_inicial = :valor_inicial
+                                WHERE item_id = :item_id AND branch_id = :branch_id";
+
+                foreach ($data->distribucion as $dist) {
+                    $checkStmt->execute([":item_id" => $id, ":branch_id" => $dist->branch_id]);
+                    $exists = $checkStmt->fetch();
+
+                    if ($exists) {
+                        $stmtUpdate = $this->conn->prepare($queryUpdate);
+                        $stmtUpdate->execute([
+                            ":item_id" => $id,
+                            ":branch_id" => $dist->branch_id,
+                            ":cantidad" => $dist->cantidad,
+                            ":meses" => $dist->meses,
+                            ":valor_unitario" => $dist->valor_unitario,
+                            ":valor_inicial" => $dist->total
+                        ]);
+                    } else {
+                        if ($dist->total > 0) {
+                            $stmtInsert = $this->conn->prepare($queryInsert);
+                            $stmtInsert->execute([
+                                ":pae_id" => $pae_id,
+                                ":item_id" => $id,
+                                ":branch_id" => $dist->branch_id,
+                                ":cantidad" => $dist->cantidad,
+                                ":meses" => $dist->meses,
+                                ":valor_unitario" => $dist->valor_unitario,
+                                ":valor_inicial" => $dist->total
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            $this->conn->commit();
+            echo json_encode(["success" => true, "message" => "Presupuesto actualizado."]);
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function delete($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        $query = "UPDATE presupuesto_items SET estado = 0 WHERE id_item = :id AND pae_id = :pae_id";
+        $stmt = $this->conn->prepare($query);
+        $res = $stmt->execute([":id" => $id, ":pae_id" => $pae_id]);
+        echo json_encode(["success" => $res]);
     }
 }

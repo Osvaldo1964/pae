@@ -149,4 +149,118 @@ class TrasladoController
             echo json_encode(["message" => $e->getMessage()]);
         }
     }
+
+    public function show($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        $query = "SELECT t.*, 
+                         io.codigo as cod_origen, io.nombre as nom_origen, bo.name as branch_origen,
+                         id.codigo as cod_destino, id.nombre as nom_destino, bd.name as branch_destino,
+                         (ao.valor_inicial + ao.valor_adiciones - ao.valor_reducciones - ao.valor_ejecutado + t.valor) as saldo_disponible_origen_con_tras
+                  FROM presupuesto_traslados t
+                  JOIN presupuesto_asignacion ao ON t.origen_id = ao.id_asignacion
+                  JOIN presupuesto_items io ON ao.item_id = io.id_item
+                  JOIN school_branches bo ON ao.branch_id = bo.id
+                  JOIN presupuesto_asignacion ad ON t.destino_id = ad.id_asignacion
+                  JOIN presupuesto_items id ON ad.item_id = id.id_item
+                  JOIN school_branches bd ON ad.branch_id = bd.id
+                  WHERE t.id_traslado = :id AND t.pae_id = :pae_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([":id" => $id, ":pae_id" => $pae_id]);
+        echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
+    }
+
+    public function update($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        if (!$pae_id) {
+            http_response_code(403);
+            echo json_encode(["message" => "Acceso denegado."]);
+            return;
+        }
+
+        $stmtOld = $this->conn->prepare("SELECT * FROM presupuesto_traslados WHERE id_traslado = :id AND pae_id = :pae_id");
+        $stmtOld->execute([":id" => $id, ":pae_id" => $pae_id]);
+        $old = $stmtOld->fetch(PDO::FETCH_ASSOC);
+
+        if (!$old) {
+            echo json_encode(["success" => false, "message" => "Traslado no encontrado."]);
+            return;
+        }
+
+        $data = json_decode(file_get_contents("php://input"));
+
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Revert OLD values
+            // Source (Reduction -)
+            $this->conn->prepare("UPDATE presupuesto_asignacion SET valor_reducciones = valor_reducciones - :v, valor_traslados_contracredito = valor_traslados_contracredito - :v WHERE id_asignacion = :id")
+                ->execute([":v" => $old['valor'], ":id" => $old['origen_id']]);
+            // Destination (Addition -)
+            $this->conn->prepare("UPDATE presupuesto_asignacion SET valor_adiciones = valor_adiciones - :v, valor_traslados_credito = valor_traslados_credito - :v WHERE id_asignacion = :id")
+                ->execute([":v" => $old['valor'], ":id" => $old['destino_id']]);
+
+            // 2. Apply NEW values
+            // New Source (Reduction +)
+            $this->conn->prepare("UPDATE presupuesto_asignacion SET valor_reducciones = valor_reducciones + :v, valor_traslados_contracredito = valor_traslados_contracredito + :v WHERE id_asignacion = :id")
+                ->execute([":v" => $data->valor, ":id" => $old['origen_id']]); // Origin/Dest usually locked in edit for simplicity but we could allow change
+            // New Destination (Addition +)
+            $this->conn->prepare("UPDATE presupuesto_asignacion SET valor_adiciones = valor_adiciones + :v, valor_traslados_credito = valor_traslados_credito + :v WHERE id_asignacion = :id")
+                ->execute([":v" => $data->valor, ":id" => $old['destino_id']]);
+
+            // 3. Update Record
+            $query = "UPDATE presupuesto_traslados SET 
+                      fecha = :fecha, valor = :valor, justificacion = :justificacion 
+                      WHERE id_traslado = :id AND pae_id = :pae_id";
+            $this->conn->prepare($query)->execute([
+                ":id" => $id,
+                ":pae_id" => $pae_id,
+                ":fecha" => $data->fecha,
+                ":valor" => $data->valor,
+                ":justificacion" => $data->justificacion
+            ]);
+
+            $this->conn->commit();
+            echo json_encode(["success" => true, "message" => "Traslado actualizado."]);
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(["message" => $e->getMessage()]);
+        }
+    }
+
+    public function delete($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        $stmt = $this->conn->prepare("SELECT * FROM presupuesto_traslados WHERE id_traslado = :id AND pae_id = :pae_id");
+        $stmt->execute([":id" => $id, ":pae_id" => $pae_id]);
+        $mov = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$mov) {
+            echo json_encode(["success" => false, "message" => "No existe."]);
+            return;
+        }
+
+        try {
+            $this->conn->beginTransaction();
+
+            // Revert balances
+            $this->conn->prepare("UPDATE presupuesto_asignacion SET valor_reducciones = valor_reducciones - :v, valor_traslados_contracredito = valor_traslados_contracredito - :v WHERE id_asignacion = :id")
+                ->execute([":v" => $mov['valor'], ":id" => $mov['origen_id']]);
+            $this->conn->prepare("UPDATE presupuesto_asignacion SET valor_adiciones = valor_adiciones - :v, valor_traslados_credito = valor_traslados_credito - :v WHERE id_asignacion = :id")
+                ->execute([":v" => $mov['valor'], ":id" => $mov['destino_id']]);
+
+            // Delete Record
+            $this->conn->prepare("DELETE FROM presupuesto_traslados WHERE id_traslado = :id")->execute([":id" => $id]);
+
+            $this->conn->commit();
+            echo json_encode(["success" => true, "message" => "Traslado eliminado y saldos revertidos."]);
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            http_response_code(500);
+            echo json_encode(["message" => $e->getMessage()]);
+        }
+    }
 }

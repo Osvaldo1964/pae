@@ -70,4 +70,4 @@
 
 ---
 
-**Última actualización**: 12 de Febrero 2026, 11:38 PM
+**Última actualización**: 13 de Febrero 2026, 6:00 PM

@@ -475,6 +475,35 @@ Generar un ciclo completo a partir de una plantilla.
 
 ---
 
+---
+
+## 💰 Finanzas
+
+### GET /terceros
+Listar proveedores, empleados y contratistas.
+
+---
+
+### GET /presupuesto
+Obtener el plan de presupuesto por rubros y centros de costo.
+
+---
+
+### GET /movimientos
+Listar egresos y ejecución presupuestal.
+
+---
+
+### POST /movimientos
+Registrar un nuevo gasto (soporta archivos vía `multipart/form-data`).
+
+---
+
+### GET /traslados
+Listar traslados internos de recursos.
+
+---
+
 ## 📊 Códigos de Estado HTTP
 
 | Código | Significado | Uso |
@@ -503,4 +532,4 @@ Todos los errores siguen el mismo formato:
 
 ---
 
-**Última Actualización:** 01 de Febrero de 2026, 22:00 PM
+**Última Actualización:** 13 de Febrero de 2026, 18:00 PM

@@ -25,6 +25,11 @@ const Config = {
         return this.BASE_URL.replace(/\/app\/$/, '/api');
     },
 
+    // Root URL (replaces /app/ with /)
+    get ROOT_URL() {
+        return this.BASE_URL.replace(/\/app\/$/, '/');
+    },
+
     // Assets Base URL
     get ASSETS_URL() {
         return this.BASE_URL + 'assets';

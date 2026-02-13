@@ -580,29 +580,61 @@ if ($resource === 'auth') {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($action === 'branches') {
             $controller->getBranches();
+        } elseif ($action && is_numeric($action)) {
+            $controller->show($action);
         } else {
             $controller->index();
         }
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->store();
+        if ($action && is_numeric($action)) {
+            $controller->update($action);
+        } else {
+            $controller->store();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
     }
 } elseif ($resource === 'movimientos') {
     $controller = new \Controllers\MovimientoController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($action === 'budget') {
             $controller->getActiveBudget();
+        } elseif ($action && is_numeric($action)) {
+            $controller->show($action);
         } else {
             $controller->index();
         }
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->store();
+        if ($action && is_numeric($action)) {
+            $controller->update($action);
+        } else {
+            $controller->store();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
     }
 } elseif ($resource === 'traslados') {
     $controller = new \Controllers\TrasladoController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $controller->index();
+        if ($action && is_numeric($action)) {
+            $controller->show($action);
+        } else {
+            $controller->index();
+        }
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->store();
+        if ($action && is_numeric($action)) {
+            $controller->update($action);
+        } else {
+            $controller->store();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
     }
 } elseif ($resource === 'deliveries') {
     $controller = new \Controllers\DeliveryController();

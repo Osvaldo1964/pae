@@ -74,6 +74,7 @@ window.MovimientosView = {
                                         <th>Tercero / Beneficiario</th>
                                         <th class="text-end">Valor</th>
                                         <th class="text-center">Soporte</th>
+                                        <th class="text-center pe-4" style="width: 120px;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -113,81 +114,105 @@ window.MovimientosView = {
                 </td>
                 <td class="text-center">
                     ${m.soporte_url ?
-                `<a href="${Config.BASE_URL}${m.soporte_url}" target="_blank" class="btn btn-sm btn-light text-info shadow-sm">
+                `<a href="${Config.ROOT_URL}${m.soporte_url}" target="_blank" class="btn btn-sm btn-light text-info shadow-sm">
                             <i class="fas fa-eye me-1"></i>Ver
                          </a>` :
                 `<span class="text-muted small">Sin soporte</span>`}
+                </td>
+                <td class="text-center pe-4">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary border-0" onclick="MovimientosView.editItem(${m.id_movimiento})" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-danger border-0" onclick="MovimientosView.deleteItem(${m.id_movimiento})" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join('');
     },
 
-    async openModal() {
-        const budgetOptions = this.budget.map(b =>
-            `<option value="${b.id_asignacion}">${b.codigo} - ${b.item_nombre} (${b.branch_name}) | Saldo: ${Helper.formatCurrency(b.saldo_disponible)}</option>`
-        ).join('');
+    async openModal(editId = null) {
+        let item = null;
+        if (editId) {
+            Helper.loading(true);
+            item = await Helper.fetchAPI(`/movimientos/${editId}`);
+            Helper.loading(false);
+        }
+
+        const budgetOptions = this.budget.map(b => {
+            const isSelected = item?.asignacion_id == b.id_asignacion;
+            // If editing, and it's the current assignment, available balance should include current value
+            let saldo = parseFloat(b.saldo_disponible);
+            if (isSelected) saldo = parseFloat(item.saldo_disponible_con_mov);
+
+            return `<option value="${b.id_asignacion}" ${isSelected ? 'selected' : ''} data-saldo="${saldo}">
+                ${b.codigo} - ${b.item_nombre} (${b.branch_name}) | Saldo: ${Helper.formatCurrency(saldo)}
+             </option>`;
+        }).join('');
 
         const tercerOptions = this.terceros.map(t =>
-            `<option value="${t.id_tercero}">${t.identificacion} - ${t.nombres}</option>`
+            `<option value="${t.id_tercero}" ${item?.tercero_id == t.id_tercero ? 'selected' : ''}>${t.identificacion} - ${t.nombres}</option>`
         ).join('');
 
         const today = new Date().toISOString().split('T')[0];
 
         const { value: formValues } = await Swal.fire({
-            title: '<strong>Nuevo Movimiento</strong>',
+            title: `<strong>${editId ? 'Editar' : 'Nuevo'} Movimiento</strong>`,
             width: '800px',
             html: `
                 <div class="text-start px-2 py-3">
-                    <p class="small text-info mb-4 border-bottom pb-2">Todos los campos son obligatorios.</p>
-                    
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-uppercase">Fecha</label>
-                            <input id="mov-fecha" type="date" class="form-control" value="${today}">
+                            <input id="mov-fecha" type="date" class="form-control" value="${item?.fecha || today}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-uppercase">Tipo Movimiento</label>
                             <select id="mov-tipo" class="form-select">
-                                <option value="Pago">Pago</option>
-                                <option value="Compra">Compra</option>
-                                <option value="Nomina">Nomina</option>
-                                <option value="Servicio">Servicio</option>
-                                <option value="Otro">Otro</option>
+                                <option value="Pago" ${item?.tipo_movimiento == 'Pago' ? 'selected' : ''}>Pago</option>
+                                <option value="Compra" ${item?.tipo_movimiento == 'Compra' ? 'selected' : ''}>Compra</option>
+                                <option value="Nomina" ${item?.tipo_movimiento == 'Nomina' ? 'selected' : ''}>Nomina</option>
+                                <option value="Servicio" ${item?.tipo_movimiento == 'Servicio' ? 'selected' : ''}>Servicio</option>
+                                <option value="Otro" ${item?.tipo_movimiento == 'Otro' ? 'selected' : ''}>Otro</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-uppercase">Valor ($)</label>
-                            <input id="mov-valor" type="number" step="any" class="form-control" placeholder="0.00">
+                            <input id="mov-valor" type="number" step="any" class="form-control" placeholder="0.00" value="${item?.valor || ''}">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label small fw-bold text-uppercase">Rubro / Centro de Costo (Saldo Disponible)</label>
-                            <select id="mov-asignacion" class="form-select select2-basic">
+                            <select id="mov-asignacion" class="form-select" ${editId ? 'disabled' : ''}>
                                 <option value="">Seleccione Rubro/Centro</option>
                                 ${budgetOptions}
                             </select>
+                            ${editId ? '<small class="text-muted">El rubro no se puede cambiar en edición. Elimine y cree uno nuevo si es necesario.</small>' : ''}
                         </div>
 
                         <div class="col-md-8">
                             <label class="form-label small fw-bold text-uppercase">Tercero / Beneficiario</label>
-                            <select id="mov-tercero" class="form-select select2-basic">
+                            <select id="mov-tercero" class="form-select">
                                 <option value="">Seleccione Tercero</option>
                                 ${tercerOptions}
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-uppercase">No. Documento / Factura</label>
-                            <input id="mov-documento" class="form-control" placeholder="Nro de soporte">
+                            <input id="mov-documento" class="form-control" placeholder="Nro de soporte" value="${item?.numero_documento || ''}">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label small fw-bold text-uppercase">Soporte (PDF/Imagen) - <small class="text-muted text-lowercase font-italic">Opcional</small></label>
                             <input id="mov-soporte" type="file" class="form-control" accept="image/*,application/pdf">
+                            ${item?.soporte_url ? `<div class="mt-1 small"><a href="${Config.ROOT_URL}${item.soporte_url}" target="_blank" class="text-primary"><i class="fas fa-file-download me-1"></i>Ver soporte actual</a></div>` : ''}
                         </div>
 
                         <div class="col-12">
                             <label class="form-label small fw-bold text-uppercase">Detalle / Observación</label>
-                            <textarea id="mov-detalle" class="form-control" rows="3" placeholder="Descripción detallada del egreso..."></textarea>
+                            <textarea id="mov-detalle" class="form-control" rows="3" placeholder="Descripción detallada del egreso...">${item?.detalle || ''}</textarea>
                         </div>
                     </div>
                 </div>
@@ -196,7 +221,6 @@ window.MovimientosView = {
             showCancelButton: true,
             confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Guardar',
             cancelButtonText: 'Cerrar',
-            confirmButtonColor: '#16a085',
             preConfirm: () => {
                 const asignacion_id = document.getElementById('mov-asignacion').value;
                 const tercero_id = document.getElementById('mov-tercero').value;
@@ -208,10 +232,13 @@ window.MovimientosView = {
                     return false;
                 }
 
-                // Check if valor exceeds available balance
-                const selectedBudget = this.budget.find(b => b.id_asignacion == asignacion_id);
-                if (selectedBudget && valor > selectedBudget.saldo_disponible) {
-                    Swal.showValidationMessage(`Saldo insuficiente. Disponible: ${Helper.formatCurrency(selectedBudget.saldo_disponible)}`);
+                // Balance check
+                const selectEl = document.getElementById('mov-asignacion');
+                const selectedOption = selectEl.options[selectEl.selectedIndex];
+                const saldoDisponible = parseFloat(selectedOption.dataset.saldo) || 0;
+
+                if (valor > saldoDisponible) {
+                    Swal.showValidationMessage(`Saldo insuficiente. Disponible: ${Helper.formatCurrency(saldoDisponible)}`);
                     return false;
                 }
 
@@ -225,35 +252,60 @@ window.MovimientosView = {
                 formData.append('detalle', document.getElementById('mov-detalle').value);
 
                 const fileInput = document.getElementById('mov-soporte');
-                if (fileInput.files[0]) {
-                    formData.append('soporte', fileInput.files[0]);
-                }
+                if (fileInput.files[0]) formData.append('soporte', fileInput.files[0]);
 
                 return formData;
             }
         });
 
         if (formValues) {
-            Helper.loading(true, 'Registrando movimiento...');
+            this.save(formValues, editId);
+        }
+    },
+
+    async save(formData, id = null) {
+        Helper.loading(true, id ? 'Actualizando...' : 'Registrando...');
+        try {
+            const url = id ? `/movimientos/${id}` : '/movimientos';
+            const res = await Helper.fetchAPI(url, {
+                method: 'POST',
+                body: formData
+            });
+            Helper.loading(false);
+            if (res.success) {
+                Helper.alert('success', 'Movimiento procesado correctamente');
+                this.init();
+            } else {
+                Helper.alert('error', res.message || 'Error al procesar');
+            }
+        } catch (error) {
+            Helper.loading(false);
+            Helper.alert('error', 'Error de conexión');
+        }
+    },
+
+    async editItem(id) {
+        this.openModal(id);
+    },
+
+    async deleteItem(id) {
+        if (await Helper.confirm('¿Deseas eliminar este movimiento? El saldo ejecutado del presupuesto se restaurará.')) {
+            Helper.loading(true, 'Eliminando y restaurando presupuesto...');
             try {
-                const res = await Helper.fetchAPI('/movimientos', {
-                    method: 'POST',
-                    body: formValues
-                });
+                const res = await Helper.fetchAPI(`/movimientos/${id}`, { method: 'DELETE' });
                 Helper.loading(false);
                 if (res.success) {
-                    Swal.fire('¡Éxito!', res.message, 'success');
-                    await this.init();
+                    Helper.alert('success', 'Movimiento eliminado');
+                    this.init();
                 } else {
-                    Swal.fire('Error', res.message || 'Error al guardar', 'error');
+                    Helper.alert('error', res.message || 'Error al eliminar');
                 }
-            } catch (error) {
+            } catch (e) {
                 Helper.loading(false);
-                Swal.fire('Error', 'Error de conexión', 'error');
+                Helper.alert('error', 'No se pudo conectar con el servidor');
             }
         }
     }
 };
 
-// Initialize
 MovimientosView.init();

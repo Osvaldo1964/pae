@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 12 de Febrero 2026, 11:35 PM
-**Versión Doc:** 1.8.0 | **Versión Código:** 1.8.0 (Financial Expansion)
+**Última actualización**: 13 de Febrero 2026, 6:00 PM
+**Versión Doc:** 1.8.5 | **Versión Código:** 1.8.5 (Financial Refinement)
 
 ---
 
@@ -173,18 +173,21 @@
 - [x] **Vinculación:** Asignación de empleados a cargos y sedes
 - [x] **Reportes:** Nómina y listados por cargo/sede
 
-### 16. Módulo de Finanzas (Presupuesto y Gastos) ✅ ⭐ NUEVO
+### 16. Módulo de Finanzas (Presupuesto y Gastos) ✅ ⭐ COMPLETADO
 - [x] **Gestión de Terceros:** CRUD completo de proveedores, empleados y contratistas con aislamiento por PAE.
 - [x] **Planeación Presupuestal:** 
   - [x] Carga de rubros con jerarquía de códigos.
-  - [x] Distribución obligatoria por centros de costo (Sedes/Colegios).
-  - [x] Validador de diferencia entre total global y suma de sedes.
+  - [x] Distribución por centros de costo (Sedes/Colegios).
+  - [x] **Inteligencia de Consolidación:** Los rubros "Padre" ahora resumen automáticamente el valor de sus hijos.
+  - [x] **Sincronización:** Sistema de actualización que respeta integridad referencial ante movimientos existentes.
 - [x] **Movimientos Financieros:**
-  - [x] Registro de gastos vinculados a rubros y sedes.
-  - [x] **Control de Saldo:** Bloqueo preventivo de gastos que superan el presupuesto disponible.
-  - [x] **Gestión de Soportes:** Subida de archivos PDF/Imágenes integrados a la nube local.
+  - [x] Registro de egresos asociados a rubros y sedes.
+  - [x] **Edición y Eliminación:** Listado con botones de acción y gestión de estados.
+  - [x] **Reconciliación de Saldos:** La eliminación o edición de un gasto restaura/actualiza automáticamente el presupuesto disponible.
+  - [x] **Gestión de Soportes:** Subida de archivos PDF/Imágenes con visualización corregida vía `ROOT_URL`.
 - [x] **Traslados Presupuestales:** 
   - [x] Movimientos entre rubros (Débito/Crédito) para rebalanceo de recursos.
+  - [x] **Reversión Automática:** La eliminación de un traslado restaura los saldos originales en origen y destino.
   - [x] Trazabilidad e historial de justificaciones.
 
 ### 17. Módulo de Reportes (Hub de Gestión) ✅
@@ -226,6 +229,12 @@
 ---
 
 ## 🔧 CORRECCIONES RECIENTES (v1.7.0)
+
+### v1.8.5 (13 Feb 2026)
+- ✅ **Refinamiento Financiero:** Botones de Editar/Eliminar implementados en Movimientos y Traslados.
+- ✅ **Lógica de Saldos:** Automatización de la restauración de presupuesto al eliminar o editar gastos/traslados.
+- ✅ **Fix de Soportes:** Implementación de `ROOT_URL` en `config.js` para corregir rutas de visualización de archivos fuera de `/app/`.
+- ✅ **Presupuesto Inteligente:** Los rubros padre ahora consolidan valores y bloquean entrada directa de datos.
 
 ### v1.8.0 (12 Feb 2026 - Noche)
 - ✅ **Módulo Financiero:** Lanzamiento de Terceros, Presupuesto, Movimientos y Traslados.

@@ -19,15 +19,59 @@ window.PresupuestoView = {
                 Helper.fetchAPI('/presupuesto'),
                 Helper.fetchAPI('/presupuesto/branches')
             ]);
-            this.items = Array.isArray(items) ? items : [];
+            
+            // Calculate totals for parents based on children
+            this.items = this.calculateSummaries(Array.isArray(items) ? items : []);
             this.branches = Array.isArray(branches) ? branches : [];
         } catch (error) {
             console.error('Error loading budget data:', error);
         }
     },
 
+    /**
+     * Business Logic: Parents sum children's values
+     */
+    calculateSummaries(items) {
+        // First, reset parent totals to 0 if they have children
+        const hasChildren = new Set();
+        items.forEach(item => {
+            if (item.padre_id) hasChildren.add(parseInt(item.padre_id));
+        });
+
+        // Create a map for quick access
+        const map = {};
+        items.forEach(item => {
+            item.isParent = hasChildren.has(parseInt(item.id_item));
+            if (item.isParent) {
+                item.valor_total_oficial = 0;
+                item.cantidad_global = 0;
+            } else {
+                item.valor_total_oficial = parseFloat(item.valor_total_oficial) || 0;
+            }
+            map[item.id_item] = item;
+        });
+
+        // Sum up (bottom-up approach by code length/nesting would be ideal, 
+        // but for now we iterate and add to immediate parent)
+        // Note: This logic assumes simple parent-child. For deep nesting, it needs recursion.
+        
+        // Strategy: Sort by code length descending to process children first
+        const sorted = [...items].sort((a, b) => b.codigo.length - a.codigo.length);
+        
+        sorted.forEach(item => {
+            if (item.padre_id && map[item.padre_id]) {
+                map[item.padre_id].valor_total_oficial += parseFloat(item.valor_total_oficial);
+            }
+        });
+
+        return items;
+    },
+
     render() {
-        const totalBudget = this.items.reduce((acc, item) => acc + parseFloat(item.valor_total_oficial), 0);
+        const totalBudget = this.items.reduce((acc, item) => {
+            // Only sum top-level items for the grand total to avoid double counting
+            return !item.padre_id ? acc + parseFloat(item.valor_total_oficial) : acc;
+        }, 0);
 
         const html = `
             <div class="container-fluid py-4">
@@ -57,7 +101,8 @@ window.PresupuestoView = {
                                         <th>Nombre del Rubro</th>
                                         <th class="text-end">Vlr. Unitario</th>
                                         <th class="text-center">Cant / Tiempo</th>
-                                        <th class="text-end pe-4">Total Oficial</th>
+                                        <th class="text-end">Total Oficial</th>
+                                        <th class="text-center pe-4" style="width: 120px;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -75,57 +120,91 @@ window.PresupuestoView = {
             container.innerHTML = html;
             Helper.initDataTable('#presupuestoTable', {
                 order: [[0, 'asc']],
-                pageLength: 10
+                pageLength: 25
             });
         }
     },
 
     renderTableBody() {
-        return this.items.map(item => `
-            <tr>
-                <td class="ps-4 fw-bold text-dark text-nowrap">${item.codigo}</td>
-                <td>
-                    <div class="fw-bold text-primary-custom">${item.nombre}</div>
-                    <small class="text-muted d-block" style="max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${item.descripcion || 'Sin descripción'}
-                    </small>
-                </td>
-                <td class="text-end fw-bold text-success">${Helper.formatCurrency(item.valor_unitario_oficial)}</td>
-                <td class="text-center">
-                    <span class="badge bg-light text-dark border">${item.cantidad_global} ${item.unidad_medida || 'Und'}</span>
-                    <div class="small text-muted mt-1">${item.tiempo_global} Meses</div>
-                </td>
-                <td class="text-end pe-4">
-                    <h5 class="mb-0 fw-bold">${Helper.formatCurrency(item.valor_total_oficial)}</h5>
-                </td>
-            </tr>
-        `).join('');
+        return this.items.map(item => {
+            const isParent = item.isParent;
+            const rowClass = isParent ? 'bg-light fw-bold' : '';
+            const indent = (item.codigo.split('.').length - 1) * 20;
+
+            return `
+                <tr class="${rowClass}">
+                    <td class="ps-4 text-nowrap" style="padding-left: ${24 + indent}px !important;">
+                        ${isParent ? '<i class="fas fa-folder me-2 text-warning"></i>' : '<i class="far fa-file-alt me-2 text-muted"></i>'}
+                        ${item.codigo}
+                    </td>
+                    <td>
+                        <div class="${isParent ? 'text-dark' : 'text-primary-custom'}">${item.nombre}</div>
+                        ${item.descripcion ? `<small class="text-muted d-block text-truncate" style="max-width: 300px;">${item.descripcion}</small>` : ''}
+                    </td>
+                    <td class="text-end">
+                        ${!isParent ? `<span class="text-success">${Helper.formatCurrency(item.valor_unitario_oficial)}</span>` : '-'}
+                    </td>
+                    <td class="text-center">
+                        ${!isParent ? `
+                            <span class="badge bg-white text-dark border">${item.cantidad_global} ${item.unidad_medida || 'Und'}</span>
+                            <div class="x-small text-muted mt-1">${item.tiempo_global} Meses</div>
+                        ` : '<span class="text-muted small">Consolidado</span>'}
+                    </td>
+                    <td class="text-end">
+                        <span class="fw-bold ${isParent ? 'text-dark fs-6' : ''}">${Helper.formatCurrency(item.valor_total_oficial)}</span>
+                    </td>
+                    <td class="text-center pe-4">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary border-0" onclick="PresupuestoView.editItem(${item.id_item})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger border-0" onclick="PresupuestoView.deleteItem(${item.id_item})" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     },
 
-    async openModal() {
-        const branchesHtml = this.branches.map(b => `
-            <tr data-branch-id="${b.id}">
-                <td style="max-width: 300px;">
-                    <div class="fw-bold small text-truncate">${b.name}</div>
-                    <div class="text-muted x-small" style="font-size: 0.7rem;">${b.school_name}</div>
-                </td>
-                <td><input type="number" class="form-control form-control-sm dist-cant" value="0" step="any" oninput="PresupuestoView.calcRow(this)"></td>
-                <td><input type="number" class="form-control form-control-sm dist-meses" value="0" step="any" oninput="PresupuestoView.calcRow(this)"></td>
-                <td><input type="number" class="form-control form-control-sm dist-vlr" value="0" step="any" oninput="PresupuestoView.calcRow(this)"></td>
-                <td class="text-end"><span class="fw-bold dist-total text-secondary">$ 0</span></td>
-            </tr>
-        `).join('');
+    async openModal(editId = null) {
+        let item = null;
+        if (editId) {
+            Helper.loading(true);
+            item = await Helper.fetchAPI(`/presupuesto/${editId}`);
+            Helper.loading(false);
+        }
 
-        const parentsHtml = this.items.map(i => `<option value="${i.id_item}">${i.codigo} - ${i.nombre}</option>`).join('');
+        const branchesHtml = this.branches.map(b => {
+            const dist = item?.distribucion?.find(d => d.branch_id == b.id) || {};
+            return `
+                <tr data-branch-id="${b.id}">
+                    <td style="max-width: 300px;">
+                        <div class="fw-bold small text-truncate">${b.name}</div>
+                        <div class="text-muted x-small" style="font-size: 0.7rem;">${b.school_name}</div>
+                    </td>
+                    <td><input type="number" class="form-control form-control-sm dist-cant" value="${dist.cantidad || 0}" step="any" oninput="PresupuestoView.calcRow(this)"></td>
+                    <td><input type="number" class="form-control form-control-sm dist-meses" value="${dist.meses || 0}" step="any" oninput="PresupuestoView.calcRow(this)"></td>
+                    <td><input type="number" class="form-control form-control-sm dist-vlr" value="${dist.valor_unitario || 0}" step="any" oninput="PresupuestoView.calcRow(this)"></td>
+                    <td class="text-end"><span class="fw-bold dist-total text-secondary">${Helper.formatCurrency(dist.valor_inicial || 0)}</span></td>
+                </tr>
+            `;
+        }).join('');
+
+        const parentsHtml = this.items
+            .filter(i => i.id_item != editId)
+            .map(i => `<option value="${i.id_item}" ${item?.padre_id == i.id_item ? 'selected' : ''}>${i.codigo} - ${i.nombre}</option>`)
+            .join('');
 
         const { value: formValues } = await Swal.fire({
-            title: '<strong>Nuevo Rubro Presupuestal</strong>',
+            title: `<strong>${editId ? 'Editar' : 'Nuevo'} Rubro Presupuestal</strong>`,
             width: '1000px',
             html: `
                 <div class="text-start px-2 py-3" style="max-height: 80vh; overflow-y: auto;">
                     <div class="alert alert-info border-0 shadow-sm mb-4">
                         <i class="fas fa-info-circle me-2"></i> 
-                        Defina los valores globales y luego distribuya el presupuesto entre las sedes.
+                        <b>Nota:</b> Si este rubro es un "Padre" (tiene sub-rubros), no asigne valores aquí; el sistema los sumará automáticamente de sus hijos.
                     </div>
 
                     <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold text-uppercase small">
@@ -133,12 +212,12 @@ window.PresupuestoView = {
                     </h6>
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <label class="form-label small fw-bold">CÓDIGO (JERARQUÍA) <span class="text-danger">*</span></label>
-                            <input id="bud-codigo" class="form-control" placeholder="Ej: 2.1.3">
+                            <label class="form-label small fw-bold">CÓDIGO (JERARQUÍA) *</label>
+                            <input id="bud-codigo" class="form-control" value="${item?.codigo || ''}" placeholder="Ej: 2.1.3">
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small fw-bold">NOMBRE DEL RUBRO <span class="text-danger">*</span></label>
-                            <input id="bud-nombre" class="form-control" placeholder="Nombre descriptivo">
+                            <label class="form-label small fw-bold">NOMBRE DEL RUBRO *</label>
+                            <input id="bud-nombre" class="form-control" value="${item?.nombre || ''}" placeholder="Nombre descriptivo">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label small fw-bold">RUBRO PADRE</label>
@@ -149,76 +228,76 @@ window.PresupuestoView = {
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold">DESCRIPCIÓN</label>
-                            <textarea id="bud-descripcion" class="form-control" rows="2" placeholder="Detalle técnico del rubro"></textarea>
+                            <textarea id="bud-descripcion" class="form-control" rows="2">${item?.descripcion || ''}</textarea>
                         </div>
                     </div>
 
-                    <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold text-uppercase small">
-                        <i class="fas fa-calculator me-2"></i>Cálculo Global contratado
-                    </h6>
-                    <div class="row g-3 mb-4 bg-light p-3 rounded border">
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">UNIDAD</label>
-                            <input id="bud-unidad" class="form-control" placeholder="Mes/Glb/Hect">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">CANTIDAD</label>
-                            <input id="bud-cant" type="number" class="form-control" value="0" step="any" oninput="PresupuestoView.calcGlobal()">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold">MESES / TIEMPO</label>
-                            <input id="bud-meses" type="number" class="form-control" value="0" step="any" oninput="PresupuestoView.calcGlobal()">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">VALOR UNITARIO</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input id="bud-vlr" type="number" class="form-control" value="0" step="any" oninput="PresupuestoView.calcGlobal()">
+                    <div id="values-container" style="${item?.isParent ? 'display:none' : ''}">
+                        <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold text-uppercase small">
+                            <i class="fas fa-calculator me-2"></i>Cálculo Global contratado
+                        </h6>
+                        <div class="row g-3 mb-4 bg-light p-3 rounded border">
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">UNIDAD</label>
+                                <input id="bud-unidad" class="form-control" value="${item?.unidad_medida || ''}" placeholder="Mes/Glb/Hect">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">CANTIDAD</label>
+                                <input id="bud-cant" type="number" class="form-control" value="${item?.cantidad_global || 0}" step="any" oninput="PresupuestoView.calcGlobal()">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">MESES / TIEMPO</label>
+                                <input id="bud-meses" type="number" class="form-control" value="${item?.tiempo_global || 0}" step="any" oninput="PresupuestoView.calcGlobal()">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">VALOR UNITARIO</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input id="bud-vlr" type="number" class="form-control" value="${item?.valor_unitario_oficial || 0}" step="any" oninput="PresupuestoView.calcGlobal()">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-success">TOTAL GLOBAL</label>
+                                <div id="bud-total-global" class="fs-4 fw-bold text-success" data-val="${item?.valor_total_oficial || 0}">${Helper.formatCurrency(item?.valor_total_oficial || 0)}</div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold text-success">TOTAL GLOBAL</label>
-                            <div id="bud-total-global" class="fs-4 fw-bold text-success" data-val="0">$ 0</div>
-                        </div>
-                    </div>
 
-                    <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold text-uppercase small">
-                        <i class="fas fa-sitemap me-2"></i>Distribución por Sedes (Sedes / Colegios)
-                    </h6>
-                    <div class="table-responsive border rounded bg-white shadow-sm">
-                        <table class="table table-sm table-hover align-middle mb-0" id="distribucionTable">
-                            <thead class="bg-light small fw-bold text-secondary">
-                                <tr>
-                                    <th class="ps-3 py-2">CENTRO / SEDE</th>
-                                    <th style="width: 100px;">CANTIDAD</th>
-                                    <th style="width: 80px;">MESES</th>
-                                    <th style="width: 160px;">VLR. UNITARIO</th>
-                                    <th class="text-end pe-3" style="width: 150px;">TOTAL</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${branchesHtml}
-                            </tbody>
-                            <tfoot class="bg-light fw-bold border-top">
-                                <tr>
-                                    <td colspan="4" class="text-end text-uppercase small">Total Asignado:</td>
-                                    <td class="text-end pe-3"><span id="sum-asignado" class="fs-6" data-val="0">$ 0</span></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" class="text-end text-uppercase small">Diferencia (Sobrante/Faltante):</td>
-                                    <td class="text-end pe-3"><span id="diff-asignado" class="text-success" data-val="0">$ 0</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                        <h6 class="text-primary border-bottom pb-2 mb-3 fw-bold text-uppercase small">
+                            <i class="fas fa-sitemap me-2"></i>Distribución por Sedes
+                        </h6>
+                        <div class="table-responsive border rounded bg-white shadow-sm mb-4">
+                            <table class="table table-sm table-hover align-middle mb-0" id="distribucionTable">
+                                <thead class="bg-light small fw-bold text-secondary">
+                                    <tr>
+                                        <th class="ps-3 py-2">CENTRO / SEDE</th>
+                                        <th style="width: 100px;">CANTIDAD</th>
+                                        <th style="width: 80px;">MESES</th>
+                                        <th style="width: 160px;">VLR. UNITARIO</th>
+                                        <th class="text-end pe-3" style="width: 150px;">TOTAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${branchesHtml}
+                                </tbody>
+                                <tfoot class="bg-light fw-bold border-top">
+                                    <tr>
+                                        <td colspan="4" class="text-end text-uppercase small">Total Asignado:</td>
+                                        <td class="text-end pe-3"><span id="sum-asignado" class="fs-6" data-val="${item?.valor_total_oficial || 0}">${Helper.formatCurrency(item?.valor_total_oficial || 0)}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-end text-uppercase small">Diferencia:</td>
+                                        <td class="text-end pe-3"><span id="diff-asignado" class="text-success" data-val="0">$ 0</span></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
             `,
             showCloseButton: true,
             showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Guardar Presupuesto',
+            confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Guardar',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#16a085',
-            padding: '1em',
             preConfirm: () => {
                 const codigo = document.getElementById('bud-codigo').value;
                 const nombre = document.getElementById('bud-nombre').value;
@@ -227,15 +306,18 @@ window.PresupuestoView = {
                     return false;
                 }
 
+                // If is parent, we don't validate values
+                const isParentCheck = PresupuestoView.items.some(i => i.padre_id == editId);
+                if (isParentCheck) return { codigo, nombre, padre_id: document.getElementById('bud-padre').value, descripcion: document.getElementById('bud-descripcion').value };
+
                 const totalGlobal = parseFloat(document.getElementById('bud-total-global').dataset.val) || 0;
                 const totalAsignado = parseFloat(document.getElementById('sum-asignado').dataset.val) || 0;
 
-                if (Math.abs(totalGlobal - totalAsignado) > 0.01) {
+                if (Math.abs(totalGlobal - totalAsignado) > 1) {
                     Swal.showValidationMessage('La distribución no coincide con el total global');
                     return false;
                 }
 
-                // Collect distribution
                 const distribucion = [];
                 document.querySelectorAll('#distribucionTable tbody tr').forEach(tr => {
                     const branchId = tr.dataset.branchId;
@@ -245,19 +327,12 @@ window.PresupuestoView = {
                     const total = cant * meses * vlr;
 
                     if (total > 0) {
-                        distribucion.push({
-                            branch_id: branchId,
-                            cantidad: cant,
-                            meses: meses,
-                            valor_unitario: vlr,
-                            total: total
-                        });
+                        distribucion.push({ branch_id: branchId, cantidad: cant, meses: meses, valor_unitario: vlr, total: total });
                     }
                 });
 
                 return {
-                    codigo,
-                    nombre,
+                    codigo, nombre,
                     padre_id: document.getElementById('bud-padre').value,
                     descripcion: document.getElementById('bud-descripcion').value,
                     unidad_medida: document.getElementById('bud-unidad').value,
@@ -271,22 +346,48 @@ window.PresupuestoView = {
         });
 
         if (formValues) {
-            Helper.loading(true, 'Guardando rubro y asignaciones...');
+            this.save(formValues, editId);
+        }
+    },
+
+    async save(data, id = null) {
+        Helper.loading(true, id ? 'Actualizando...' : 'Guardando...');
+        try {
+            const url = id ? `/presupuesto/${id}` : '/presupuesto';
+            const res = await Helper.fetchAPI(url, {
+                method: 'POST', // Backend PHP update uses POST with segment or PUT
+                body: JSON.stringify(data)
+            });
+            Helper.loading(false);
+            if (res.success) {
+                Helper.alert('success', 'Presupuesto actualizado correctamente');
+                this.init();
+            } else {
+                Helper.alert('error', res.message || 'Error al guardar');
+            }
+        } catch (error) {
+            Helper.loading(false);
+            Helper.alert('error', 'Error de conexión');
+        }
+    },
+
+    async editItem(id) {
+        this.openModal(id);
+    },
+
+    async deleteItem(id) {
+        if (await Helper.confirm('¿Deseas eliminar este rubro?')) {
+            Helper.loading(true);
             try {
-                const res = await Helper.fetchAPI('/presupuesto', {
-                    method: 'POST',
-                    body: JSON.stringify(formValues)
-                });
-                Helper.loading(false);
+                const res = await Helper.fetchAPI(`/presupuesto/${id}`, { method: 'DELETE' });
+                Helper.init();
                 if (res.success) {
-                    Swal.fire('¡Éxito!', 'Presupuesto cargado correctamente.', 'success');
+                    Helper.alert('success', 'Rubro eliminado');
                     this.init();
-                } else {
-                    Swal.fire('Error', res.message || 'Error desconocido', 'error');
                 }
-            } catch (error) {
+            } catch (e) {
                 Helper.loading(false);
-                Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+                Helper.alert('error', 'No se pudo eliminar');
             }
         }
     },
@@ -312,18 +413,15 @@ window.PresupuestoView = {
 
         const span = tr.querySelector('.dist-total');
         span.innerText = Helper.formatCurrency(total);
-        span.classList.toggle('text-secondary', total === 0);
-        span.classList.toggle('text-primary', total > 0);
+        span.dataset.val = total;
         this.updateDifference();
     },
 
     updateDifference() {
         let sum = 0;
         document.querySelectorAll('#distribucionTable tbody tr').forEach(tr => {
-            const cant = parseFloat(tr.querySelector('.dist-cant').value) || 0;
-            const meses = parseFloat(tr.querySelector('.dist-meses').value) || 0;
-            const vlr = parseFloat(tr.querySelector('.dist-vlr').value) || 0;
-            sum += cant * meses * vlr;
+            const val = parseFloat(tr.querySelector('.dist-total').dataset.val) || 0;
+            sum += val;
         });
 
         const sumEl = document.getElementById('sum-asignado');
@@ -336,14 +434,8 @@ window.PresupuestoView = {
         const diffEl = document.getElementById('diff-asignado');
         diffEl.innerText = Helper.formatCurrency(diff);
         diffEl.dataset.val = diff;
-
-        if (Math.abs(diff) < 0.01) {
-            diffEl.className = 'text-success';
-        } else {
-            diffEl.className = 'text-danger';
-        }
+        diffEl.className = Math.abs(diff) < 1 ? 'text-success' : 'text-danger';
     }
 };
 
-// Initialize
 PresupuestoView.init();
