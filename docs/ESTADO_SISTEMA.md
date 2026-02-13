@@ -28,15 +28,14 @@
   - *Refinamiento:* Layout optimizado para evitar cortes en impresión.
 - ✅ **Corrección (Hotfix):** Filtro por grado optimizado para servidores Linux.
 
-### 5. **Operación / Reportes** 🟢 ⭐ FASE AVANZADA
+### 5. **Operación / Reportes** ✅ ⭐ FASE COMPLETADA
 - ✅ **Almacén:** Inventario actual y movimientos de entradas/salidas.
-  - ✅ **Nuevo:** Reporte de Necesidades (Stock Actual vs Requerimientos de Menú).
-- ✅ **Asistencia y Consumo (QR):** 
-  - Monitoreo en tiempo real de raciones entregadas por escáner móvil.
-  - Generación de planillas oficiales (Resolución 0003) para archivo físico.
-  - Filtros avanzados por Institución, Sede, Jornada y Complemento.
+- ✅ **Asistencia y Consumo (QR):** Registro de entregas y planillas oficiales.
+- ✅ **Hub de Reportes (Alimentación):** 
+  - ✅ Impresión de Insumos (Filtros por grupo/estado).
+  - ✅ Impresión de Recetas (Ficha técnica visual).
+  - ✅ Minutas x Ciclo x Sede (Calendario hábil y detalles de ración).
 - 🟡 **Módulo Móvil de Entregas (PWA):** *REFINANDO*
-  - Escáner funcional. Persisten ajustes menores de UX en entornos locales.
 
 ### 6. **UX / Navegación**
 - ✅ **Reordenamiento Sidebar:** Recurso Humano posicionado antes de Reportes para flujo lógico.
@@ -65,4 +64,4 @@
 
 ---
 
-**Última actualización**: 10 de Febrero 2026, 19:38 PM
+**Última actualización**: 12 de Febrero 2026, 19:28 PM

@@ -134,7 +134,7 @@ const App = {
                     foundGroup = App.state.menu.find(g => g.name === 'Configuración');
                     foundModule = { name: 'Mi Equipo' };
                 } else if (route === 'ration-types') {
-                    foundGroup = App.state.menu.find(g => g.name === 'Cocina');
+                    foundGroup = App.state.menu.find(g => g.name === 'Alimentación');
                     foundModule = { name: 'Tipos de Ración' };
                 }
             }
@@ -237,10 +237,18 @@ const App = {
                     'consumos': 'consumos',
                     'hr-positions': 'hr_positions',
                     'hr-employees': 'hr_employees',
-                    'ration-types': 'ration_types'
+                    'ration-types': 'ration_types',
+                    'reports-insumos': 'reports_insumos',
+                    'reports-recetas': 'reports_recetas',
+                    'reports-minutas': 'reports_minutas'
                 };
 
-                App.loadView(viewMap[route] || route);
+                const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm'];
+                if (reportCategories.includes(route)) {
+                    App.renderReportsSubHub(route);
+                } else {
+                    App.loadView(viewMap[route] || route);
+                }
             } else if (hash === 'users') {
                 App.renderUsers();
             } else {
@@ -674,13 +682,21 @@ const App = {
             }
         }
 
-        if (group.name === 'Cocina') {
+        if (group.name === 'Alimentación') {
             modulesToRender.push({ name: 'Tipos de Ración', route: 'ration-types', icon: 'fas fa-utensils', description: 'Momento entrega', virtual: true, color: 'warning' });
         }
 
+        if (group.id == 5 || group.name === 'Reportes') {
+            // Level 1: Main Categories
+            modulesToRender.length = 0; // Clear existing if any (like the default dashboard)
+            modulesToRender.push({ name: 'Financieros', route: 'reports-fin', icon: 'fas fa-file-invoice-dollar', description: 'Balances, costos y presupuestos', virtual: true, color: 'danger' });
+            modulesToRender.push({ name: 'Alimentación', route: 'reports-ali', icon: 'fas fa-utensils', description: 'Insumos, recetas y minutas', virtual: true, color: 'success' });
+            modulesToRender.push({ name: 'Administrativos', route: 'reports-adm', icon: 'fas fa-clipboard-list', description: 'Asistencia, personal y gestión', virtual: true, color: 'primary' });
+        }
+
         // 3. APPLY MANUAL ORDERING
-        // COCINA: items, ration-types, recetario, minutas (ciclos)
-        if (group.name === 'Cocina') {
+        // ALIMENTACIÓN: items, ration-types, recetario, minutas (ciclos)
+        if (group.name === 'Alimentación') {
             const order = ['items', 'ration-types', 'recetario', 'minutas'];
             modulesToRender.sort((a, b) => {
                 let idxA = order.indexOf(a.route);
@@ -723,6 +739,71 @@ const App = {
                     <i class="${group.icon} text-primary"></i>
                 </div>
                 <h3 class="mb-0 text-primary-custom fw-bold">${group.name}</h3>
+            </div>
+            <div class="row">
+                ${cardsHtml}
+            </div>
+        `;
+    },
+
+    renderReportsSubHub: (category) => {
+        let title = '';
+        let icon = '';
+        let color = '';
+        let modules = [];
+
+        if (category === 'reports-ali') {
+            title = 'Reportes de Alimentación';
+            icon = 'fas fa-utensils';
+            color = 'success';
+            modules = [
+                { name: 'Impresión de Insumos', route: 'reports-insumos', icon: 'fas fa-carrot', description: 'Listado maestro de insumos y nutrientes', color: 'success' },
+                { name: 'Impresión de Recetas', route: 'reports-recetas', icon: 'fas fa-book-open', description: 'Fichas técnicas de preparación', color: 'success' },
+                { name: 'Minutas x Ciclo x Sede', route: 'reports-minutas', icon: 'fas fa-calendar-alt', description: 'Programación detallada por institución', color: 'success' }
+            ];
+        } else if (category === 'reports-fin') {
+            title = 'Reportes Financieros';
+            icon = 'fas fa-file-invoice-dollar';
+            color = 'danger';
+            modules = [
+                { name: 'Costos por Ciclo', route: 'reports-costs', icon: 'fas fa-dollar-sign', description: 'Análisis de inversión por período' }
+            ];
+        } else if (category === 'reports-adm') {
+            title = 'Reportes Administrativos';
+            icon = 'fas fa-clipboard-list';
+            color = 'primary';
+            modules = [
+                { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' }
+            ];
+        }
+
+        let cardsHtml = '';
+        modules.forEach(mod => {
+            cardsHtml += `
+                <div class="col-md-4 mb-4 fade-in">
+                    <div class="card h-100 shadow-sm hover-card border-${color}">
+                        <div class="card-body text-center">
+                            <div class="icon-circle mb-3 mx-auto">
+                                <i class="${mod.icon} fa-2x text-${color}"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">${mod.name}</h5>
+                            <p class="card-text small text-muted">${mod.description || 'Generar reporte'}</p>
+                            <a href="#module/${mod.route}" class="btn btn-outline-${color} btn-sm stretched-link">
+                                Abrir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('app').innerHTML = `
+            <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+                <a href="#group/5" class="btn btn-link text-muted me-3"><i class="fas fa-arrow-left"></i> Volver</a>
+                <div class="icon-circle bg-${color}-light me-3" style="width: 50px; height: 50px;">
+                    <i class="${icon} text-${color}"></i>
+                </div>
+                <h3 class="mb-0 text-${color} fw-bold">${title}</h3>
             </div>
             <div class="row">
                 ${cardsHtml}

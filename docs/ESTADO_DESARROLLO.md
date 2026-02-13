@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 12 de Febrero 2026, 09:55 AM
-**Versión Doc:** 1.7.5 | **Versión Código:** 1.6.2 (Hotfix Prod)
+**Última actualización**: 12 de Febrero 2026, 07:20 PM
+**Versión Doc:** 1.7.6 | **Versión Código:** 1.7.0 (Report Expansion)
 
 ---
 
@@ -14,7 +14,7 @@
 | **App Móvil (PWA)** | 🟢 Funcional | 95% |
 | **Base de Datos** | 🟢 Estable | 100% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
-| **Módulos Operativos** | 🟢 Funcional | 95% |
+| **Módulos Operativos** | 🟢 Funcional | 100% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -173,21 +173,26 @@
 - [x] **Vinculación:** Asignación de empleados a cargos y sedes
 - [x] **Reportes:** Nómina y listados por cargo/sede
 
+### 16. Módulo de Reportes (Hub de Gestión) ✅ ⭐ NUEVO
+- [x] **Arquitectura:** Hub centralizado por categorías (Financieros, Alimentación, Administrativos)
+- [x] **Reporte de Insumos:** Tabla dinámica con filtros por grupo y estado, exportable a Excel/PDF
+- [x] **Reporte de Recetario:** Vista visual de fichas técnicas con explosión de ingredientes y composición nutricional
+- [x] **Reporte de Minutas x Sede:** 
+  - Generación de carteleras para publicación en comedores escolares
+  - **Lógica Laboral:** Mapeo automático de días saltando sábados y domingos
+  - **Enriquecimiento:** Exposición de recetas detalladas (preparación analítica) en el reporte
+  - **Cumplimiento:** Formato optimizado según Resolución 0003 de 2026
+- [x] **Exportación:** Motor unificado para PDF/Print y Excel en todos los reportes operativos
+
 ---
 
 ## 🚧 EN DESARROLLO
 
 - [x] **Conversión de Unidades:** Motor automático de Gramos (receta) a Kilogramos (almacén).
 - [x] **Ciclos Flexibles:** Generación de ciclos basada en calendario real, eliminando restricción de 20 días.
-### Dashboard Principal 🟡
-- [ ] Widgets de estadísticas operativas
-- [ ] Integración de gráficos de gestión
-- [ ] KPIs en tiempo real
-
-### Módulo de Novedades 🟡
-- [ ] Reporte de ausentismos prolongados
-- [ ] Alertas de retiros
-- [ ] Seguimiento de inasistencias
+- [x] **Hub de Reportes:** Fase Alimentación completada al 100%.
+- [ ] **Dashboard Principal:** Widgets de estadísticas operativas y KPIs en tiempo real.
+- [ ] **Módulo de Novedades:** Reporte de ausentismos y alertas de retiros.
 
 ---
 
@@ -207,6 +212,12 @@
 ---
 
 ## 🔧 CORRECCIONES RECIENTES (v1.7.0)
+
+### v1.7.0 (12 Feb 2026 - Tarde)
+- ✅ **API Routing:** Normalización de rutas `/schools` y `/branches` para el Hub de Reportes.
+- ✅ **SQL Exposure:** Modificado `MenuController.php` para incluir `recipe_description` en la planeación de ciclos.
+- ✅ **Print UX:** Reajuste masivo de tamaños de fuentes y reglas de `page-break` para minutas institucionales.
+- ✅ **Business Logic:** Implementada función `getFeedingDate` para garantizar que la alimentación solo se reporte de lunes a viernes.
 
 ### v1.6.2 Hotfix (12 Feb 2026)
 - ✅ **Beneficiarios:** Corrección crítica en filtro por grado (Soporte Linux/Hostinger).

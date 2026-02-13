@@ -41,11 +41,11 @@ window.ItemsView = {
             <div class="container-fluid">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h2 class="mb-1"><i class="fas fa-carrot me-2"></i>Ítems de Cocina</h2>
+                        <h2 class="mb-1"><i class="fas fa-carrot me-2"></i>Insumos de Cocina</h2>
                         <p class="text-muted mb-0">Gestión de insumos e ingredientes (Resolución 0003 de 2026)</p>
                     </div>
                     <button class="btn btn-success" onclick="ItemsView.openModal()">
-                        <i class="fas fa-plus me-2"></i>Nuevo Ítem
+                        <i class="fas fa-plus me-2"></i>Nuevo Insumo
                     </button>
                 </div>
 
@@ -114,7 +114,7 @@ window.ItemsView = {
                     <div class="modal-content">
                         <div class="modal-header bg-success text-white">
                             <h5 class="modal-title">
-                                <i class="fas fa-carrot me-2"></i><span id="modal-title">Nuevo Ítem</span>
+                                <i class="fas fa-carrot me-2"></i><span id="modal-title">Nuevo Insumo</span>
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -149,7 +149,7 @@ window.ItemsView = {
                                     <div class="tab-pane fade show active" id="basic" role="tabpanel">
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <label class="form-label">Nombre del Ítem <span class="text-danger">*</span></label>
+                                                <label class="form-label">Nombre del Insumo <span class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" name="name" required>
                                             </div>
                                             <div class="col-md-3">
@@ -362,7 +362,7 @@ window.ItemsView = {
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                             <button type="button" class="btn btn-success" onclick="ItemsView.saveItem()">
-                                <i class="fas fa-save me-2"></i>Guardar Ítem
+                                <i class="fas fa-save me-2"></i>Guardar Insumo
                             </button>
                         </div>
                     </div>
@@ -492,12 +492,12 @@ window.ItemsView = {
         const modal = new bootstrap.Modal(document.getElementById('itemModal'));
 
         if (item) {
-            document.getElementById('modal-title').textContent = 'Editar Ítem';
+            document.getElementById('modal-title').textContent = 'Editar Insumo';
             document.querySelector('#itemModal .modal-header').classList.remove('bg-success');
             document.querySelector('#itemModal .modal-header').classList.add('bg-primary');
             this.fillForm(item);
         } else {
-            document.getElementById('modal-title').textContent = 'Nuevo Ítem';
+            document.getElementById('modal-title').textContent = 'Nuevo Insumo';
             document.querySelector('#itemModal .modal-header').classList.remove('bg-primary');
             document.querySelector('#itemModal .modal-header').classList.add('bg-success');
             document.getElementById('itemForm').reset();
@@ -611,7 +611,7 @@ window.ItemsView = {
 
     async deleteItem(id) {
         const result = await Swal.fire({
-            title: '¿Eliminar ítem?',
+            title: '¿Eliminar insumo?',
             text: 'Esta acción no se puede deshacer',
             icon: 'warning',
             showCancelButton: true,

@@ -76,7 +76,7 @@ class MenuController
             // Obtener todos los menus del ciclo con sus recetas y raciones
             $query = "SELECT m.id as menu_id, m.day_number, m.name as day_name,
                              mr.recipe_id, mr.meal_type, mr.ration_type_id,
-                             r.name as recipe_name, rt.name as ration_type_name
+                             r.name as recipe_name, r.description as recipe_description, rt.name as ration_type_name
                       FROM menus m
                       LEFT JOIN menu_recipes mr ON m.id = mr.menu_id
                       LEFT JOIN recipes r ON mr.recipe_id = r.id
@@ -103,6 +103,7 @@ class MenuController
                     $days[$dayNum]['meals'][] = [
                         'meal_type' => $row['ration_type_name'] ?: $row['meal_type'],
                         'name' => $row['recipe_name'],
+                        'description' => $row['recipe_description'],
                         'ration_type_id' => $row['ration_type_id']
                     ];
                 }
