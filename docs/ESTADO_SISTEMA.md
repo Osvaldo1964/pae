@@ -37,7 +37,13 @@
   - ✅ Minutas x Ciclo x Sede (Calendario hábil y detalles de ración).
 - 🟡 **Módulo Móvil de Entregas (PWA):** *REFINANDO*
 
-### 6. **UX / Navegación**
+### 6. **Finanzas** ✅ ⭐ FASE COMPLETADA
+- ✅ Terceros (Directorio de proveedores y contratistas)
+- ✅ Presupuesto (Planeación y distribución por sedes)
+- ✅ Movimientos (Registro de gastos con soportes PDF)
+- ✅ Traslados (Rebalanceo de recursos entre rubros)
+
+### 7. **UX / Navegación**
 - ✅ **Reordenamiento Sidebar:** Recurso Humano posicionado antes de Reportes para flujo lógico.
 - ✅ **Hub Cocina:** Ordenamiento manual (Ítems > Tipos de Ración > Recetario > Ciclos).
 
@@ -64,4 +70,4 @@
 
 ---
 
-**Última actualización**: 12 de Febrero 2026, 19:28 PM
+**Última actualización**: 12 de Febrero 2026, 11:38 PM

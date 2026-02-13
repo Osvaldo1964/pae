@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 12 de Febrero 2026, 07:20 PM
-**Versión Doc:** 1.7.6 | **Versión Código:** 1.7.0 (Report Expansion)
+**Última actualización**: 12 de Febrero 2026, 11:35 PM
+**Versión Doc:** 1.8.0 | **Versión Código:** 1.8.0 (Financial Expansion)
 
 ---
 
@@ -173,7 +173,21 @@
 - [x] **Vinculación:** Asignación de empleados a cargos y sedes
 - [x] **Reportes:** Nómina y listados por cargo/sede
 
-### 16. Módulo de Reportes (Hub de Gestión) ✅ ⭐ NUEVO
+### 16. Módulo de Finanzas (Presupuesto y Gastos) ✅ ⭐ NUEVO
+- [x] **Gestión de Terceros:** CRUD completo de proveedores, empleados y contratistas con aislamiento por PAE.
+- [x] **Planeación Presupuestal:** 
+  - [x] Carga de rubros con jerarquía de códigos.
+  - [x] Distribución obligatoria por centros de costo (Sedes/Colegios).
+  - [x] Validador de diferencia entre total global y suma de sedes.
+- [x] **Movimientos Financieros:**
+  - [x] Registro de gastos vinculados a rubros y sedes.
+  - [x] **Control de Saldo:** Bloqueo preventivo de gastos que superan el presupuesto disponible.
+  - [x] **Gestión de Soportes:** Subida de archivos PDF/Imágenes integrados a la nube local.
+- [x] **Traslados Presupuestales:** 
+  - [x] Movimientos entre rubros (Débito/Crédito) para rebalanceo de recursos.
+  - [x] Trazabilidad e historial de justificaciones.
+
+### 17. Módulo de Reportes (Hub de Gestión) ✅
 - [x] **Arquitectura:** Hub centralizado por categorías (Financieros, Alimentación, Administrativos)
 - [x] **Reporte de Insumos:** Tabla dinámica con filtros por grupo y estado, exportable a Excel/PDF
 - [x] **Reporte de Recetario:** Vista visual de fichas técnicas con explosión de ingredientes y composición nutricional
@@ -212,6 +226,12 @@
 ---
 
 ## 🔧 CORRECCIONES RECIENTES (v1.7.0)
+
+### v1.8.0 (12 Feb 2026 - Noche)
+- ✅ **Módulo Financiero:** Lanzamiento de Terceros, Presupuesto, Movimientos y Traslados.
+- ✅ **Arquitectura:** Implementación de Soporte Multi-Tenant (`pae_id`) en 4 nuevas tablas financieras.
+- ✅ **JS Views:** Creación de `fin_terceros.js`, `fin_presupuesto.js`, `fin_movimientos.js` y `fin_traslados.js`.
+- ✅ **Backend:** Desarrollo de controladores RESTful para toda la suite financiera con validación de saldo.
 
 ### v1.7.0 (12 Feb 2026 - Tarde)
 - ✅ **API Routing:** Normalización de rutas `/schools` y `/branches` para el Hub de Reportes.

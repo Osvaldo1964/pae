@@ -561,6 +561,49 @@ if ($resource === 'auth') {
         $controller = new \Controllers\NeedsReportController();
         $controller->generate($id_param);
     }
+} elseif ($resource === 'terceros') {
+    $controller = new \Controllers\TerceroController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->create();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
+} elseif ($resource === 'presupuesto') {
+    $controller = new \Controllers\PresupuestoController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action === 'branches') {
+            $controller->getBranches();
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    }
+} elseif ($resource === 'movimientos') {
+    $controller = new \Controllers\MovimientoController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action === 'budget') {
+            $controller->getActiveBudget();
+        } else {
+            $controller->index();
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    }
+} elseif ($resource === 'traslados') {
+    $controller = new \Controllers\TrasladoController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    }
 } elseif ($resource === 'deliveries') {
     $controller = new \Controllers\DeliveryController();
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {

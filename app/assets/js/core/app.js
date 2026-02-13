@@ -136,6 +136,15 @@ const App = {
                 } else if (route === 'ration-types') {
                     foundGroup = App.state.menu.find(g => g.name === 'Alimentación');
                     foundModule = { name: 'Tipos de Ración' };
+                } else if (route.startsWith('fin-')) {
+                    foundGroup = { id: 99, name: 'Financiero' };
+                    const finNames = {
+                        'fin-terceros': 'Terceros',
+                        'fin-presupuesto': 'Presupuesto',
+                        'fin-movimientos': 'Movimientos',
+                        'fin-traslados': 'Traslados'
+                    };
+                    foundModule = { name: finNames[route] };
                 }
             }
 
@@ -240,7 +249,11 @@ const App = {
                     'ration-types': 'ration_types',
                     'reports-insumos': 'reports_insumos',
                     'reports-recetas': 'reports_recetas',
-                    'reports-minutas': 'reports_minutas'
+                    'reports-minutas': 'reports_minutas',
+                    'fin-terceros': 'fin_terceros',
+                    'fin-presupuesto': 'fin_presupuesto',
+                    'fin-movimientos': 'fin_movimientos',
+                    'fin-traslados': 'fin_traslados'
                 };
 
                 const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm'];
@@ -638,6 +651,18 @@ const App = {
         sidebarList.innerHTML = '';
 
         App.state.menu.forEach(group => {
+            // Check if we need to inject Financiero before Reports
+            if (group.name === 'Reportes' || group.id == 5) {
+                const finLi = document.createElement('li');
+                finLi.className = 'nav-item mb-2';
+                finLi.innerHTML = `
+                    <a href="#group/99" class="nav-link text-white">
+                        <i class="fas fa-hand-holding-usd me-2"></i> Financiero
+                    </a>
+                `;
+                sidebarList.appendChild(finLi);
+            }
+
             const li = document.createElement('li');
             li.className = 'nav-item mb-2';
             li.innerHTML = `
@@ -660,7 +685,18 @@ const App = {
     },
 
     renderGroupHub: (groupId) => {
-        const group = App.state.menu.find(g => g.id == groupId);
+        let group = App.state.menu.find(g => g.id == groupId);
+
+        // Virtual group Financiero
+        if (groupId == 99) {
+            group = {
+                id: 99,
+                name: 'Financiero',
+                icon: 'fas fa-hand-holding-usd',
+                modules: []
+            };
+        }
+
         if (!group) return;
 
         let cardsHtml = '';
@@ -684,6 +720,13 @@ const App = {
 
         if (group.name === 'Alimentación') {
             modulesToRender.push({ name: 'Tipos de Ración', route: 'ration-types', icon: 'fas fa-utensils', description: 'Momento entrega', virtual: true, color: 'warning' });
+        }
+
+        if (group.id == 99 || group.name === 'Financiero') {
+            modulesToRender.push({ name: 'Terceros', route: 'fin-terceros', icon: 'fas fa-id-card', description: 'Proveedores y Clientes', virtual: true, color: 'primary' });
+            modulesToRender.push({ name: 'Presupuesto', route: 'fin-presupuesto', icon: 'fas fa-calculator', description: 'Planeación Financiera', virtual: true, color: 'warning' });
+            modulesToRender.push({ name: 'Movimientos', route: 'fin-movimientos', icon: 'fas fa-exchange-alt', description: 'Ingresos y Gastos', virtual: true, color: 'success' });
+            modulesToRender.push({ name: 'Traslados', route: 'fin-traslados', icon: 'fas fa-reply-all', description: 'Movimientos Internos', virtual: true, color: 'info' });
         }
 
         if (group.id == 5 || group.name === 'Reportes') {
