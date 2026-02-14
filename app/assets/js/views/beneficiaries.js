@@ -251,10 +251,12 @@ var BeneficiariesView = {
                                                     <option value="BONO ALIMENTARIO">Bono Alimentario</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Tipo de Ración *</label>
-                                                <select class="form-select" id="ration-type-id" required></select>
-                                                <input type="hidden" id="ration-type"> <!-- Legacy field -->
+                                            <div class="col-md-12">
+                                                <label class="form-label">Tipos de Ración Asignados *</label>
+                                                <div id="ration-types-container" class="border rounded p-3 bg-white" style="max-height: 150px; overflow-y: auto;">
+                                                    <!-- Checkboxes will be loaded here -->
+                                                </div>
+                                                <div class="form-text text-muted">Seleccione una o más raciones permitidas.</div>
                                             </div>
 
 
@@ -430,13 +432,35 @@ var BeneficiariesView = {
             this.populateSelect('school-id', this.schools, 'Seleccione Institución');
             this.populateSelect('doc-type', this.documentTypes, 'Seleccione Tipo');
             this.populateSelect('ethnic-group', this.ethnicGroups, 'Seleccione Etnia');
-            this.populateSelect('ration-type-id', this.rationTypes, 'Seleccione Ración');
+
+            // Populate Ration Checkboxes
+            this.populateRationCheckboxes();
 
             // Filters
             this.populateSelect('filterSchool', this.schools, 'Todos los Colegios');
         } catch (err) {
             console.error("Error loading master data:", err);
         }
+    },
+
+    populateRationCheckboxes() {
+        const container = document.getElementById('ration-types-container');
+        if (!container) return;
+
+        if (this.rationTypes.length === 0) {
+            container.innerHTML = '<div class="text-muted small">No hay tipos de ración activos.</div>';
+            return;
+        }
+
+        const html = this.rationTypes.map(rt => `
+            <div class="form-check">
+                <input class="form-check-input ration-checkbox" type="checkbox" value="${rt.id}" id="ration-${rt.id}">
+                <label class="form-check-label" for="ration-${rt.id}">
+                    ${rt.name} ${rt.population_name ? `<span class="badge bg-light text-dark border ms-1">${rt.population_name}</span>` : ''}
+                </label>
+            </div>
+        `).join('');
+        container.innerHTML = html;
     },
 
     populateSelect(elementId, data, emptyText) {
@@ -508,7 +532,8 @@ var BeneficiariesView = {
                         <span class="badge bg-light text-dark border">${b.grade || ''}°</span>
                         <span class="badge bg-light text-dark border">${b.group_name || 'N/A'}</span>
                         <br><small class="text-muted">${b.shift || ''}</small>
-                        <br><span class="badge bg-primary-light text-primary border" style="font-size: 0.65rem;">${b.ration_type_name || b.ration_type || 'N/A'}</span>
+                        <br><small class="text-muted">${b.shift || ''}</small>
+                        <br><span class="badge bg-primary-light text-primary border" style="font-size: 0.65rem; white-space: normal; text-align: left;">${b.ration_rights_names || b.ration_type_name || 'Sin Asignar'}</span>
                     </td>
                     <td><span class="badge ${statusClass}">${b.status || 'ACTIVO'}</span></td>
                     <td class="text-end">
@@ -584,7 +609,22 @@ var BeneficiariesView = {
             document.getElementById('shift').value = b.shift;
             document.getElementById('enrollment-date').value = b.enrollment_date || '';
             document.getElementById('modality').value = b.modality;
-            document.getElementById('ration-type-id').value = b.ration_type_id || '';
+            document.getElementById('modality').value = b.modality;
+
+            // Set Ration Checkboxes
+            const checkboxes = document.querySelectorAll('.ration-checkbox');
+            checkboxes.forEach(cb => cb.checked = false); // Reset all
+
+            if (b.ration_rights_ids && Array.isArray(b.ration_rights_ids)) {
+                b.ration_rights_ids.forEach(id => {
+                    const cb = document.getElementById(`ration-${id}`);
+                    if (cb) cb.checked = true;
+                });
+            } else if (b.ration_type_id) {
+                // Fallback for migration phase
+                const cb = document.getElementById(`ration-${b.ration_type_id}`);
+                if (cb) cb.checked = true;
+            }
             document.getElementById('status').value = b.status;
 
             document.getElementById('address').value = b.address || '';
@@ -651,8 +691,11 @@ var BeneficiariesView = {
             shift: document.getElementById('shift').value,
             enrollment_date: document.getElementById('enrollment-date').value,
             modality: document.getElementById('modality').value,
-            ration_type_id: document.getElementById('ration-type-id').value,
-            ration_type: this.rationTypes.find(rt => rt.id == document.getElementById('ration-type-id').value)?.name || '',
+            enrollment_date: document.getElementById('enrollment-date').value,
+            modality: document.getElementById('modality').value,
+            ration_rights: Array.from(document.querySelectorAll('.ration-checkbox:checked')).map(cb => cb.value),
+            // ration_type_id: document.getElementById('ration-type-id').value, // Removed legacy
+            // ration_type: this.rationTypes.find(rt => rt.id == document.getElementById('ration-type-id').value)?.name || '', // Removed legacy
             status: document.getElementById('status').value,
 
             address: document.getElementById('address').value,

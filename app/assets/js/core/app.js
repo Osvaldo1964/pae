@@ -133,9 +133,9 @@ const App = {
                 } else if (route === 'team') {
                     foundGroup = App.state.menu.find(g => g.name === 'Configuración');
                     foundModule = { name: 'Mi Equipo' };
-                } else if (route === 'ration-types') {
+                } else if (route === 'population-types') {
                     foundGroup = App.state.menu.find(g => g.name === 'Alimentación');
-                    foundModule = { name: 'Tipos de Ración' };
+                    foundModule = { name: 'Raciones y Población' };
                 } else if (route.startsWith('fin-')) {
                     foundGroup = { id: 99, name: 'Financiero' };
                     const finNames = {
@@ -247,6 +247,7 @@ const App = {
                     'hr-positions': 'hr_positions',
                     'hr-employees': 'hr_employees',
                     'ration-types': 'ration_types',
+                    'population-types': 'ration_types',
                     'reports-insumos': 'reports_insumos',
                     'reports-recetas': 'reports_recetas',
                     'reports-minutas': 'reports_minutas',
@@ -719,7 +720,7 @@ const App = {
         }
 
         if (group.name === 'Alimentación') {
-            modulesToRender.push({ name: 'Tipos de Ración', route: 'ration-types', icon: 'fas fa-utensils', description: 'Momento entrega', virtual: true, color: 'warning' });
+            modulesToRender.push({ name: 'Raciones y Población', route: 'population-types', icon: 'fas fa-users', description: 'Configuracion', virtual: true, color: 'info' });
         }
 
         if (group.id == 99 || group.name === 'Financiero') {
@@ -740,7 +741,7 @@ const App = {
         // 3. APPLY MANUAL ORDERING
         // ALIMENTACIÓN: items, ration-types, recetario, minutas (ciclos)
         if (group.name === 'Alimentación') {
-            const order = ['items', 'ration-types', 'recetario', 'minutas'];
+            const order = ['items', 'population-types', 'recetario', 'minutas'];
             modulesToRender.sort((a, b) => {
                 let idxA = order.indexOf(a.route);
                 let idxB = order.indexOf(b.route);

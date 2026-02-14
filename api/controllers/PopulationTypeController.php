@@ -6,7 +6,7 @@ use Config\Database;
 use PDO;
 use Exception;
 
-class RationTypeController
+class PopulationTypeController
 {
     private $conn;
 
@@ -35,11 +35,13 @@ class RationTypeController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
-            $query = "SELECT rt.*, pt.name as population_name 
-                      FROM pae_ration_types rt 
-                      LEFT JOIN pae_population_types pt ON rt.population_type_id = pt.id 
-                      WHERE rt.pae_id = :pae_id AND rt.status = 'ACTIVO' 
-                      ORDER BY rt.name";
+            if (!$pae_id) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'message' => 'No autorizado']);
+                return;
+            }
+
+            $query = "SELECT * FROM pae_population_types WHERE pae_id = :pae_id AND status = 'ACTIVO' ORDER BY name";
             $stmt = $this->conn->prepare($query);
             $stmt->bindValue(':pae_id', $pae_id);
             $stmt->execute();
@@ -55,19 +57,25 @@ class RationTypeController
         try {
             $data = json_decode(file_get_contents("php://input"), true);
             $pae_id = $this->getPaeIdFromToken();
+            if (!$pae_id) {
+                throw new Exception("No autorizado");
+            }
 
-            $query = "INSERT INTO pae_ration_types (pae_id, name, description, status, population_type_id) 
-                      VALUES (:pae_id, :name, :description, :status, :population_type_id)";
+            if (empty($data['name'])) {
+                throw new Exception("El nombre es obligatorio");
+            }
+
+            $query = "INSERT INTO pae_population_types (pae_id, name, description, status) 
+                      VALUES (:pae_id, :name, :description, :status)";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':pae_id' => $pae_id,
                 ':name' => $data['name'],
                 ':description' => $data['description'] ?? null,
-                ':status' => $data['status'] ?? 'ACTIVO',
-                ':population_type_id' => $data['population_type_id'] ?? null
+                ':status' => $data['status'] ?? 'ACTIVO'
             ]);
 
-            echo json_encode(['success' => true, 'message' => 'Tipo de ración creado correctamente', 'id' => $this->conn->lastInsertId()]);
+            echo json_encode(['success' => true, 'message' => 'Tipo de Población creado correctamente', 'id' => $this->conn->lastInsertId()]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -78,6 +86,9 @@ class RationTypeController
     {
         try {
             $data = json_decode(file_get_contents("php://input"), true);
+
+            // Validate ownership/pae_id ideally
+
             $pae_id = $this->getPaeIdFromToken();
             if (!$pae_id) {
                 http_response_code(403);
@@ -85,18 +96,17 @@ class RationTypeController
                 return;
             }
 
-            $query = "UPDATE pae_ration_types SET name = :name, description = :description, status = :status, population_type_id = :population_type_id WHERE id = :id AND pae_id = :pae_id";
+            $query = "UPDATE pae_population_types SET name = :name, description = :description, status = :status WHERE id = :id AND pae_id = :pae_id";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':id' => $id,
                 ':pae_id' => $pae_id,
                 ':name' => $data['name'],
                 ':description' => $data['description'] ?? null,
-                ':status' => $data['status'] ?? 'ACTIVO',
-                ':population_type_id' => $data['population_type_id'] ?? null
+                ':status' => $data['status'] ?? 'ACTIVO'
             ]);
 
-            echo json_encode(['success' => true, 'message' => 'Tipo de ración actualizado']);
+            echo json_encode(['success' => true, 'message' => 'Tipo de Población actualizado']);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -106,21 +116,20 @@ class RationTypeController
     public function delete($id)
     {
         try {
-            // Check usage (beneficiaries, recipes, etc)
-            // For now, simple check on recipes
-            $stmtCheck = $this->conn->prepare("SELECT COUNT(*) FROM recipes WHERE ration_type_id = ?");
+            // Check usage in ration types
+            $stmtCheck = $this->conn->prepare("SELECT COUNT(*) FROM pae_ration_types WHERE population_type_id = ?");
             $stmtCheck->execute([$id]);
             if ($stmtCheck->fetchColumn() > 0) {
-                throw new Exception("No se puede eliminar porque está siendo usado en recetas.");
+                throw new Exception("No se puede eliminar porque hay Tipos de Ración asociados a esta población.");
             }
 
             $pae_id = $this->getPaeIdFromToken();
-            if (!$pae_id) return; // Should handle error better
+            if (!$pae_id) return; // Should handle error better but complying with flow
 
-            $query = "DELETE FROM pae_ration_types WHERE id = :id AND pae_id = :pae_id";
+            $query = "DELETE FROM pae_population_types WHERE id = :id AND pae_id = :pae_id";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([':id' => $id, ':pae_id' => $pae_id]);
-            echo json_encode(['success' => true, 'message' => 'Tipo de ración eliminado']);
+            echo json_encode(['success' => true, 'message' => 'Tipo de Población eliminado']);
         } catch (Exception $e) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);

@@ -28,7 +28,14 @@ class BeneficiaryController extends BaseController
                          dt.name as document_type_name, eg.name as ethnic_group_name,
                          rt.name as ration_type_name,
                          pm.name as modality_name,
-                         png.name as nutritional_group_name
+                         png.name as nutritional_group_name,
+                         (SELECT GROUP_CONCAT(prt.name SEPARATOR ', ') 
+                          FROM beneficiary_ration_rights brr 
+                          JOIN pae_ration_types prt ON brr.ration_type_id = prt.id 
+                          WHERE brr.beneficiary_id = b.id) as ration_rights_names,
+                         (SELECT GROUP_CONCAT(brr.ration_type_id) 
+                          FROM beneficiary_ration_rights brr 
+                          WHERE brr.beneficiary_id = b.id) as ration_rights_ids
                   FROM " . $this->table_name . " b
                   LEFT JOIN school_branches br ON b.branch_id = br.id
                   LEFT JOIN schools s ON br.school_id = s.id
@@ -45,6 +52,12 @@ class BeneficiaryController extends BaseController
         $stmt->execute();
 
         $beneficiaries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Convert comma separated IDs to array
+        foreach ($beneficiaries as &$b) {
+            $b['ration_rights_ids'] = $b['ration_rights_ids'] ? array_map('intval', explode(',', $b['ration_rights_ids'])) : [];
+        }
+
         $this->sendResponse($beneficiaries);
     }
 
@@ -133,10 +146,29 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
         $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
 
-        if ($stmt->execute()) {
-            $this->sendResponse(["message" => "Beneficiario registrado exitosamente.", "id" => $this->conn->lastInsertId()]);
-        } else {
-            $this->sendError("Error al registrar beneficiario.", 500);
+        try {
+            $this->conn->beginTransaction();
+
+            if ($stmt->execute()) {
+                $beneficiary_id = $this->conn->lastInsertId();
+
+                // Save Ration Rights
+                if (isset($data['ration_rights']) && is_array($data['ration_rights'])) {
+                    $stmtRights = $this->conn->prepare("INSERT INTO beneficiary_ration_rights (pae_id, beneficiary_id, ration_type_id) VALUES (?, ?, ?)");
+                    foreach ($data['ration_rights'] as $rationId) {
+                        $stmtRights->execute([$pae_id, $beneficiary_id, $rationId]);
+                    }
+                }
+
+                $this->conn->commit();
+                $this->sendResponse(["message" => "Beneficiario registrado exitosamente.", "id" => $beneficiary_id]);
+            } else {
+                $this->conn->rollBack();
+                $this->sendError("Error al registrar beneficiario.", 500);
+            }
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            $this->sendError("Error del sistema: " . $e->getMessage(), 500);
         }
     }
 
@@ -251,10 +283,32 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
         $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
 
-        if ($stmt->execute()) {
-            $this->sendResponse(["message" => "Beneficiario actualizado exitosamente."]);
-        } else {
-            $this->sendError("Error al actualizar beneficiario.", 500);
+        try {
+            $this->conn->beginTransaction();
+
+            if ($stmt->execute()) {
+                // Sync Ration Rights
+                if (isset($data['ration_rights']) && is_array($data['ration_rights'])) {
+                    // Delete existing rights
+                    $stmtDel = $this->conn->prepare("DELETE FROM beneficiary_ration_rights WHERE beneficiary_id = ?");
+                    $stmtDel->execute([$id]);
+
+                    // Insert new rights
+                    $stmtRights = $this->conn->prepare("INSERT INTO beneficiary_ration_rights (pae_id, beneficiary_id, ration_type_id) VALUES (?, ?, ?)");
+                    foreach ($data['ration_rights'] as $rationId) {
+                        $stmtRights->execute([$pae_id, $id, $rationId]);
+                    }
+                }
+
+                $this->conn->commit();
+                $this->sendResponse(["message" => "Beneficiario actualizado exitosamente."]);
+            } else {
+                $this->conn->rollBack();
+                $this->sendError("Error al actualizar beneficiario.", 500);
+            }
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            $this->sendError("Error del sistema: " . $e->getMessage(), 500);
         }
     }
 

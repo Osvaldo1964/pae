@@ -643,6 +643,17 @@ if ($resource === 'auth') {
     } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->index();
     }
+} elseif ($resource === 'population-types') {
+    $controller = new \Controllers\PopulationTypeController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->store();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        $controller->delete($action);
+    }
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);
