@@ -17,7 +17,9 @@
 - ✅ Recetario Maestro (Estandarización de platos base)
 - ✅ Tipos de Ración (Configuración de momentos de consumo)
 - ✅ Minutas y Ciclos (Planeación flexible y modular)
-  - ✅ **Nuevo:** Ciclos de duración variable (Añadir días manualmente).
+  - ✅ **Selector Granular:** Calendario interactivo para marcar/desmarcar días específicos.
+  - ✅ **Exclusión de Fines de Semana:** Configuración automática para saltar sábados y domingos.
+  - ✅ **Duración Variable:** Adaptabilidad total a cronogramas PAE, ICBF o mixtos.
   - ✅ **Mapeo Circular:** Inteligencia para adaptar plantillas de cualquier duración al calendario elegido.
 - ✅ **Calculadora de Conversión:** Motor automático de Gramos a Kilogramos/Litros.
   - ✅ **Reporte de Explosión de Insumos:** Proyección corregida con factores de conversión (`1000g = 1KG`).
@@ -76,4 +78,4 @@
 
 ---
 
-**Última actualización**: 14 de Febrero 2026, 9:30 PM
+**Última actualización**: 15 de Febrero 2026, 7:15 AM

@@ -218,7 +218,6 @@
 ## 🚧 EN DESARROLLO
 
 - [x] **Conversión de Unidades:** Motor automático de Gramos (receta) a Kilogramos (almacén).
-- [x] **Ciclos Flexibles:** Generación de ciclos basada en calendario real, eliminando restricción de 20 días.
 - [x] **Hub de Reportes:** Fase Alimentación completada al 100%.
 - [ ] **Dashboard Principal:** Widgets de estadísticas operativas y KPIs en tiempo real.
 - [ ] **Módulo de Novedades:** Reporte de ausentismos y alertas de retiros.
@@ -241,6 +240,13 @@
 ---
 
 ## 🔧 CORRECCIONES RECIENTES (v1.9.0)
+
+### v1.9.5 (15 Feb 2026)
+- ✅ **Ciclos Flexibles (Granularidad Total):**
+  - **Selector de Días:** Interfaz visual para marcar/desmarcar días específicos dentro de un rango.
+  - **Exclusión Inteligente:** Checkbox para omitir fines de semana automáticamente.
+  - **Backend Adaptativo:** El generador ahora recibe la lista exacta de fechas, permitiendo ciclos con festivos o días extra según la necesidad (PAE, ICBF, etc.).
+  - **UX Mejorada:** Foco automático y prevención de bloqueos en la interfaz de creación.
 
 ### v1.9.0 (14 Feb 2026)
 - ✅ **Carga Masiva Inteligente:** Implementada detección automática de delimitadores CSV (coma o punto y coma) para compatibilidad con Excel.
@@ -307,6 +313,7 @@
 - ✅ **Ruteo Dinámico:** Sistema agnóstico a subcarpeta de instalación
 - ✅ **Estabilidad:** Mejorado manejo de respuestas JSON vacías
 - ✅ **Diagnóstico:** Reforzados logs para trazabilidad de errores
+
 
 ---
 

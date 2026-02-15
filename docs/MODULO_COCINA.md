@@ -86,62 +86,62 @@ Se ha implementado el **Módulo de Cocina** completo siguiendo la **Resolución 
 - **Modales Dinámicos:** Creación y edición con carga automática de ingredientes.
 - **Visualización Rápida:** 3 indicadores nutricionales clave en la tarjeta del plato.
 
-### 🎯 Cumplimiento Normativo
-
-#### Resolución 0003 de 2026
-
-✅ **Clasificación por Grupo de Alimento** - Implementada con 9 categorías legales  
-✅ **Factor de Rendimiento** - Peso bruto vs neto con cálculo automático de desperdicio  
-✅ **Compra Local (Ley 2046)** - Campo booleano con productor local  
-✅ **Trazabilidad** - Registro sanitario, lote, vencimiento  
-✅ **Información Nutricional Completa** - Por 100g/100ml  
-✅ **Control de Alérgenos** - 6 alérgenos principales  
-✅ **Control de Sodio** - Para ultraprocesados  
-
-### 📊 Estructura de Datos de Ejemplo
-
-**Ítem: Pechuga de Pollo**
-```
-Nombre: PECHUGA DE POLLO
-Grupo: Proteicos
-Unidad: Kilogramos
-Peso Bruto: 100g
-Peso Neto: 80g
-% Desperdicio: 20% (hueso/piel)
-Calorías: 165 kcal
-Proteínas: 31g
-Sodio: 74mg
-Compra Local: Sí
-Productor: Avícola Santa Marta SAS
-```
-
-### 🔄 Próximos Pasos
-
-1. **Minutas** - Implementar gestión de menús con:
-   - Ciclos de 20 días
-   - Derivación etárea (Preescolar, Primaria, Bachillerato)
-   - Validación de componentes obligatorios
-   - Cálculo nutricional automático
-
-2. **Almacén** - Gestión de inventarios con:
-   - Entradas y salidas
-   - Control de stock
-   - Alertas de vencimiento
-   - Trazabilidad de lotes
-
-3. **Explosión de Víveres** - Cálculo automático de:
-   - Cantidad bruta vs neta
-   - Requerimientos por número de beneficiarios
-   - Costos totales
-
-4. **Ciclos de Menú** - Integración del recetario con el calendario de 20 días.
-5. **Novedades y Entregas** - Registro de asistencia y consumo.
-
-### ⚖️ Conversión Automática de Unidades
-El sistema ahora maneja automáticamente la conversión entre las **Cantidades Patrón** de la receta y las **Unidades de Almacén**:
-- **Recetas:** Se configuran siempre en la unidad mínima (Gramos para peso, Mililitros para volumen).
-- **Almacén:** Puede usar Kilogramos (KG), Litros (L) o Libras (LB).
-- **Lógica:** Al aprobar un ciclo, el sistema utiliza el `conversion_factor` de la tabla `measurement_units` para generar proyecciones de compra correctas (ej: 50,000g se proyectan como 50kg).
+#### 5. Módulo de Minutas y Ciclos ⭐ IMPLEMENTADO
+ 
+ **Backend (`api/controllers/MenuCycleController.php`):**
+ - **Generación Flexible:** Motor de calendario que permite ciclos de cualquier duración (no solo 20 días).
+ - **Selector Granular:** El usuario define exactamente qué fechas incluyen alimentación via UI.
+ - **Manejo de Festivos:** Exclusión automática de fines de semana y personalización manual de días hábiles.
+ - **Integración:** Vincula plantillas maestras con fechas reales, calculando requerimientos automáticamente.
+ 
+ **Frontend (`app/assets/js/views/minutas.js`):**
+ - **Modal Interactivo:** Calendario visual para selección de rango y días específicos.
+ - **Visualización:** Pestañas para Ciclos Activos vs Plantillas.
+ - **Reportes:** Generación directa de explosión de insumos y minutas por sede.
+ 
+ ### 🎯 Cumplimiento Normativo
+ 
+ #### Resolución 0003 de 2026
+ 
+ ✅ **Clasificación por Grupo de Alimento** - Implementada con 9 categorías legales  
+ ✅ **Factor de Rendimiento** - Peso bruto vs neto con cálculo automático de desperdicio  
+ ✅ **Compra Local (Ley 2046)** - Campo booleano con productor local  
+ ✅ **Trazabilidad** - Registro sanitario, lote, vencimiento  
+ ✅ **Información Nutricional Completa** - Por 100g/100ml  
+ ✅ **Control de Alérgenos** - 6 alérgenos principales  
+ ✅ **Control de Sodio** - Para ultraprocesados  
+ ✅ **Ciclos de Menú** - Adaptables a calendario escolar real
+ 
+ ### 📊 Estructura de Datos de Ejemplo
+ 
+ **Ítem: Pechuga de Pollo**
+ ```
+ Nombre: PECHUGA DE POLLO
+ Grupo: Proteicos
+ Unidad: Kilogramos
+ Peso Bruto: 100g
+ Peso Neto: 80g
+ % Desperdicio: 20% (hueso/piel)
+ Calorías: 165 kcal
+ Proteínas: 31g
+ Sodio: 74mg
+ Compra Local: Sí
+ Productor: Avícola Santa Marta SAS
+ ```
+ 
+ ### 🔄 Próximos Pasos
+ 
+ 1. **Almacén** - Gestión de inventarios (Completado en Módulo Almacén)
+ 
+ 2. **Novedades y Entregas** - Registro de asistencia y consumo.
+ 
+ 3. **Integración SIMAT** - Sincronización automática de matrícula.
+ 
+ ### ⚖️ Conversión Automática de Unidades
+ El sistema ahora maneja automáticamente la conversión entre las **Cantidades Patrón** de la receta y las **Unidades de Almacén**:
+ - **Recetas:** Se configuran siempre en la unidad mínima (Gramos para peso, Mililitros para volumen).
+ - **Almacén:** Puede usar Kilogramos (KG), Litros (L) o Libras (LB).
+ - **Lógica:** Al aprobar un ciclo, el sistema utiliza el `conversion_factor` de la tabla `measurement_units` para generar proyecciones de compra correctas (ej: 50,000g se proyectan como 50kg).
 
 
 ### 📁 Archivos Creados

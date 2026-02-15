@@ -570,10 +570,10 @@ window.MinutasView = {
 
         // Default dates
         const today = new Date().toISOString().split('T')[0];
-        const nextMonth = new Date(Date.now() + 27 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        // const nextMonth = new Date(Date.now() + 27 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
         modalDiv.innerHTML = `
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header bg-success text-white">
                         <h5 class="modal-title fw-bold"><i class="fas fa-calendar-plus me-2"></i>Programar Nuevo Ciclo</h5>
@@ -583,16 +583,16 @@ window.MinutasView = {
                         <form id="new-cycle-form">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-muted">NOMBRE DEL CICLO / PERIODO</label>
-                                <input type="text" name="name" class="form-control" placeholder="Ej: Ciclo Febrero Primaria - 2026" required>
+                                <input type="text" name="name" class="form-control" placeholder="Ej: Ciclo Febrero Primaria - 2026" required autofocus>
                             </div>
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">FECHA DE INICIO</label>
-                                    <input type="date" name="start_date" class="form-control" value="${today}" required>
+                                    <input type="date" name="start_date" id="cycle-start-date" class="form-control" value="${today}" required onchange="MinutasView.updateDatesList()">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">FECHA DE FIN</label>
-                                    <input type="date" name="end_date" class="form-control" value="${nextMonth}" required>
+                                    <input type="date" name="end_date" id="cycle-end-date" class="form-control" value="" required onchange="MinutasView.updateDatesList()">
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -602,15 +602,27 @@ window.MinutasView = {
                                     ${this.templates.map(t => `<option value="${t.id}" ${t.id == preSelectedTemplateId ? 'selected' : ''}>${t.name}</option>`).join('')}
                                 </select>
                             </div>
-                            <div class="bg-light p-3 rounded border">
-                                <small class="text-muted d-block mb-1"><i class="fas fa-info-circle me-1"></i> El sistema generará menús para cada día hábil entre las fechas seleccionadas.</small>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label small fw-bold text-muted mb-0">DÍAS DE ATENCIÓN</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="exclude-weekends" checked onchange="MinutasView.toggleWeekends()">
+                                        <label class="form-check-label small" for="exclude-weekends">Excluir Fines de Semana</label>
+                                    </div>
+                                </div>
+                                <div class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;" id="cycle-days-list">
+                                    <div class="text-center p-3 text-muted small fst-italic">Seleccione las fechas para ver los días disponibles</div>
+                                </div>
+                                <small class="text-muted fst-italic ms-1" style="font-size: 0.75rem;">* Desmarque los días que no tendrán servicio (festivos, jornadas institucionales, etc)</small>
                             </div>
+
                         </form>
                     </div>
                     <div class="modal-footer bg-light border-top-0">
                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-success px-4 fw-bold shadow-sm" onclick="MinutasView.generateCycle()">
-                            <i class="fas fa-magic me-1"></i> Generar Ciclo Completo
+                            <i class="fas fa-magic me-1"></i> Generar Ciclo
                         </button>
                     </div>
                 </div>
@@ -619,7 +631,84 @@ window.MinutasView = {
         document.body.appendChild(modalDiv);
         const modal = new bootstrap.Modal(modalDiv);
         modal.show();
+
+        // Focus on name input when modal is shown
+        modalDiv.addEventListener('shown.bs.modal', () => {
+            document.querySelector('#new-cycle-form input[name="name"]').focus();
+        });
+
+        // Initial update (will be empty because end_date is empty)
+        // this.updateDatesList(); 
+
         modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+    },
+
+    updateDatesList() {
+        const startInput = document.getElementById('cycle-start-date');
+        const endInput = document.getElementById('cycle-end-date');
+        const container = document.getElementById('cycle-days-list');
+        const excludeWeekends = document.getElementById('exclude-weekends').checked;
+
+        if (!startInput.value || !endInput.value) return;
+
+        const start = new Date(startInput.value + 'T00:00:00'); // Force local time handling
+        const end = new Date(endInput.value + 'T00:00:00');
+
+        if (end < start) {
+            container.innerHTML = '<div class="text-center text-danger p-3 small">La fecha fin debe ser posterior al inicio</div>';
+            return;
+        }
+
+        let html = '<div class="row g-2">';
+        let currentDate = new Date(start);
+
+        const formatter = new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+
+        while (currentDate <= end) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const dayOfWeek = currentDate.getDay(); // 0 = Sun, 6 = Sat
+            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+            const isChecked = !(excludeWeekends && isWeekend);
+            // Capitalize first letter
+            let label = formatter.format(currentDate);
+            label = label.charAt(0).toUpperCase() + label.slice(1);
+
+            html += `
+                <div class="col-md-3 col-sm-4 col-6">
+                    <div class="position-relative bg-white border rounded p-2 shadow-sm h-100 d-flex align-items-center form-check-hover" style="transition: all 0.2s;">
+                        <input class="form-check-input date-selector me-2 mt-0" type="checkbox" value="${dateStr}" id="date-${dateStr}" ${isChecked ? 'checked' : ''} data-is-weekend="${isWeekend}" style="cursor: pointer;">
+                        <label class="form-check-label small w-100 stretched-link ${isWeekend ? 'text-danger fw-bold' : 'text-dark fw-bold'}" for="date-${dateStr}" style="cursor: pointer; line-height: 1.2; font-size: 0.85rem;">
+                            ${label}
+                        </label>
+                    </div>
+                </div>
+            `;
+
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        html += '</div>';
+
+        // Add style for hover if not exists
+        if (!document.getElementById('date-picker-styles')) {
+            const style = document.createElement('style');
+            style.id = 'date-picker-styles';
+            style.innerHTML = `.form-check-hover:hover { background-color: #f8f9fa !important; border-color: #0d6efd !important; transform: translateY(-1px); }`;
+            document.head.appendChild(style);
+        }
+
+        container.innerHTML = html;
+        container.scrollTop = 0; // Reset scroll to top
+    },
+
+    toggleWeekends() {
+        const exclude = document.getElementById('exclude-weekends').checked;
+        document.querySelectorAll('.date-selector').forEach(cb => {
+            const isWeekend = cb.dataset.isWeekend === 'true';
+            if (isWeekend) {
+                cb.checked = !exclude;
+            }
+        });
     },
 
     async generateCycle() {
@@ -627,11 +716,24 @@ window.MinutasView = {
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
         const formData = new FormData(form);
+
+        // Collect specific dates
+        const specificDates = [];
+        document.querySelectorAll('.date-selector:checked').forEach(cb => {
+            specificDates.push(cb.value);
+        });
+
+        if (specificDates.length === 0) {
+            Helper.alert('warning', 'Debe seleccionar al menos un día para el ciclo.');
+            return;
+        }
+
         const data = {
             name: formData.get('name'),
             start_date: formData.get('start_date'),
             end_date: formData.get('end_date'),
-            template_id: formData.get('template_id')
+            template_id: formData.get('template_id'),
+            specific_dates: specificDates
         };
 
         try {

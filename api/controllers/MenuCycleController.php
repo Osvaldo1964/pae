@@ -61,7 +61,7 @@ class MenuCycleController
 
     /**
      * POST /api/menu-cycles/generate
-     * Genera un ciclo de 20 días basado en una plantilla
+     * Genera un ciclo basado en una plantilla y fechas específicas
      */
     public function generate()
     {
@@ -79,7 +79,9 @@ class MenuCycleController
 
             $template_id = $data['template_id'];
             $start_date = $data['start_date'];
+            $end_date = $data['end_date'];
             $name = $data['name'];
+            $specific_dates = $data['specific_dates'] ?? []; // Array de fechas 'Y-m-d'
 
             $pae_id = $this->getPaeIdFromToken();
             if (!$pae_id) {
@@ -98,30 +100,40 @@ class MenuCycleController
             if (!$templateDays)
                 throw new Exception("La plantilla seleccionada no tiene días configurados.");
 
-            // 2. Definir el periodo de días hábiles entre las fechas
-            $start = new \DateTime($start_date);
-            $end = new \DateTime($data['end_date']);
-            $end_display = $end->format('Y-m-d');
-
+            // 2. Definir las fechas a procesar
+            // Si el frontend envía fechas específicas, usamos esas. Si no, calculamos días hábiles como fallback (legacy)
             $dates_mapping = [];
-            $business_days_count = 0;
-
-            $interval = new \DateInterval('P1D');
-            $period = new \DatePeriod($start, $interval, $end->modify('+1 day'));
-
-            foreach ($period as $date) {
-                $day_of_week = $date->format('N'); // 1 (Mon) to 7 (Sun)
-                if ($day_of_week < 6) {
-                    $business_days_count++;
-                    $dates_mapping[$business_days_count] = $date->format('Y-m-d');
+            
+            if (!empty($specific_dates)) {
+                // Ordenar fechas por seguridad
+                sort($specific_dates);
+                foreach ($specific_dates as $i => $date_str) {
+                    $dates_mapping[$i + 1] = $date_str;
                 }
+                $total_days = count($dates_mapping);
+            } else {
+                // FALLBACK: Lógica anterior (Solo Lunes a Viernes)
+                $start = new \DateTime($start_date);
+                $end = new \DateTime($end_date);
+                $business_days_count = 0;
+                $interval = new \DateInterval('P1D');
+                $period = new \DatePeriod($start, $interval, $end->modify('+1 day'));
+
+                foreach ($period as $date) {
+                    $day_of_week = $date->format('N'); // 1 (Mon) to 7 (Sun)
+                    if ($day_of_week < 6) {
+                        $business_days_count++;
+                        $dates_mapping[$business_days_count] = $date->format('Y-m-d');
+                    }
+                }
+                $total_days = $business_days_count;
             }
 
-            if ($business_days_count === 0)
-                throw new Exception("No hay días hábiles en el rango seleccionado.");
+            if ($total_days === 0)
+                throw new Exception("No hay días hábiles o seleccionados en el rango.");
 
             $stmtCycle = $this->conn->prepare("INSERT INTO menu_cycles (pae_id, name, start_date, end_date, total_days, status) VALUES (?, ?, ?, ?, ?, 'BORRADOR')");
-            $stmtCycle->execute([$pae_id, $name, $start_date, $end_display, $business_days_count]);
+            $stmtCycle->execute([$pae_id, $name, $start_date, $end_date, $total_days]);
             $cycle_id = $this->conn->lastInsertId();
 
             // 3. Crear los menús diarios (menus) y vincular recetas usando mapeo circular (módulo)
@@ -137,7 +149,7 @@ class MenuCycleController
                 $template_day_to_use = (($rel_day - 1) % $max_template_day) + 1;
 
                 if (!isset($days_data[$template_day_to_use])) {
-                    // Si ese día específico no existe en la plantilla (ej: saltos), buscamos el anterior más cercano
+                    // Si ese día específico no existe en la plantilla (ej: saltos manuales), buscamos el anterior más cercano
                     $found = false;
                     for ($d = $template_day_to_use; $d >= 1; $d--) {
                         if (isset($days_data[$d])) {
@@ -146,12 +158,17 @@ class MenuCycleController
                             break;
                         }
                     }
-                    if (!$found)
-                        continue;
+                    if (!$found) continue;
                 }
 
                 $stmtMenu = $this->conn->prepare("INSERT INTO menus (pae_id, cycle_id, name, day_number) VALUES (?, ?, ?, ?)");
-                $menu_name = "Día " . $rel_day . " - " . $real_date;
+                // Formatear fecha bonita para el nombre del menú
+                $dateObj = new \DateTime($real_date);
+                // Array de días en español
+                $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                $diaSemana = $dias[$dateObj->format('w')];
+                $menu_name = "Día " . $rel_day . " - " . $diaSemana . " " . $dateObj->format('d/m');
+                
                 $stmtMenu->execute([$pae_id, $cycle_id, $menu_name, $rel_day]);
                 $menu_id = $this->conn->lastInsertId();
 
@@ -163,7 +180,7 @@ class MenuCycleController
             }
 
             $this->conn->commit();
-            echo json_encode(['success' => true, 'message' => 'Ciclo de 20 días generado correctamente', 'id' => $cycle_id]);
+            echo json_encode(['success' => true, 'message' => 'Ciclo generado correctamente', 'id' => $cycle_id]);
         } catch (Exception $e) {
             if ($this->conn->inTransaction())
                 $this->conn->rollBack();
