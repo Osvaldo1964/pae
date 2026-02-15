@@ -72,7 +72,7 @@ var BeneficiariesView = {
                             </div>
                             <div class="col-md-3">
                                 <select class="form-select" id="filterSchool" onchange="BeneficiariesView.filterTable()">
-                                    <option value="">Todos los Colegios</option>
+                                    <option value="">Todos los Centros</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -94,7 +94,7 @@ var BeneficiariesView = {
                                     <tr>
                                         <th>Identificación</th>
                                         <th>Nombre Completo</th>
-                                        <th>Institución / Sede</th>
+                                        <th>Centro / Punto</th>
                                         <th>Grado / Grupo</th>
                                         <th>Estado</th>
                                         <th class="text-end">Acciones</th>
@@ -115,7 +115,7 @@ var BeneficiariesView = {
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title" id="modalBeneficiaryTitle">Registro de Estudiante</h5>
+                            <h5 class="modal-title" id="modalBeneficiaryTitle">Registro de Beneficiario</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-0">
@@ -128,7 +128,7 @@ var BeneficiariesView = {
                                 </li>
                                 <li class="nav-item">
                                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-enrollment" type="button">
-                                        <i class="fas fa-graduation-cap me-2"></i>Matrícula
+                                        <i class="fas fa-graduation-cap me-2"></i>Vinculación
                                     </button>
                                 </li>
                                 <li class="nav-item">
@@ -158,7 +158,7 @@ var BeneficiariesView = {
                                                 <input type="text" class="form-control" id="doc-number" required>
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label fw-bold">SIMAT ID (Opcional)</label>
+                                                <label class="form-label fw-bold">ID Externo (Opcional)</label>
                                                 <input type="text" class="form-control" id="simat-id">
                                             </div>
                                             
@@ -196,14 +196,14 @@ var BeneficiariesView = {
                                                 <select class="form-select" id="ethnic-group" required></select>
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label">SISBEN (Categoría)</label>
+                                                <label class="form-label">Categorización (SISBEN)</label>
                                                 <input type="text" class="form-control" id="sisben" placeholder="Ej: A1, B2">
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-check mt-1">
                                                     <input class="form-check-input" type="checkbox" id="is-overage">
                                                     <label class="form-check-label fw-bold text-danger" for="is-overage">
-                                                        ¿Es Estudiante en Extraedad? (Adulto)
+                                                        ¿Es Beneficiario Adulto?
                                                     </label>
                                                 </div>
                                             </div>
@@ -222,21 +222,21 @@ var BeneficiariesView = {
                                     <div class="tab-pane fade" id="tab-enrollment">
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <label class="form-label fw-bold">Institución Educativa *</label>
+                                                <label class="form-label fw-bold">Centro / Institución *</label>
                                                 <select class="form-select" id="school-id" onchange="BeneficiariesView.onSchoolChange(this.value)" required></select>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label fw-bold">Sede Educativa *</label>
+                                                <label class="form-label fw-bold">Punto de Atención *</label>
                                                 <select class="form-select" id="branch-id" required disabled>
-                                                    <option value="">Seleccione primero un colegio</option>
+                                                    <option value="">Seleccione primero un centro</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label">Grado *</label>
+                                                <label class="form-label">Nivel / Grado *</label>
                                                 <select class="form-select" id="grade" required>
-                                                    <option value="TRANSICION">Transición / Grado 0</option>
-                                                    <option value="1">Primero</option>
-                                                    <option value="2">Segundo</option>
+                                                    <option value="TRANSICION">Transición / Nivel 1</option>
+                                                    <option value="1">Primero / Nivel 2</option>
+                                                    <option value="2">Segundo / Nivel 3</option>
                                                     <option value="3">Tercero</option>
                                                     <option value="4">Cuarto</option>
                                                     <option value="5">Quinto</option>
@@ -246,6 +246,9 @@ var BeneficiariesView = {
                                                     <option value="9">Noveno</option>
                                                     <option value="10">Décimo</option>
                                                     <option value="11">Undécimo</option>
+                                                    <option value="ADULTO_MAYOR">Adulto Mayor</option>
+                                                    <option value="MADRE_GESTANTE">Madre Gestante</option>
+                                                    <option value="PRIMERA_INFANCIA">Primera Infancia</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
@@ -263,11 +266,11 @@ var BeneficiariesView = {
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label">Fecha de Matrícula</label>
+                                                <label class="form-label">Fecha de Vinculación</label>
                                                 <input type="date" class="form-control" id="enrollment-date">
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label">Modalidad PAE *</label>
+                                                <label class="form-label">Modalidad Atención *</label>
                                                 <select class="form-select" id="modality" required>
                                                     <option value="RACION PREPARADA EN SITIO">Preparada en Sitio</option>
                                                     <option value="RACION INDUSTRIALIZADA">Industrializada</option>
@@ -320,14 +323,14 @@ var BeneficiariesView = {
                                                 <input type="email" class="form-control" id="email">
                                             </div>
                                             <div class="col-12"><hr></div>
-                                            <h6 class="mb-0">Información del Acudiente</h6>
+                                            <h6 class="mb-0">Información del Acudiente / Contacto</h6>
                                             <div class="col-md-8">
                                                 <label class="form-label">Nombre del Acudiente</label>
                                                 <input type="text" class="form-control" id="guardian-name">
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label">Parentesco</label>
-                                                <input type="text" class="form-control" id="guardian-relationship" placeholder="Ej: Madre, Padre, Tío">
+                                                <label class="form-label">Relación</label>
+                                                <input type="text" class="form-control" id="guardian-relationship" placeholder="Ej: Madre, Padre, Hijo">
                                             </div>
                                             <div class="col-md-4">
                                                 <label class="form-label">Teléfono Acudiente</label>
@@ -407,11 +410,11 @@ var BeneficiariesView = {
         const span = document.getElementById('suggested-age-group');
 
         let group = '';
-        if (age >= 3 && age <= 5) group = 'PREESCOLAR';
+        if (age >= 3 && age <= 5) group = 'PREESCOLAR/INFANCIA';
         else if (age >= 6 && age <= 7) group = 'PRIMARIA A';
         else if (age >= 8 && age <= 12) group = 'PRIMARIA B';
         else if (age >= 13 && age <= 17) group = 'SECUNDARIA';
-        else if (age > 17) group = 'EXTRAEDAD / ADULTO';
+        else if (age > 17) group = 'ADULTO';
 
         if (group) {
             span.innerText = group;
@@ -454,7 +457,7 @@ var BeneficiariesView = {
             this.ethnicGroups = ethnicGroups || [];
             this.rationTypes = rationTypes.success ? rationTypes.data : [];
 
-            this.populateSelect('school-id', this.schools, 'Seleccione Institución');
+            this.populateSelect('school-id', this.schools, 'Seleccione Centro');
             this.populateSelect('doc-type', this.documentTypes, 'Seleccione Tipo');
             this.populateSelect('ethnic-group', this.ethnicGroups, 'Seleccione Etnia');
 
@@ -462,7 +465,7 @@ var BeneficiariesView = {
             this.populateRationCheckboxes();
 
             // Filters
-            this.populateSelect('filterSchool', this.schools, 'Todos los Colegios');
+            this.populateSelect('filterSchool', this.schools, 'Todos los Centros');
         } catch (err) {
             console.error("Error loading master data:", err);
         }
@@ -516,7 +519,7 @@ var BeneficiariesView = {
     async onSchoolChange(schoolId) {
         const branchSelect = document.getElementById('branch-id');
         if (!schoolId) {
-            branchSelect.innerHTML = '<option value="">Seleccione primero un colegio</option>';
+            branchSelect.innerHTML = '<option value="">Seleccione primero un centro</option>';
             branchSelect.disabled = true;
             return;
         }
@@ -524,11 +527,11 @@ var BeneficiariesView = {
         try {
             const branches = await Helper.fetchAPI(`/branches?school_id=${schoolId}`);
             this.filteredBranches = branches || [];
-            this.populateSelect('branch-id', this.filteredBranches, 'Seleccione Sede');
+            this.populateSelect('branch-id', this.filteredBranches, 'Seleccione Punto');
             branchSelect.disabled = false;
         } catch (err) {
             console.error("Error loading branches:", err);
-            Helper.alert('error', 'No se pudieron cargar las sedes');
+            Helper.alert('error', 'No se pudieron cargar los puntos de atención');
         }
     },
 
@@ -1093,13 +1096,13 @@ var BeneficiariesView = {
                                                 <div class="accordion-item">
                                                     <h2 class="accordion-header" id="headingOne">
                                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                                            Sedes Educativas (Copiar Nombre Exacto)
+                                                            Puntos de Atención (Copiar Nombre Exacto)
                                                         </button>
                                                     </h2>
                                                     <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionReference">
                                                         <div class="accordion-body p-0" style="max-height: 200px; overflow-y: auto;">
                                                             <table class="table table-sm table-striped mb-0 small">
-                                                                <thead class="table-light sticky-top"><tr><th>Nombre Sede</th><th>Institución</th></tr></thead>
+                                                                <thead class="table-light sticky-top"><tr><th>Nombre Punto</th><th>Centro / Institución</th></tr></thead>
                                                                 <tbody>
                                                                     ${(this.branches || []).map(b => `<tr><td>${b.name}</td><td class="text-muted">${b.school_name}</td></tr>`).join('')}
                                                                 </tbody>

@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
 **Última actualización**: 14 de Febrero 2026, 9:25 PM
-**Versión Doc:** 1.9.0 | **Versión Código:** 1.9.0 (Raciones Diferenciales y Carga Masiva)
+**Versión Doc:** 1.9.8 | **Versión Código:** 1.9.8 (Instituciones Beneficiarias y Ciclos Flexibles)
 
 ---
 
@@ -241,7 +241,11 @@
 
 ## 🔧 CORRECCIONES RECIENTES (v1.9.0)
 
-### v1.9.5 (15 Feb 2026)
+### v1.9.8 (15 Feb 2026 - Tarde)
+- ✅ **Generalización de Instituciones:**
+  - **Cambio de Nomenclatura:** Módulo "Sedes Educativas" renombrado a "Instituciones Beneficiarias" para dar soporte a CDI, Ancianatos y Comedores.
+  - **Base de Datos:** Ampliación del ENUM `school_type` para incluir nuevos tipos de entidad.
+  - **UI/UX:** Actualización masiva de etiquetas en formularios de creación y listados.
 - ✅ **Ciclos Flexibles (Granularidad Total):**
   - **Selector de Días:** Interfaz visual para marcar/desmarcar días específicos dentro de un rango.
   - **Exclusión Inteligente:** Checkbox para omitir fines de semana automáticamente.

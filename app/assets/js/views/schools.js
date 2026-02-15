@@ -18,11 +18,11 @@ var SchoolsView = {
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h2><i class="fas fa-school me-2"></i>Entorno: Colegios y Sedes</h2>
-                                <p class="text-muted">Administración de instituciones educativas y sus sedes físicas</p>
+                                <h2><i class="fas fa-university me-2"></i>Entorno: Centros y Puntos de Atención</h2>
+                                <p class="text-muted">Administración de centros, instituciones y sus puntos de atención</p>
                             </div>
                             <button class="btn btn-success" onclick="SchoolsView.openSchoolModal()">
-                                <i class="fas fa-plus me-2"></i>Nuevo Colegio
+                                <i class="fas fa-plus me-2"></i>Nuevo Centro
                             </button>
                         </div>
                     </div>
@@ -33,15 +33,15 @@ var SchoolsView = {
                     <div class="col-md-7">
                         <div class="card shadow-sm h-100">
                             <div class="card-header bg-white py-3">
-                                <h5 class="card-title mb-0">Instituciones Educativas</h5>
+                                <h5 class="card-title mb-0">Listado de Centros / Instituciones</h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table id="schoolsTable" class="table table-hover align-middle">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Colegio</th>
-                                                <th>Rector / Ubicación</th>
+                                                <th>Centro / Institución</th>
+                                                <th>Responsable / Ubicación</th>
                                                 <th class="text-end">Acciones</th>
                                             </tr>
                                         </thead>
@@ -58,14 +58,14 @@ var SchoolsView = {
                     <div class="col-md-5">
                         <div class="card shadow-sm h-100 border-primary">
                             <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0" id="branches-title">Sedes</h5>
+                                <h5 class="card-title mb-0" id="branches-title">Puntos de Atención</h5>
                                 <button class="btn btn-sm btn-light" id="btn-new-branch" onclick="SchoolsView.openBranchModal()" style="display:none">
-                                    <i class="fas fa-plus"></i> Sede
+                                    <i class="fas fa-plus"></i> Punto
                                 </button>
                             </div>
                             <div class="card-body">
                                 <div id="branches-container">
-                                    <p class="text-center text-muted py-5">Seleccione un colegio para ver sus sedes</p>
+                                    <p class="text-center text-muted py-5">Seleccione un centro para ver sus puntos de atención</p>
                                 </div>
                             </div>
                         </div>
@@ -78,7 +78,7 @@ var SchoolsView = {
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title" id="modalSchoolTitle">Nuevo Colegio</h5>
+                            <h5 class="modal-title" id="modalSchoolTitle">Nuevo Centro</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
@@ -86,24 +86,29 @@ var SchoolsView = {
                                 <input type="hidden" id="school-id">
                                 <div class="row g-3">
                                     <div class="col-md-4">
-                                        <label class="form-label">Código DANE *</label>
+                                        <label class="form-label">Código Externo / DANE *</label>
                                         <input type="text" class="form-control" id="school-dane" required placeholder="Ej: 14700... ">
                                     </div>
                                     <div class="col-md-8">
-                                        <label class="form-label">Nombre del Colegio *</label>
+                                        <label class="form-label">Nombre del Centro *</label>
                                         <input type="text" class="form-control" id="school-name" required>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Tipo *</label>
                                         <select class="form-select" id="school-type" required>
-                                            <option value="PUBLICO">Público</option>
-                                            <option value="PRIVADO">Privado</option>
-                                            <option value="MIXTO">Mixto</option>
-                                            <option value="INDIGENA">Indígena</option>
+                                            <option value="PUBLICO">Colegio Público</option>
+                                            <option value="PRIVADO">Colegio Privado</option>
+                                            <option value="MIXTO">Colegio Mixto</option>
+                                            <option value="INDIGENA">Colegio Indígena</option>
+                                            <option value="CDI">CDI - Centro Desarrollo Infantil</option>
+                                            <option value="HI">HI - Hogar Infantil</option>
+                                            <option value="ANCIANATO">Centro Adulto Mayor</option>
+                                            <option value="COMEDOR_COMUNITARIO">Comedor Comunitario</option>
+                                            <option value="PUNTO_ENTREGA">Punto de Entrega</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Rector</label>
+                                        <label class="form-label">Rector / Director / Responsable</label>
                                         <input type="text" class="form-control" id="school-rector">
                                     </div>
                                     <div class="col-md-6">
@@ -169,18 +174,18 @@ var SchoolsView = {
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header bg-info text-white">
-                            <h5 class="modal-title" id="modalBranchTitle">Nueva Sede</h5>
+                            <h5 class="modal-title" id="modalBranchTitle">Nuevo Punto de Atención</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <form id="formBranch">
                                 <input type="hidden" id="branch-id">
                                 <div class="mb-3">
-                                    <label class="form-label">Código DANE *</label>
+                                    <label class="form-label">Código Externo / DANE *</label>
                                     <input type="text" class="form-control" id="branch-dane" required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Nombre de la Sede *</label>
+                                    <label class="form-label">Nombre del Punto *</label>
                                     <input type="text" class="form-control" id="branch-name" required>
                                 </div>
                                 <div class="mb-3">
@@ -257,7 +262,7 @@ var SchoolsView = {
                             <img src="${logo}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;" onerror="this.src='${Config.BASE_URL}assets/img/logos/logo_ovc.png'">
                             <div>
                                 <h6 class="mb-0">${s.name}</h6>
-                                <small class="text-primary fw-bold" style="font-size: 0.75rem;">DANE: ${s.dane_code || '-'}</small> | 
+                                <small class="text-primary fw-bold" style="font-size: 0.75rem;">COD: ${s.dane_code || '-'}</small> | 
                                 <small class="badge bg-secondary">${s.school_type}</small>
                             </div>
                         </div>
@@ -293,7 +298,7 @@ var SchoolsView = {
         }
 
         const titleEl = document.getElementById('branches-title');
-        if (titleEl) titleEl.innerText = `Sedes: ${school.name}`;
+        if (titleEl) titleEl.innerText = `Puntos: ${school.name}`;
 
         const btnNew = document.getElementById('btn-new-branch');
         if (btnNew) btnNew.style.display = 'block';
@@ -324,7 +329,7 @@ var SchoolsView = {
         if (!container) return;
 
         if (this.branches.length === 0) {
-            container.innerHTML = '<p class="text-center text-muted py-5">No hay sedes registradas para este colegio</p>';
+            container.innerHTML = '<p class="text-center text-muted py-5">No hay puntos registrados para este centro</p>';
             return;
         }
 
@@ -335,7 +340,7 @@ var SchoolsView = {
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="mb-1">${b.name} ${b.name === 'PRINCIPAL' ? '<span class="badge bg-info text-white ms-2" style="font-size:0.7em">MATRIZ</span>' : ''}</h6>
-                            <small class="text-primary d-block fw-bold mb-1" style="font-size: 0.8rem;">DANE: ${b.dane_code || '-'}</small>
+                            <small class="text-primary d-block fw-bold mb-1" style="font-size: 0.8rem;">COD: ${b.dane_code || '-'}</small>
                             <small class="text-muted"><i class="fas fa-user me-1"></i>${b.manager_name || '-'}</small><br>
                             <small class="text-muted"><i class="fas fa-phone me-1"></i>${b.phone || '-'}</small>
                         </div>
@@ -377,7 +382,7 @@ var SchoolsView = {
         const isEdit = !!school;
         document.getElementById('formSchool').reset();
         document.getElementById('school-id').value = isEdit ? school.id : '';
-        document.getElementById('modalSchoolTitle').innerText = isEdit ? 'Editar Colegio' : 'Nuevo Colegio';
+        document.getElementById('modalSchoolTitle').innerText = isEdit ? 'Editar Centro / Institución' : 'Nuevo Centro / Institución';
 
         if (!isEdit) {
             document.getElementById('school-logo-preview').style.display = 'none';
@@ -452,12 +457,12 @@ var SchoolsView = {
             }
         } catch (err) {
             console.error(err);
-            Helper.alert('error', 'Error al guardar colegio');
+            Helper.alert('error', 'Error al guardar centro');
         }
     },
 
     async deleteSchool(id) {
-        if (!await Helper.confirm('Esta acción eliminará también todas sus sedes registradas.')) return;
+        if (!await Helper.confirm('Esta acción eliminará también todos sus puntos de atención registrados.')) return;
 
         try {
             const res = await Helper.fetchAPI(`/schools/${id}`, { method: 'DELETE' });
@@ -466,7 +471,7 @@ var SchoolsView = {
                 await this.loadSchools();
                 if (this.selectedSchoolId == id) {
                     this.selectedSchoolId = null;
-                    document.getElementById('branches-container').innerHTML = '<p class="text-center text-muted py-5">Seleccione un colegio para ver sus sedes</p>';
+                    document.getElementById('branches-container').innerHTML = '<p class="text-center text-muted py-5">Seleccione un centro para ver sus puntos de atención</p>';
                     document.getElementById('btn-new-branch').style.display = 'none';
                 }
             }
@@ -482,7 +487,7 @@ var SchoolsView = {
         const isEdit = !!branch;
         document.getElementById('formBranch').reset();
         document.getElementById('branch-id').value = isEdit ? branch.id : '';
-        document.getElementById('modalBranchTitle').innerText = isEdit ? 'Editar Sede' : 'Nueva Sede';
+        document.getElementById('modalBranchTitle').innerText = isEdit ? 'Editar Punto de Atención' : 'Nuevo Punto de Atención';
 
         if (isEdit) {
             document.getElementById('branch-dane').value = branch.dane_code || '';
@@ -529,12 +534,12 @@ var SchoolsView = {
             }
         } catch (err) {
             console.error(err);
-            Helper.alert('error', 'Error al guardar sede');
+            Helper.alert('error', 'Error al guardar punto de atención');
         }
     },
 
     async deleteBranch(id) {
-        if (!await Helper.confirm('¿Seguro que desea eliminar esta sede?')) return;
+        if (!await Helper.confirm('¿Seguro que desea eliminar este punto de atención?')) return;
 
         try {
             const res = await Helper.fetchAPI(`/branches/${id}`, { method: 'DELETE' });

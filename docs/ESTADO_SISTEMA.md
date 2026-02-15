@@ -8,7 +8,7 @@
 - ✅ Mi Equipo (Gestión de staff del operador PAE)
 
 ### 2. **Entorno**
-- ✅ Sedes Educativas (Colegios y Sedes con códigos DANE)
+- ✅ Instituciones Beneficiarias (Sedes, CDI, Centros con códigos DANE)
 - ✅ Proveedores (Directorio de proveedores)
 
 ### 3. **Cocina** ✅ ⭐ FASE COMPLETADA
@@ -78,4 +78,4 @@
 
 ---
 
-**Última actualización**: 15 de Febrero 2026, 7:15 AM
+**Última actualización**: 15 de Febrero 2026, 2:30 PM

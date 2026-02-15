@@ -32,7 +32,7 @@
 📋 SIDEBAR
 ├── 🏠 Dashboard
 ├── 👥 Entorno
-│   ├── 🏫 Sedes Educativas
+│   ├── 🏫 Instituciones Beneficiarias
 │   └── 👨‍🎓 Beneficiarios
 ├── 🍽️ Cocina
 │   └── 🥕 Ítems
