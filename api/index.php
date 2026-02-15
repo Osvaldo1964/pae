@@ -335,6 +335,8 @@ if ($resource === 'auth') {
     }
 } elseif ($resource === 'beneficiarios') {
     $controller = new \Controllers\BeneficiaryController();
+    $importController = new \Controllers\BeneficiaryImportController();
+
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($action === 'document_types') {
             $controller->getDocumentTypes();
@@ -342,11 +344,17 @@ if ($resource === 'auth') {
             $controller->getEthnicGroups();
         } elseif ($action === 'print-list') {
             $controller->printList();
+        } elseif ($action === 'template') {
+            $importController->downloadTemplate();
         } else {
             $controller->index();
         }
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->create();
+        if ($action === 'import') {
+            $importController->import();
+        } else {
+            $controller->create();
+        }
     } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
         $controller->update($action);
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {

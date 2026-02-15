@@ -223,7 +223,11 @@ const App = {
                 const groupId = hash.split('/')[1];
                 App.renderGroupHub(groupId);
             } else if (hash.startsWith('module/')) {
-                const route = hash.split('/')[1];
+                // Fix: Split by '?' to handle query params like module/beneficiaries?action=download
+                let route = hash.split('/')[1];
+                if (route.includes('?')) {
+                    route = route.split('?')[0];
+                }
                 console.log("Loading Module:", route);
 
                 // Map specific routes to view files if name differs
@@ -738,13 +742,64 @@ const App = {
             modulesToRender.push({ name: 'Administrativos', route: 'reports-adm', icon: 'fas fa-clipboard-list', description: 'Asistencia, personal y gestión', virtual: true, color: 'primary' });
         }
 
-        // 3. APPLY MANUAL ORDERING
+        // 3. APPLY MANUAL ORDERING AND CUSTOM GROUPS
         // ALIMENTACIÓN: items, ration-types, recetario, minutas (ciclos)
         if (group.name === 'Alimentación') {
             const order = ['items', 'population-types', 'recetario', 'minutas'];
             modulesToRender.sort((a, b) => {
                 let idxA = order.indexOf(a.route);
                 let idxB = order.indexOf(b.route);
+                if (idxA === -1) idxA = 99;
+                if (idxB === -1) idxB = 99;
+                return idxA - idxB;
+            });
+        }
+
+        // BENEFICIARIOS GROUP - Custom 5-Card Dashboard
+        if (group.name === 'Beneficiarios') {
+            // 1. Rename/Map existing modules
+            const benefModule = modulesToRender.find(m => m.name === 'Estudiantes' || m.name === 'Beneficiarios' || m.route === 'beneficiarios');
+            if (benefModule) {
+                benefModule.name = 'Beneficiarios';
+                benefModule.description = 'Gestión de estudiantes y matrícula';
+                benefModule.icon = 'fas fa-users';
+                benefModule.route = 'beneficiarios'; // Ensure route is clean
+            }
+
+            // 2. Add Virtual Modules with Actions
+            // Check if they don't already exist to avoid dupes on re-render
+
+            if (!modulesToRender.find(m => m.name === 'Carga Masiva')) {
+                modulesToRender.push({
+                    name: 'Carga Masiva',
+                    route: 'beneficiaries-upload', // Dummy route
+                    action: "window.location.hash='#module/beneficiaries?action=upload'",
+                    icon: 'fas fa-file-upload',
+                    description: 'Subir archivo de beneficiarios',
+                    virtual: true,
+                    color: 'success'
+                });
+            }
+
+            // 3. Sort
+            const order = ['beneficiarios', 'beneficiaries-upload', 'novedades', 'reporte-asistencia'];
+            modulesToRender.sort((a, b) => {
+                let routeA = a.route === 'beneficiaries' ? 'beneficiarios' : a.route; // Normalize
+                let routeB = b.route === 'beneficiaries' ? 'beneficiarios' : b.route;
+
+                // Partial match for report/news if needed
+                if (a.name === 'Novedades') routeA = 'novedades';
+                if (b.name === 'Novedades') routeB = 'novedades';
+                if (a.name.includes('Asistencia')) routeA = 'reporte-asistencia';
+                if (b.name.includes('Asistencia')) routeB = 'reporte-asistencia';
+
+                let idxA = order.indexOf(routeA);
+                let idxB = order.indexOf(routeB);
+
+                // Fallback for known virtuals
+                if (a.route === 'beneficiaries-upload') idxA = 1;
+                if (b.route === 'beneficiaries-upload') idxB = 1;
+
                 if (idxA === -1) idxA = 99;
                 if (idxB === -1) idxB = 99;
                 return idxA - idxB;
@@ -759,6 +814,16 @@ const App = {
                 isVirtual && mod.color === 'success' ? 'style="background-color: #d4edda;"' : '';
             const iconColor = isVirtual ? `text-${mod.color || 'primary'}` : 'text-primary';
 
+            // Custom Action Limit
+            let linkHtml = '';
+            if (mod.action) {
+                linkHtml = `<a href="#" onclick="${mod.action}; return false;" class="btn btn-outline-${mod.color || 'primary'} btn-sm stretched-link">Ingresar</a>`;
+            } else {
+                linkHtml = `<a href="#module/${mod.route}" class="btn btn-outline-${mod.color || 'primary'} btn-sm stretched-link">
+                                ${mod.route === 'ration-types' ? 'Configurar' : 'Ingresar'}
+                            </a>`;
+            }
+
             cardsHtml += `
                 <div class="col-md-4 mb-4 fade-in">
                     <div class="card h-100 shadow-sm hover-card ${borderClass}">
@@ -768,9 +833,7 @@ const App = {
                             </div>
                             <h5 class="card-title fw-bold">${mod.name}</h5>
                             <p class="card-text small text-muted">${mod.description || 'Acceso al módulo'}</p>
-                            <a href="#module/${mod.route}" class="btn btn-outline-${mod.color || 'primary'} btn-sm stretched-link">
-                                ${mod.route === 'ration-types' ? 'Configurar' : 'Ingresar'}
-                            </a>
+                            ${linkHtml}
                         </div>
                     </div>
                 </div>

@@ -7,7 +7,7 @@ class Config
     // Base URL of the project
     // Adjust this according to the environment (localhost vs Hostinger)
     public const BASE_URL = 'http://localhost/pae/';
-    public const APP_VERSION = '1.6.3';
+    public const APP_VERSION = '1.6.6';
 
     // API URL
     public const API_URL = self::BASE_URL . 'api/';

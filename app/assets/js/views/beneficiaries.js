@@ -16,25 +16,47 @@ var BeneficiariesView = {
     /**
      * Render the view
      */
-    async render() {
+    /**
+     * Render the main module dashboard
+     */
+    render() {
+        // Direct render of the list (flat hierarchy)
+        this.renderList();
+
+        // Check for specific actions in URL (e.g. #module/beneficiaries?action=upload)
+        const hash = window.location.hash;
+        if (hash.includes('action=upload')) {
+            setTimeout(() => this.openBulkUploadModal(true), 500);
+        } else if (hash.includes('action=download')) {
+            this.downloadTemplate();
+        }
+    },
+
+    /**
+     * Render the beneficiaries list (Table)
+     */
+    async renderList() {
+        let branchText = '';
+        if (BeneficiariesView.currentBranchName) {
+            branchText = ` - <small class="text-white">${BeneficiariesView.currentBranchName}</small>`;
+        }
+
         const html = `
             <div class="container-fluid py-4">
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h2><i class="fas fa-user-graduate me-2"></i>Beneficiarios (Estudiantes)</h2>
-                                <p class="text-muted">Gestión de matrícula y caracterización de estudiantes focalizados</p>
-                            </div>
-                            <div>
-                                <button class="btn btn-outline-secondary me-2" onclick="PrintListView.openModal()">
-                                    <i class="fas fa-print me-2"></i>Imprimir Listas
-                                </button>
-                                <button class="btn btn-primary" onclick="BeneficiariesView.openModal()">
-                                    <i class="fas fa-plus me-2"></i>Nuevo Beneficiario
-                                </button>
-                            </div>
-                        </div>
+                <div class="row mb-4 align-items-center">
+                    <div class="col-md-6">
+                         <h2 class="text-primary-custom fw-bold">
+                            <!-- Back Button -->
+                            <button class="btn btn-link text-decoration-none text-muted me-2 p-0" onclick="BeneficiariesView.render()">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <i class="fas fa-user-graduate me-2"></i>Gestión de Beneficiarios${branchText}
+                         </h2>
+                    </div>
+                    <div class="col-md-6 text-end">
+                         <button class="btn btn-primary rounded-pill px-4" onclick="BeneficiariesView.openModal()">
+                            <i class="fas fa-plus me-2"></i>Nuevo Beneficiario
+                         </button>
                     </div>
                 </div>
 
@@ -86,6 +108,7 @@ var BeneficiariesView = {
                     </div>
                 </div>
             </div>
+
 
             <!-- Modal: Beneficiary Form -->
             <div class="modal fade" id="modalBeneficiary" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
@@ -417,14 +440,16 @@ var BeneficiariesView = {
 
     async loadMasterData() {
         try {
-            const [schools, docTypes, ethnicGroups, rationTypes] = await Promise.all([
+            const [schools, branches, docTypes, ethnicGroups, rationTypes] = await Promise.all([
                 Helper.fetchAPI('/schools'),
+                Helper.fetchAPI('/branches'),
                 Helper.fetchAPI('/beneficiarios/document_types'),
                 Helper.fetchAPI('/beneficiarios/ethnic_groups'),
                 Helper.fetchAPI('/ration-types')
             ]);
 
             this.schools = schools || [];
+            this.branches = branches || [];
             this.documentTypes = docTypes || [];
             this.ethnicGroups = ethnicGroups || [];
             this.rationTypes = rationTypes.success ? rationTypes.data : [];
@@ -440,6 +465,20 @@ var BeneficiariesView = {
             this.populateSelect('filterSchool', this.schools, 'Todos los Colegios');
         } catch (err) {
             console.error("Error loading master data:", err);
+        }
+    },
+
+    openBulkUploadModal: (showUploadTab = false) => {
+        document.getElementById('upload-results').classList.add('d-none');
+        document.getElementById('bulk-file').value = '';
+
+        const modal = new bootstrap.Modal(document.getElementById('modalBulkUpload'));
+        modal.show();
+
+        if (showUploadTab) {
+            // If we had tabs, we would switch here. 
+            // For now, just focus the input to be helpful
+            setTimeout(() => document.getElementById('bulk-file').focus(), 500);
         }
     },
 
@@ -531,7 +570,6 @@ var BeneficiariesView = {
                     <td>
                         <span class="badge bg-light text-dark border">${b.grade || ''}°</span>
                         <span class="badge bg-light text-dark border">${b.group_name || 'N/A'}</span>
-                        <br><small class="text-muted">${b.shift || ''}</small>
                         <br><small class="text-muted">${b.shift || ''}</small>
                         <br><span class="badge bg-primary-light text-primary border" style="font-size: 0.65rem; white-space: normal; text-align: left;">${b.ration_rights_names || b.ration_type_name || 'Sin Asignar'}</span>
                     </td>
@@ -967,6 +1005,265 @@ var BeneficiariesView = {
             table.column(3).search('^' + grade + '([^0-9]|$)', true, false).draw();
         } else {
             table.column(3).search('').draw();
+        }
+    },
+
+    /**
+     * Download CSV Template
+     */
+    async downloadTemplate() {
+        try {
+            Helper.loading(true, "Generando plantilla...");
+            const response = await fetch(Config.apiEndpoint('/beneficiarios/template'), {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${Config.getToken()}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Error al descargar la plantilla');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'plantilla_carga_beneficiarios.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            Helper.loading(false);
+        } catch (error) {
+            console.error(error);
+            Helper.loading(false);
+            Helper.alert('error', 'No se pudo descargar la plantilla. Verifique su sesión.');
+        }
+    },
+
+    /**
+     * Open Bulk Upload Modal
+     */
+    openBulkUploadModal(showUploadTab = false) {
+        // Create Modal HTML if not exists (or simpler, just use existing one but assuming we need a specific one for upload)
+        // Check if modal exists
+        if (!document.getElementById('modalBulkUpload')) {
+            const modalHtml = `
+            <div class="modal fade" id="modalBulkUpload" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Carga Masiva de Beneficiarios</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Para realizar la carga masiva, primero descargue la plantilla, llene los datos y luego suba el archivo.
+                            </div>
+                            
+                            <ul class="nav nav-tabs" id="bulkTabs" role="tablist">
+                                <li class="nav-item">
+                                    <button class="nav-link active" id="tab-instructions-btn" data-bs-toggle="tab" data-bs-target="#tab-instructions" type="button">Instrucciones</button>
+                                </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" id="tab-upload-btn" data-bs-toggle="tab" data-bs-target="#tab-upload" type="button">Subir Archivo</button>
+                                </li>
+                            </ul>
+                            
+                            <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                                <div class="tab-pane fade show active" id="tab-instructions">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Pasos para la carga:</h6>
+                                            <ol>
+                                                <li>Descargue la plantilla CSV: <button class="btn btn-sm btn-outline-primary ms-2" onclick="BeneficiariesView.downloadTemplate()">Descargar Plantilla</button></li>
+                                                <li>Llene los datos obligatorios.</li>
+                                                <li>Guarde el archivo como CSV (Delimitado por comas).</li>
+                                                <li>Suba el archivo en la pestaña "Subir Archivo".</li>
+                                            </ol>
+                                            <div class="alert alert-warning small">
+                                                <strong>Nota:</strong> Use los <b>Nombres Exactos</b> y <b>Códigos</b> listados a continuación.
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary"><i class="fas fa-book me-2"></i>Diccionario de Datos</h6>
+                                            <div class="accordion" id="accordionReference">
+                                                
+                                                <!-- Sedes -->
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingOne">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                                            Sedes Educativas (Copiar Nombre Exacto)
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionReference">
+                                                        <div class="accordion-body p-0" style="max-height: 200px; overflow-y: auto;">
+                                                            <table class="table table-sm table-striped mb-0 small">
+                                                                <thead class="table-light sticky-top"><tr><th>Nombre Sede</th><th>Institución</th></tr></thead>
+                                                                <tbody>
+                                                                    ${(this.branches || []).map(b => `<tr><td>${b.name}</td><td class="text-muted">${b.school_name}</td></tr>`).join('')}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Etnias -->
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingTwo">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                            Grupos Étnicos (Usar Código)
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionReference">
+                                                        <div class="accordion-body p-0" style="max-height: 200px; overflow-y: auto;">
+                                                            <table class="table table-sm table-striped mb-0 small">
+                                                                <thead class="table-light sticky-top"><tr><th>Cód</th><th>Nombre</th></tr></thead>
+                                                                <tbody>
+                                                                    ${this.ethnicGroups.map(e => `<tr><td>${e.code}</td><td>${e.name}</td></tr>`).join('')}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Raciones -->
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingThree">
+                                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                                            Tipos de Ración (Copiar Nombre Exacto)
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionReference">
+                                                        <div class="accordion-body p-0" style="max-height: 200px; overflow-y: auto;">
+                                                            <table class="table table-sm table-striped mb-0 small">
+                                                                <thead class="table-light sticky-top"><tr><th>Nombre Ración</th></tr></thead>
+                                                                <tbody>
+                                                                    ${(Array.isArray(this.rationTypes) ? this.rationTypes : []).map(r => `<tr><td>${r.name}</td></tr>`).join('')}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="tab-upload">
+                                    <div class="mb-3">
+                                        <label for="bulkFile" class="form-label">Seleccionar Archivo CSV</label>
+                                        <input class="form-control" type="file" id="bulkFile" accept=".csv">
+                                    </div>
+                                    <div id="uploadResult" class="d-none"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-success" onclick="BeneficiariesView.uploadBulkFile()">
+                                <i class="fas fa-upload me-2"></i>Procesar Carga
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('modalBulkUpload'));
+        modal.show();
+
+        if (showUploadTab) {
+            const triggerEl = document.querySelector('#tab-upload-btn');
+            bootstrap.Tab.getInstance(triggerEl) || new bootstrap.Tab(triggerEl).show();
+
+            // Allow Bootstrap tab transition then show
+            setTimeout(() => {
+                const tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            }, 200);
+        }
+    },
+
+    /**
+     * Upload Bulk File
+     */
+    async uploadBulkFile() {
+        const fileInput = document.getElementById('bulkFile');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            Helper.alert('warning', 'Por favor seleccione un archivo CSV');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        Helper.loading(true, 'Procesando archivo, esto puede tomar unos momentos...');
+
+        try {
+            const response = await fetch(Config.apiEndpoint('/beneficiarios/import'), {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${Config.getToken()}`
+                },
+                body: formData
+            });
+
+            const res = await response.json();
+            Helper.loading(false);
+
+            if (response.ok && (res.status === 'success' || !res.error)) {
+                const results = res.details || {};
+                let msg = `Proceso finalizado.\nCreados: ${results.created || 0}\nActualizados: ${results.updated || 0}\nErrores: ${results.errors || 0}`;
+
+                if (results.error_list && results.error_list.length > 0) {
+                    // Create a text file with errors? Or just show summary
+                    console.error("Errores de importación:", results.error_list);
+                    msg += '\n\nRevise la consola para detalles de errores.';
+                }
+
+                Swal.fire({
+                    title: 'Carga Completada',
+                    text: msg,
+                    icon: (results.errors > 0 ? 'warning' : 'success')
+                }).then(() => {
+                    // Close modal first
+                    const modalEl = document.getElementById('modalBulkUpload');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                    }
+                    // Redirect to dashboard or group
+                    let targetHash = '#dashboard';
+                    if (App.state.menu) {
+                        const group = App.state.menu.find(g => (g.modules || []).some(m => m.route === 'beneficiarios'));
+                        if (group) {
+                            targetHash = `#group/${group.id}`;
+                        } else {
+                            // Fallback: Check if group name is Beneficiarios/Estudiantes directly
+                            const g2 = App.state.menu.find(g => g.name === 'Beneficiarios' || g.name === 'Estudiantes');
+                            if (g2) targetHash = `#group/${g2.id}`;
+                        }
+                    }
+
+                    window.location.hash = '#'; // Hack to force reload to dashboard first
+                    setTimeout(() => {
+                        window.location.hash = targetHash;
+                    }, 100);
+                });
+
+                // Reload list
+                this.loadBeneficiaries();
+            } else {
+                Helper.alert('error', res.message || 'Error en la carga');
+            }
+        } catch (err) {
+            console.error(err);
+            Helper.loading(false);
+            Helper.alert('error', 'Error de red al subir el archivo');
         }
     },
 

@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 13 de Febrero 2026, 6:00 PM
-**Versión Doc:** 1.8.5 | **Versión Código:** 1.8.5 (Financial Refinement)
+**Última actualización**: 14 de Febrero 2026, 9:25 PM
+**Versión Doc:** 1.9.0 | **Versión Código:** 1.9.0 (Raciones Diferenciales y Carga Masiva)
 
 ---
 
@@ -53,7 +53,7 @@
 - [x] Dashboard de gestión de inquilinos (PAE Programs)
 - [x] Configuración de logos de operador y entidad territorial
 
-### 6. Módulo de Beneficiarios (Estudiantes) ✅
+### 6. Módulo de Beneficiarios (Estudiantes) ✅ ⭐ v1.9.0
 - [x] **Backend:** `BeneficiaryController.php` con CRUD completo
 - [x] **Frontend:** Formulario multi-pestaña (4 secciones):
   - Identificación (Documento, nombres, etnia, SISBEN)
@@ -65,6 +65,17 @@
   - Tabla principal: `beneficiaries` (30+ campos)
   - Migraciones de refinamiento aplicadas
 - [x] **Cumplimiento Resolución 0003 de 2026**
+- [x] **Raciones Diferenciales:** Soporte para múltiples tipos de ración por beneficiario (Desayuno + Almuerzo, Diferencial, etc.)
+  - Tabla intermedia `beneficiary_ration_rights`
+  - Tipos de Población (Indígena, Afro, Regular) configurables
+  - Frontend: Asignación múltiple en formulario
+- [x] **Carga Masiva (Bulk Upload):**
+  - **Backend Inteligente:** Detección automática de delimitador CSV (`;` o `,`)
+  - **Validación Fila por Fila:** Integridad referencial de Sedes y Tipos de Documento
+  - **Interfaz Simplificada:** Dashboard de 4 tarjetas
+  - **Diccionario de Datos Integrado:** Visualización de códigos válidos para carga
+  - **Reporte de Errores:** Feedback detallado de fallos en carga
+
 ### v1.7.5 (10 Feb 2026)
 - **Implementación**: Motor de conversión de unidades (`measurement_units` con `conversion_factor`).
 - **Mejora**: Flexibilización de plantillas de minutas (duración variable y mapeo circular corregido).
@@ -91,6 +102,7 @@
   - Compra local (Ley 2046 - 30%)
   - Trazabilidad (registro sanitario, refrigeración, vida útil)
   - Control de alérgenos y sodio
+- [x] **Tipos de Población:** Configuración de grupos poblacionales para raciones diferenciales.
 - [x] Cálculo automático de % desperdicio
 - [x] Filtros por grupo, compra local y estado
 - [x] Badges de colores por grupo de alimento
@@ -228,7 +240,14 @@
 
 ---
 
-## 🔧 CORRECCIONES RECIENTES (v1.7.0)
+## 🔧 CORRECCIONES RECIENTES (v1.9.0)
+
+### v1.9.0 (14 Feb 2026)
+- ✅ **Carga Masiva Inteligente:** Implementada detección automática de delimitadores CSV (coma o punto y coma) para compatibilidad con Excel.
+- ✅ **Navegación Circular:** Redirección automática al Hub de Beneficiarios (4 Tarjetas) tras completar una carga masiva.
+- ✅ **Feedback de Carga:** Corrección de contadores (Creados/Actualizados) en reporte de éxito.
+- ✅ **Raciones Diferenciales:** Implementación completa de asignación múltiple de raciones por beneficiario y gestión de Tipos de Población.
+- ✅ **Diccionario de Datos:** Integración dinámica de códigos de Sedes y Etnias en el modal de carga.
 
 ### v1.8.5 (13 Feb 2026)
 - ✅ **Refinamiento Financiero:** Botones de Editar/Eliminar implementados en Movimientos y Traslados.

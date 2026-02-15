@@ -7,70 +7,15 @@ use Utils\JWT;
 use PDO;
 use Exception;
 
-class BranchController
+class BranchController extends BaseController
 {
-    private $conn;
     private $table_name = "school_branches";
-
-    public function __construct()
-    {
-        $this->conn = Database::getInstance()->getConnection();
-    }
-
-    private function getPaeIdFromToken()
-    {
-        $headers = null;
-        if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER["Authorization"]);
-        } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
-        } else if (isset($_SERVER['HTTP_X_AUTH_TOKEN'])) {
-            $headers = trim($_SERVER["HTTP_X_AUTH_TOKEN"]);
-        } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
-            } elseif (isset($requestHeaders['X-Auth-Token'])) {
-                $headers = trim($requestHeaders['X-Auth-Token']);
-            }
-        }
-
-        if (!$headers) {
-            return null;
-        }
-
-        // Robust extraction: Handle with or without "Bearer "
-        $jwt = $headers;
-        if (preg_match('/Bearer\s+(.*)$/i', $headers, $matches)) {
-            $jwt = $matches[1];
-        }
-
-        if ($jwt) {
-            try {
-                $decoded = JWT::decode($jwt);
-                return $decoded['data']['pae_id'] ?? null;
-            } catch (Exception $e) {
-                error_log("BranchController: JWT Decode Error: " . $e->getMessage());
-                return null;
-            }
-        }
-        return null;
-    }
 
     public function index($school_id = null)
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            $debug = [
-                'has_auth' => isset($_SERVER['Authorization']),
-                'has_http_auth' => isset($_SERVER['HTTP_AUTHORIZATION']),
-                'has_x_token' => isset($_SERVER['HTTP_X_AUTH_TOKEN']),
-                'all_headers' => function_exists('apache_request_headers') ? array_keys(apache_request_headers()) : 'N/A'
-            ];
-            echo json_encode(["message" => "Acceso denegado.", "debug" => $debug]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $query = "SELECT b.*, s.name as school_name 
@@ -92,16 +37,14 @@ class BranchController
         $stmt->execute();
 
         $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($branches);
+        $this->sendResponse($branches);
     }
 
     public function create()
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $data = json_decode(file_get_contents("php://input"));
@@ -111,18 +54,14 @@ class BranchController
 
 
         if (empty($data->school_id) || empty($data->name)) {
-            http_response_code(400);
-            echo json_encode(["message" => "ID de colegio y nombre de sede son requeridos."]);
-            return;
+            return $this->sendError("ID de colegio y nombre de sede son requeridos.", 400);
         }
 
         // Verify school ownership
         $check = $this->conn->prepare("SELECT id FROM schools WHERE id = :id AND pae_id = :pae_id");
         $check->execute(['id' => $data->school_id, 'pae_id' => $pae_id]);
         if ($check->rowCount() == 0) {
-            http_response_code(404);
-            echo json_encode(["message" => "Colegio no encontrado."]);
-            return;
+            return $this->sendError("Colegio no encontrado.", 404);
         }
 
         $query = "INSERT INTO " . $this->table_name . " 
@@ -130,21 +69,21 @@ class BranchController
                   VALUES (:school_id, :pae_id, :dane_code, :name, :address, :phone, :manager_name, :area_type)";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":school_id", $data->school_id);
-        $stmt->bindParam(":pae_id", $pae_id);
-        $stmt->bindParam(":dane_code", $data->dane_code);
-        $stmt->bindParam(":name", $data->name);
-        $stmt->bindParam(":address", $data->address);
-        $stmt->bindParam(":phone", $data->phone);
-        $stmt->bindParam(":manager_name", $data->manager_name);
-        $stmt->bindParam(":area_type", $data->area_type);
+        $params = [
+            ":school_id" => $data->school_id,
+            ":pae_id" => $pae_id,
+            ":dane_code" => $data->dane_code ?? null,
+            ":name" => $data->name,
+            ":address" => $data->address ?? null,
+            ":phone" => $data->phone ?? null,
+            ":manager_name" => $data->manager_name ?? null,
+            ":area_type" => $data->area_type ?? null
+        ];
 
-        if ($stmt->execute()) {
-            http_response_code(201);
-            echo json_encode(["message" => "Sede creada exitosamente.", "id" => $this->conn->lastInsertId()]);
+        if ($stmt->execute($params)) {
+            $this->sendResponse(["message" => "Sede creada exitosamente.", "id" => $this->conn->lastInsertId()], 201);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al crear sede."]);
+            $this->sendError("Error al crear sede.", 500);
         }
     }
 
@@ -152,9 +91,7 @@ class BranchController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $data = json_decode(file_get_contents("php://input"));
@@ -167,9 +104,7 @@ class BranchController
         $check = $this->conn->prepare("SELECT id FROM school_branches WHERE id = :id AND pae_id = :pae_id");
         $check->execute(['id' => $id, 'pae_id' => $pae_id]);
         if ($check->rowCount() == 0) {
-            http_response_code(404);
-            echo json_encode(["message" => "Sede no encontrada."]);
-            return;
+            return $this->sendError("Sede no encontrada.", 404);
         }
 
         $query = "UPDATE " . $this->table_name . " 
@@ -178,20 +113,21 @@ class BranchController
                   WHERE id = :id AND pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":dane_code", $data->dane_code);
-        $stmt->bindParam(":name", $data->name);
-        $stmt->bindParam(":address", $data->address);
-        $stmt->bindParam(":phone", $data->phone);
-        $stmt->bindParam(":manager_name", $data->manager_name);
-        $stmt->bindParam(":area_type", $data->area_type);
-        $stmt->bindParam(":id", $id);
-        $stmt->bindParam(":pae_id", $pae_id);
+        $params = [
+            ":dane_code" => $data->dane_code ?? null,
+            ":name" => $data->name,
+            ":address" => $data->address ?? null,
+            ":phone" => $data->phone ?? null,
+            ":manager_name" => $data->manager_name ?? null,
+            ":area_type" => $data->area_type ?? null,
+            ":id" => $id,
+            ":pae_id" => $pae_id
+        ];
 
-        if ($stmt->execute()) {
-            echo json_encode(["message" => "Sede actualizada exitosamente."]);
+        if ($stmt->execute($params)) {
+            $this->sendResponse(["message" => "Sede actualizada exitosamente."]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al actualizar sede."]);
+            $this->sendError("Error al actualizar sede.", 500);
         }
     }
 
@@ -199,9 +135,7 @@ class BranchController
     {
         $pae_id = $this->getPaeIdFromToken();
         if (!$pae_id) {
-            http_response_code(403);
-            echo json_encode(["message" => "Acceso denegado."]);
-            return;
+            return $this->sendError("Acceso denegado.", 403);
         }
 
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :id AND pae_id = :pae_id";
@@ -210,10 +144,9 @@ class BranchController
         $stmt->bindParam(":pae_id", $pae_id);
 
         if ($stmt->execute()) {
-            echo json_encode(["message" => "Sede eliminada exitosamente."]);
+            $this->sendResponse(["message" => "Sede eliminada exitosamente."]);
         } else {
-            http_response_code(500);
-            echo json_encode(["message" => "Error al eliminar sede."]);
+            $this->sendError("Error al eliminar sede.", 500);
         }
     }
 }
