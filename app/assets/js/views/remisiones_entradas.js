@@ -246,17 +246,28 @@ window.RemisionesEntradasView = {
                     if (res.success) {
                         document.getElementById('remission-entrada-items-body').innerHTML = '';
                         res.data.forEach(item => {
-                            this.addItemRow({
-                                item_id: item.item_id,
-                                quantity: item.quantity_ordered,
-                                requested: item.quantity_ordered
-                            });
+                            const ordered = parseFloat(item.quantity_ordered) || 0;
+                            const received = parseFloat(item.quantity_received) || 0;
+                            const pending = ordered - received;
+
+                            if (pending > 0) {
+                                this.addItemRow({
+                                    item_id: item.item_id,
+                                    quantity: pending,
+                                    requested: pending
+                                });
+                            }
                         });
+
+                        if (document.getElementById('remission-entrada-items-body').innerHTML === '') {
+                            Helper.alert('info', 'Esta orden ya ha sido recibida completamente.');
+                        }
                     }
                 } catch (error) {
                     Helper.alert('error', 'Error al cargar detalles de la OC');
                 }
             }
+
         }
     },
 

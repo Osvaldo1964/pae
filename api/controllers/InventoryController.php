@@ -552,7 +552,19 @@ class InventoryController
     public function getPurchaseOrderDetails($id)
     {
         try {
-            $stmt = $this->conn->prepare("SELECT d.*, i.name as item_name FROM purchase_order_details d JOIN items i ON d.item_id = i.id WHERE d.po_id = ?");
+            $query = "SELECT d.*, i.name as item_name,
+                             COALESCE((
+                                SELECT SUM(ird.quantity_sent)
+                                FROM inventory_remission_details ird
+                                JOIN inventory_remissions ir ON ird.remission_id = ir.id
+                                WHERE ir.po_id = d.po_id 
+                                  AND ird.item_id = d.item_id 
+                                  AND ir.status != 'CANCELADA'
+                             ), 0) as quantity_received
+                      FROM purchase_order_details d 
+                      JOIN items i ON d.item_id = i.id 
+                      WHERE d.po_id = ?";
+            $stmt = $this->conn->prepare($query);
             $stmt->execute([$id]);
             echo json_encode(['success' => true, 'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
         } catch (Exception $e) {
@@ -560,6 +572,7 @@ class InventoryController
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
 
     public function savePurchaseOrder()
     {
