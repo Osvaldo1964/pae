@@ -188,22 +188,30 @@ window.MinutasView = {
         let daysHtml = '';
         days.forEach(d => {
             const meals = d.meals.map(m => `
-                <div class="mb-2 p-2 bg-light rounded border-start border-primary border-3 text-start">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold small text-primary">${m.meal_type}</span>
+                <div class="mb-2 p-2 bg-light rounded border-start border-primary border-3 text-start position-relative shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge bg-primary-light text-primary fw-bold" style="font-size: 0.65rem;">${m.meal_type}</span>
                     </div>
-                    <div class="small fw-bold text-dark">${m.name}</div>
+                    <div class="small fw-bold text-dark text-truncate" title="${m.name}">${m.name}</div>
+                    <div class="text-muted mt-1" style="font-size: 0.65rem;">
+                         <i class="fas fa-utensils me-1"></i> ${m.ration_type_id ? 'Población específica' : 'Genérica'}
+                    </div>
                 </div>
             `).join('');
 
             daysHtml += `
                 <div class="col-md-3 mb-4">
-                    <div class="card h-100 shadow-sm border-0 border-top border-primary border-3">
-                        <div class="card-header bg-white border-0 pb-0 text-center">
+                    <div class="card h-100 shadow-sm border-0 border-top border-primary border-3 card-hover" style="transition: all 0.3s ease;">
+                        <div class="card-header bg-white border-0 pb-0 d-flex justify-content-between align-items-center">
                             <h6 class="fw-bold mb-0 text-muted small">Día ${d.day}</h6>
                         </div>
                         <div class="card-body py-2">
-                            ${meals}
+                            ${meals || '<div class="text-center py-3 text-muted small fst-italic">Sin recetas asignadas</div>'}
+                        </div>
+                        <div class="card-footer bg-white border-0 pt-0 pb-3 mt-auto">
+                            <button class="btn btn-outline-primary btn-xs w-100 fw-bold rounded-pill" onclick="MinutasView.editMenu(${d.menu_id}, '${d.name}')">
+                                <i class="fas fa-edit me-1"></i> Gestionar Menú
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -235,6 +243,133 @@ window.MinutasView = {
         const modal = new bootstrap.Modal(modalDiv);
         modal.show();
         modalDiv.addEventListener('hidden.bs.modal', () => modalDiv.remove());
+    },
+
+    printCycle(id) {
+        window.open(`${Config.API_URL}/menu-cycles/print/${id}`, '_blank');
+    },
+
+    /**
+     * Gestión avanzada de un menú diario (Ingredientes + Explosión)
+     */
+    async editMenu(menuId, menuName) {
+        try {
+            Helper.alert('info', 'Cargando detalle del menú...');
+            const res = await Helper.fetchAPI(`/menus/${menuId}`);
+            if (!res.success) throw new Exception(res.message);
+
+            const menu = res.data;
+            const items = menu.items || [];
+
+            const { value: formValues } = await Swal.fire({
+                title: `<i class="fas fa-utensils me-2"></i> ${menuName}`,
+                html: `
+                    <div class="text-start">
+                        <div class="alert alert-info py-2 small mb-3">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            Aquí puede ajustar los gramajes individuales o automatizarlos desde una receta maestra.
+                        </div>
+                        
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-8">
+                                <label class="small fw-bold text-muted d-block mb-1">EXPLOSIÓN RÁPIDA (RECETA)</label>
+                                <select id="swal-recipe-id" class="form-select form-select-sm">
+                                    <option value="">-- Seleccionar receta maestra --</option>
+                                    ${this.recipes.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-success btn-sm w-100 fw-bold" onclick="MinutasView.innerExplodeRecipe(${menuId})">
+                                    <i class="fas fa-bomb me-1"></i> Explosionar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive border rounded" style="max-height: 250px;">
+                            <table class="table table-sm table-hover mb-0" id="swal-items-table">
+                                <thead class="bg-light sticky-top">
+                                    <tr class="small text-muted">
+                                        <th>Insumo</th>
+                                        <th style="width: 80px;">Gramaje</th>
+                                        <th style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${items.map(it => `
+                                        <tr data-item-id="${it.item_id}">
+                                            <td class="small align-middle">${it.item_name}</td>
+                                            <td><input type="number" class="form-control form-control-sm item-qty" value="${it.standard_quantity}" step="0.01"></td>
+                                            <td class="text-center"><button class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+                                        </tr>
+                                    `).join('')}
+                                    ${items.length === 0 ? '<tr><td colspan="3" class="text-center py-3 text-muted small">Sin ingredientes. Use la explosión o añada manualmente.</td></tr>' : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-save me-1"></i> Guardar Cambios',
+                confirmButtonColor: '#0d6efd',
+                cancelButtonText: 'Cancelar',
+                width: '600px',
+                preConfirm: () => {
+                    const rows = document.querySelectorAll('#swal-items-table tbody tr[data-item-id]');
+                    const dataItems = [];
+                    rows.forEach(row => {
+                        dataItems.push({
+                            item_id: row.dataset.itemId,
+                            quantity: row.querySelector('.item-qty').value,
+                            preparation: ''
+                        });
+                    });
+                    return { items: dataItems };
+                }
+            });
+
+            if (formValues) {
+                Helper.alert('loading', 'Guardando cambios...');
+                const saveRes = await Helper.fetchAPI(`/menus/${menuId}/items`, {
+                    method: 'POST',
+                    body: JSON.stringify(formValues)
+                });
+                if (saveRes.success) {
+                    Helper.alert('success', 'Menú actualizado correctamente');
+                    // Recargar el modal de detalle del ciclo si estaba abierto
+                    // (Opcional, por ahora cerramos para simplificar)
+                } else {
+                    Helper.alert('error', saveRes.message);
+                }
+            }
+
+        } catch (error) {
+            Helper.alert('error', 'Error al gestionar el menú: ' + error.message);
+        }
+    },
+
+    async innerExplodeRecipe(menuId) {
+        const recipeId = document.getElementById('swal-recipe-id').value;
+        if (!recipeId) {
+            Swal.showValidationMessage('Seleccione una receta primero');
+            return;
+        }
+
+        try {
+            const res = await Helper.fetchAPI(`/menus/${menuId}/explode`, {
+                method: 'POST',
+                body: JSON.stringify({ recipe_id: recipeId })
+            });
+
+            if (res.success) {
+                Swal.close();
+                Helper.alert('success', 'Explosión completada');
+                this.editMenu(menuId, 'Menú Actualizado'); // Reabrir para ver resultados
+            } else {
+                Helper.alert('error', res.message);
+            }
+        } catch (error) {
+            Helper.alert('error', 'Error en explosión');
+        }
     },
 
     printCycle(id) {

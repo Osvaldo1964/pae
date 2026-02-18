@@ -163,10 +163,10 @@ window.RecetarioView = {
                                             ${r.items.map(i => `
                                                 <tr>
                                                     <td class="ps-3 fw-medium">${i.item_name}</td>
-                                                    <td class="text-center"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</span></td>
-                                                    <td class="text-center"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</span></td>
-                                                    <td class="text-center"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</span></td>
-                                                    <td class="text-center"><span class="badge bg-primary-light text-primary border">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</span></td>
+                                                    <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</span></td>
+                                                    <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</span></td>
+                                                    <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</span></td>
+                                                    <td class="text-end"><span class="badge bg-primary-light text-primary border">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</span></td>
                                                     <td class="pe-3 small text-muted">${i.preparation || '-'}</td>
                                                 </tr>
                                             `).join('')}
@@ -341,10 +341,10 @@ window.RecetarioView = {
                     ${this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name}</option>`).join('')}
                 </select>
             </td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-center border-0 bg-transparent" name="qty_pre" value="${q.PREESCOLAR}" placeholder="0" required title="Preescolar"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-center border-0 bg-transparent" name="qty_pria" value="${q.PRIMARIA_A}" placeholder="0" required title="Primaria A"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-center border-0 bg-transparent" name="qty_prib" value="${q.PRIMARIA_B}" placeholder="0" required title="Primaria B"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-center border-0 bg-transparent fw-bold text-primary" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" required title="Secundaria"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pre" value="${q.PREESCOLAR}" placeholder="0" required title="Preescolar"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pria" value="${q.PRIMARIA_A}" placeholder="0" required title="Primaria A"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_prib" value="${q.PRIMARIA_B}" placeholder="0" required title="Primaria B"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent fw-bold text-primary" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" required title="Secundaria"></td>
             <td><input type="text" class="form-control form-control-sm border-0 bg-transparent" name="preparation" value="${data ? data.preparation || '' : ''}" placeholder="Picar..."></td>
             <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="fas fa-minus-circle"></i></button></td>
         `;
@@ -523,10 +523,10 @@ window.RecetarioView = {
                 <tr class="small">
                     <td>${i.item_name}</td>
                     <td class="text-center">${i.unit}</td>
-                    <td class="text-center">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
-                    <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
-                    <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
-                    <td class="text-center">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                    <td class="text-end">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
+                    <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
+                    <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
+                    <td class="text-end">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
                 </tr>
             `).join('');
 
@@ -628,10 +628,10 @@ window.RecetarioView = {
         let itemRows = r.items.map(i => `
             <tr>
                 <td class="fw-bold">${i.item_name}</td>
-                <td class="text-center">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
-                <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
-                <td class="text-center">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
-                <td class="text-center">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                <td class="text-end">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
+                <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
+                <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
+                <td class="text-end">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
                 <td>${i.preparation || '-'}</td>
             </tr>
         `).join('');

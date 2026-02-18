@@ -416,8 +416,12 @@ if ($resource === 'auth') {
         $controller->getMenuDetail($action);
     } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action && is_numeric($action)) {
         $controller->update($action);
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $action && is_numeric($action) && strpos($_SERVER['REQUEST_URI'], '/items') !== false) {
-        $controller->manageItems($action);
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $action && is_numeric($action)) {
+        if (strpos($_SERVER['REQUEST_URI'], '/items') !== false) {
+            $controller->manageItems($action);
+        } elseif (strpos($_SERVER['REQUEST_URI'], '/explode') !== false) {
+            $controller->explodeRecipe($action);
+        }
     }
 } elseif ($resource === 'inventory') {
     $controller = new \Controllers\InventoryController();

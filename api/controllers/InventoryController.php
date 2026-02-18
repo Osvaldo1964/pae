@@ -775,6 +775,52 @@ class InventoryController
                 // Por ahora afectamos stock directamente como en registerMovement
                 $qty = ($type === 'ENTRADA_OC') ? $item['quantity'] : -$item['quantity'];
 
+                // ACTUALIZAR COSTO (Promedio Ponderado) si es una ENTRADA de OC
+                if ($type === 'ENTRADA_OC' && isset($data['po_id'])) {
+                    // Obtener el precio unitario de la Orden de Compra
+                    $stmtPrice = $this->conn->prepare("SELECT unit_price FROM purchase_order_details WHERE po_id = ? AND item_id = ?");
+                    $stmtPrice->execute([$data['po_id'], $item['item_id']]);
+                    $poDetail = $stmtPrice->fetch(PDO::FETCH_ASSOC);
+                    $unit_price = $poDetail ? floatval($poDetail['unit_price']) : 0;
+
+                    if ($unit_price > 0) {
+                        // Obtener stock y costo actual
+                        $stmtCurrent = $this->conn->prepare("
+                            SELECT COALESCE(inv.current_stock, 0) as stock, COALESCE(i.unit_cost, 0) as cost
+                            FROM items i
+                            LEFT JOIN inventory inv ON i.id = inv.item_id AND inv.pae_id = ?
+                            WHERE i.id = ? AND i.pae_id = ?
+                        ");
+                        $stmtCurrent->execute([$pae_id, $item['item_id'], $pae_id]);
+                        $current = $stmtCurrent->fetch(PDO::FETCH_ASSOC);
+
+                        $current_stock = floatval($current['stock'] ?? 0);
+                        $current_cost = floatval($current['cost'] ?? 0);
+
+                        // Calcular promedio ponderado
+                        $current_value = $current_stock * $current_cost;
+                        $new_value = floatval($item['quantity']) * $unit_price;
+                        $total_stock = $current_stock + floatval($item['quantity']);
+
+                        $weighted_avg_cost = $total_stock > 0 ? ($current_value + $new_value) / $total_stock : $unit_price;
+
+                        // Actualizar items.unit_cost
+                        $stmtCost = $this->conn->prepare("UPDATE items SET unit_cost = ? WHERE id = ? AND pae_id = ?");
+                        $stmtCost->execute([$weighted_avg_cost, $item['item_id'], $pae_id]);
+
+                        // Actualizar costo por ciclo si hay cycle_id
+                        if (isset($data['cycle_id']) && $data['cycle_id']) {
+                            $this->updateCycleCost(
+                                $pae_id,
+                                $item['item_id'],
+                                $data['cycle_id'],
+                                floatval($item['quantity']),
+                                $unit_price
+                            );
+                        }
+                    }
+                }
+
                 $stmtInv = $this->conn->prepare("INSERT INTO inventory (pae_id, item_id, current_stock, last_entry_date, last_exit_date) 
                                                 VALUES (?, ?, ?, ?, ?) 
                                                 ON DUPLICATE KEY UPDATE 

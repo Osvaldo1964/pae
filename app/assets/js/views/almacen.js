@@ -131,6 +131,7 @@ window.AlmacenView = {
                                                 <th class="text-center">Stock Actual</th>
                                                 <th>Unidad</th>
                                                 <th class="text-end">Costo Unit.</th>
+                                                <th class="text-end">Valor Total</th>
                                                 <th>Mínimo</th>
                                                 <th>Estado</th>
                                                 <th class="text-end pe-4">Acciones</th>
@@ -211,6 +212,7 @@ window.AlmacenView = {
                     <td class="text-center fw-bold fs-5">${Helper.formatNumber(item.stock, 3)}</td>
                     <td>${item.unit}</td>
                     <td class="text-end text-muted">${Helper.formatCurrency(item.unit_cost || 0)}</td>
+                    <td class="text-end fw-bold text-dark">${Helper.formatCurrency((parseFloat(item.stock) || 0) * (parseFloat(item.unit_cost) || 0))}</td>
                     <td class="text-muted">${Helper.formatNumber(item.minimum_stock, 3)}</td>
                     <td>
                         <span class="badge ${isLow ? 'bg-danger' : 'bg-success'} rounded-pill">
