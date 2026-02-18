@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-02-2026 a las 20:21:16
+-- Tiempo de generación: 18-02-2026 a las 21:00:46
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -6512,27 +6512,27 @@ INSERT INTO `cycle_template_days` (`id`, `template_id`, `day_number`, `meal_type
 (49, 2, 19, 'ALMUERZO', 2, 3),
 (50, 2, 20, 'DESAYUNO', 1, 1),
 (51, 2, 20, 'ALMUERZO', 2, 2),
-(66, 3, 1, 'ALMUERZO', 5, 18),
-(67, 3, 1, 'DESAYUNO', 4, 5),
-(68, 3, 2, 'ALMUERZO', 5, 7),
-(69, 3, 2, 'DESAYUNO', 4, 6),
-(70, 3, 3, 'ALMUERZO', 5, 20),
-(71, 3, 3, 'DESAYUNO', 4, 8),
-(72, 3, 4, 'ALMUERZO', 5, 21),
-(73, 3, 4, 'DESAYUNO', 4, 9),
-(74, 3, 5, 'ALMUERZO', 5, 22),
-(75, 3, 5, 'DESAYUNO', 4, 12),
-(76, 3, 6, 'ALMUERZO', 5, 23),
-(77, 3, 6, 'DESAYUNO', 4, 13),
-(78, 3, 7, 'ALMUERZO', 5, 24),
-(79, 3, 7, 'DESAYUNO', 4, 14),
-(80, 3, 8, 'ALMUERZO', 5, 25),
-(81, 3, 8, 'DESAYUNO', 4, 15),
-(82, 3, 9, 'ALMUERZO', 5, 26),
-(83, 3, 9, 'DESAYUNO', 4, 16),
-(84, 3, 10, 'ALMUERZO', 5, 27),
-(85, 3, 10, 'DESAYUNO', 4, 17),
-(86, 4, 1, '', 9, 28);
+(86, 4, 1, '', 9, 28),
+(87, 3, 1, 'ALMUERZO', 5, 18),
+(88, 3, 1, 'DESAYUNO', 4, 5),
+(89, 3, 2, 'ALMUERZO', 5, 7),
+(90, 3, 2, 'DESAYUNO', 4, 6),
+(91, 3, 3, 'ALMUERZO', 5, 20),
+(92, 3, 3, 'DESAYUNO', 4, 8),
+(93, 3, 4, 'ALMUERZO', 5, 21),
+(94, 3, 4, 'DESAYUNO', 4, 9),
+(95, 3, 5, 'ALMUERZO', 5, 22),
+(96, 3, 5, 'DESAYUNO', 4, 12),
+(97, 3, 6, 'ALMUERZO', 5, 23),
+(98, 3, 6, 'DESAYUNO', 4, 13),
+(99, 3, 7, 'ALMUERZO', 5, 24),
+(100, 3, 7, 'DESAYUNO', 4, 14),
+(101, 3, 8, 'ALMUERZO', 5, 25),
+(102, 3, 8, 'DESAYUNO', 4, 15),
+(103, 3, 9, 'ALMUERZO', 5, 26),
+(104, 3, 9, 'DESAYUNO', 4, 16),
+(105, 3, 10, 'ALMUERZO', 5, 27),
+(106, 3, 10, 'DESAYUNO', 4, 17);
 
 -- --------------------------------------------------------
 
@@ -6664,7 +6664,8 @@ CREATE TABLE `hr_employees` (
 --
 
 INSERT INTO `hr_employees` (`id`, `pae_id`, `first_name`, `last_name1`, `last_name2`, `document_number`, `address`, `phone`, `email`, `position_id`, `hire_date`, `termination_date`, `eps`, `afp`, `arl`, `salary`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, 'MARIA CLARA', 'SUAREZ', 'RENDON', '554466', 'Calle 6C No 19-21 Campito', '3003892753', 'rayelcastrohernandez@gmail.com', 1, '2026-02-07', NULL, 'SANITAS', 'COLPENSIONES', 'SURA', 1800000.00, 'ACTIVO', '2026-02-07 13:11:14', '2026-02-07 13:11:14');
+(1, 3, 'MARIA CLARA', 'SUAREZ', 'RENDON', '554466', 'Calle 6C No 19-21 Campito', '3003892753', 'rayelcastrohernandez@gmail.com', 1, '2026-02-07', NULL, 'SANITAS', 'COLPENSIONES', 'SURA', 1800000.00, 'ACTIVO', '2026-02-07 13:11:14', '2026-02-07 13:11:14'),
+(2, 4, 'OSVALDO', 'VILLALOBOS', 'JOSE', '73111404', 'cra 19 # 12-37 Local 20', '3023898254', 'osvicor@hotmail.com', 2, '2026-02-01', NULL, '', '', '', 1750000.00, 'ACTIVO', '2026-02-18 19:30:58', '2026-02-18 19:30:58');
 
 -- --------------------------------------------------------
 
@@ -6689,7 +6690,8 @@ CREATE TABLE `hr_payrolls` (
 --
 
 INSERT INTO `hr_payrolls` (`id`, `pae_id`, `period_id`, `employee_id`, `total_devengado`, `total_deduccion`, `total_neto`, `status`, `processed_at`) VALUES
-(2, 3, 1, 1, 2049095.00, 145500.00, 1903595.00, 'PROCESADO', '2026-02-18 10:36:47');
+(2, 3, 1, 1, 2049095.00, 145500.00, 1903595.00, 'PROCESADO', '2026-02-18 10:36:47'),
+(4, 4, 2, 2, 1952000.00, 190000.00, 1762000.00, 'PROCESADO', '2026-02-18 14:32:07');
 
 -- --------------------------------------------------------
 
@@ -6750,7 +6752,8 @@ CREATE TABLE `hr_payroll_config` (
 --
 
 INSERT INTO `hr_payroll_config` (`id`, `pae_id`, `year`, `smlv`, `aux_transporte`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, 2026, 1750905.00, 249095.00, 'ACTIVO', '2026-02-18 15:07:22', '2026-02-18 15:07:22');
+(1, 3, 2026, 1750905.00, 249095.00, 'ACTIVO', '2026-02-18 15:07:22', '2026-02-18 15:07:22'),
+(2, 4, 2026, 1750905.00, 202000.00, 'ACTIVO', '2026-02-18 19:31:12', '2026-02-18 19:31:12');
 
 -- --------------------------------------------------------
 
@@ -6775,7 +6778,12 @@ INSERT INTO `hr_payroll_details` (`id`, `payroll_id`, `concept_id`, `description
 (6, 2, NULL, 'Auxilio Transporte', 249095.00),
 (7, 2, NULL, 'Aporte Salud (4%)', -72000.00),
 (8, 2, NULL, 'Aporte Pensión (4%)', -72000.00),
-(9, 2, NULL, 'Libranza', -1500.00);
+(9, 2, NULL, 'Libranza', -1500.00),
+(14, 4, NULL, 'Sueldo Básico', 1750000.00),
+(15, 4, NULL, 'Auxilio Transporte', 202000.00),
+(16, 4, NULL, 'Aporte Salud (4%)', -70000.00),
+(17, 4, NULL, 'Aporte Pensión (4%)', -70000.00),
+(18, 4, NULL, 'Préstamo', -50000.00);
 
 -- --------------------------------------------------------
 
@@ -6799,7 +6807,8 @@ CREATE TABLE `hr_payroll_novelties` (
 --
 
 INSERT INTO `hr_payroll_novelties` (`id`, `pae_id`, `employee_id`, `period_id`, `concept_id`, `amount`, `description`, `created_at`) VALUES
-(1, 3, 1, 1, 4, 1500.00, 'DESCUENTO CUOTA No. 2', '2026-02-18 15:36:33');
+(1, 3, 1, 1, 4, 1500.00, 'DESCUENTO CUOTA No. 2', '2026-02-18 15:36:33'),
+(2, 4, 2, 2, 7, 50000.00, 'prestamo mes', '2026-02-18 19:32:00');
 
 -- --------------------------------------------------------
 
@@ -6824,7 +6833,8 @@ CREATE TABLE `hr_payroll_periods` (
 --
 
 INSERT INTO `hr_payroll_periods` (`id`, `pae_id`, `name`, `start_date`, `end_date`, `type`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, 'Nomina Febrero 2026', '2026-02-01', '2026-02-28', 'MENSUAL', 'ABIERTO', '2026-02-18 15:08:27', '2026-02-18 15:08:27');
+(1, 3, 'Nomina Febrero 2026', '2026-02-01', '2026-02-28', 'MENSUAL', 'ABIERTO', '2026-02-18 15:08:27', '2026-02-18 15:08:27'),
+(2, 4, 'Nomina Febrero 2026', '2026-02-01', '2026-02-28', 'MENSUAL', 'ABIERTO', '2026-02-18 19:31:26', '2026-02-18 19:31:26');
 
 -- --------------------------------------------------------
 
@@ -6846,7 +6856,8 @@ CREATE TABLE `hr_positions` (
 --
 
 INSERT INTO `hr_positions` (`id`, `pae_id`, `description`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, 'MANIPULADORES', 'ACTIVO', '2026-02-07 13:08:35', '2026-02-07 13:08:35');
+(1, 3, 'MANIPULADORES', 'ACTIVO', '2026-02-07 13:08:35', '2026-02-07 13:08:35'),
+(2, 4, 'MANIPULADORES', 'ACTIVO', '2026-02-18 19:30:24', '2026-02-18 19:30:24');
 
 -- --------------------------------------------------------
 
@@ -9329,8 +9340,9 @@ ALTER TABLE `cycle_templates`
 --
 ALTER TABLE `cycle_template_days`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_meal_per_day` (`template_id`,`day_number`,`meal_type`),
-  ADD KEY `recipe_id` (`recipe_id`);
+  ADD UNIQUE KEY `unique_ration_per_day` (`template_id`,`day_number`,`ration_type_id`),
+  ADD KEY `recipe_id` (`recipe_id`),
+  ADD KEY `idx_template_id` (`template_id`);
 
 --
 -- Indices de la tabla `daily_consumptions`
@@ -9783,7 +9795,7 @@ ALTER TABLE `cycle_templates`
 -- AUTO_INCREMENT de la tabla `cycle_template_days`
 --
 ALTER TABLE `cycle_template_days`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT de la tabla `daily_consumptions`
@@ -9813,13 +9825,13 @@ ALTER TABLE `food_groups`
 -- AUTO_INCREMENT de la tabla `hr_employees`
 --
 ALTER TABLE `hr_employees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `hr_payrolls`
 --
 ALTER TABLE `hr_payrolls`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `hr_payroll_concepts`
@@ -9831,31 +9843,31 @@ ALTER TABLE `hr_payroll_concepts`
 -- AUTO_INCREMENT de la tabla `hr_payroll_config`
 --
 ALTER TABLE `hr_payroll_config`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `hr_payroll_details`
 --
 ALTER TABLE `hr_payroll_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `hr_payroll_novelties`
 --
 ALTER TABLE `hr_payroll_novelties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `hr_payroll_periods`
 --
 ALTER TABLE `hr_payroll_periods`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `hr_positions`
 --
 ALTER TABLE `hr_positions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `inventory`
