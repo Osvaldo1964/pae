@@ -344,11 +344,11 @@ window.RecetarioView = {
                     ${this.items.map(i => `<option value="${i.id}" ${data && data.item_id == i.id ? 'selected' : ''}>${i.name}</option>`).join('')}
                 </select>
             </td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pre" value="${q.PREESCOLAR}" placeholder="0" required title="Preescolar"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pria" value="${q.PRIMARIA_A}" placeholder="0" required title="Primaria A"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_prib" value="${q.PRIMARIA_B}" placeholder="0" required title="Primaria B"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" required title="Secundaria"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent fw-bold text-primary" name="qty_gen" value="${q.GENERAL}" placeholder="0" required title="General / Adulto Mayor"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pre" value="${q.PREESCOLAR}" placeholder="0" title="Preescolar"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pria" value="${q.PRIMARIA_A}" placeholder="0" title="Primaria A"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_prib" value="${q.PRIMARIA_B}" placeholder="0" title="Primaria B"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" title="Secundaria"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent fw-bold text-primary" name="qty_gen" value="${q.GENERAL}" placeholder="0" title="General / Adulto Mayor"></td>
             <td><input type="text" class="form-control form-control-sm border-0 bg-transparent" name="preparation" value="${data ? data.preparation || '' : ''}" placeholder="Picar..."></td>
             <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="fas fa-minus-circle"></i></button></td>
         `;

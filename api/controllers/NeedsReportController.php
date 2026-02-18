@@ -30,7 +30,7 @@ class NeedsReportController
 
             // 2. Get Active Beneficiaries and Classify them by Branch, Ration Type and AGE GROUP (by GRADE)
             // SINCRONIZADO: Se usa el Grado escolar igual que en el calculador central
-            $sqlBen = "SELECT id, branch_id, ration_type_id, grade, birth_date FROM beneficiaries WHERE status = 'ACTIVO' AND pae_id = :pae_id";
+            $sqlBen = "SELECT id, branch_id, ration_type_id, grade, birth_date, beneficiary_type FROM beneficiaries WHERE status = 'ACTIVO' AND pae_id = :pae_id";
             $stmtBen = $this->conn->prepare($sqlBen);
             $stmtBen->execute([':pae_id' => $pae_id]);
             $beneficiaries = $stmtBen->fetchAll(PDO::FETCH_ASSOC);
@@ -40,7 +40,8 @@ class NeedsReportController
 
             foreach ($beneficiaries as $b) {
                 // CLASIFICACIÓN POLIMÓRFICA (Misma lógica que MenuCycleController)
-                $group = $this->getAgeGroupForGrade($b['grade'], $b['birth_date']);
+                $b['beneficiary_type'] = $b['beneficiary_type'] ?? 'student';
+                $group = $this->getAgeGroupForGrade($b['grade'], $b['birth_date'], $b['beneficiary_type']);
 
                 if ($group) {
                     $branchId = $b['branch_id'];
@@ -159,8 +160,13 @@ class NeedsReportController
         return null;
     }
 
-    private function getAgeGroupForGrade($grade, $birth_date = null)
+    private function getAgeGroupForGrade($grade, $birth_date = null, $beneficiary_type = 'student')
     {
+        // 0. Clasificación Explícita (Prioridad Absoluta)
+        if ($beneficiary_type === 'other') {
+            return 'GENERAL';
+        }
+
         $grade = trim(strtoupper($grade ?? ''));
 
         // 1. Clasificación por Grado (Prioridad PAE)

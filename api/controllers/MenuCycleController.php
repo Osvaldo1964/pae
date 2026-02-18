@@ -225,10 +225,10 @@ class MenuCycleController
 
             // 3. Obtener población por Sede, Tipo de Ración, Grado y Fecha de Nacimiento
             // Se incluye birth_date para motor de clasificación por edad (fallback para programas no escolares)
-            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type_id, grade, birth_date, COUNT(*) as total 
+            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type_id, grade, birth_date, beneficiary_type, COUNT(*) as total 
                                             FROM beneficiaries 
                                             WHERE pae_id = ? AND status = 'ACTIVO' 
-                                            GROUP BY branch_id, ration_type_id, grade, birth_date");
+                                            GROUP BY branch_id, ration_type_id, grade, birth_date, beneficiary_type");
             $stmtPop->execute([$pae_id]);
             $populations = $stmtPop->fetchAll(PDO::FETCH_ASSOC);
 
@@ -264,7 +264,9 @@ class MenuCycleController
             foreach ($populations as $pop) {
                 $totalBeneficiaries += $pop['total'];
                 $branch_id = $pop['branch_id'];
-                $age_group = $this->getAgeGroup($pop['grade'], $pop['birth_date']);
+                $pop['grade'] = $pop['grade'] ?? '';
+                $pop['beneficiary_type'] = $pop['beneficiary_type'] ?? 'student'; // Compatibilidad
+                $age_group = $this->getAgeGroup($pop['grade'], $pop['birth_date'], $pop['beneficiary_type']);
                 $ration_type_id = $pop['ration_type_id'];
 
                 foreach ($recipeDetails as $recipe) {
@@ -318,8 +320,13 @@ class MenuCycleController
     /**
      * Motor de clasificación híbrido: Grado (Escolar) -> Edad (Fallback) -> GENERAL
      */
-    private function getAgeGroup($grade, $birth_date = null)
+    private function getAgeGroup($grade, $birth_date = null, $beneficiary_type = 'student')
     {
+        // 0. Clasificación Explícita (Prioridad Absoluta)
+        if ($beneficiary_type === 'other') {
+            return 'GENERAL';
+        }
+
         $grade = trim(strtoupper($grade ?? ''));
 
         // 1. Clasificación por Grado (Prioridad PAE)

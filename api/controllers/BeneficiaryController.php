@@ -113,6 +113,8 @@ class BeneficiaryController extends BaseController
         // Bind params
         $stmt->bindParam(":pae_id", $pae_id);
         $stmt->bindParam(":branch_id", $data['branch_id']);
+        $stmt->bindParam(":btype", $data['beneficiary_type']);
+        $stmt->bindParam(":popname", $data['population_name']);
         $stmt->bindParam(":document_type_id", $data['document_type_id']);
         $stmt->bindParam(":document_number", $data['document_number']);
         $stmt->bindParam(":first_name", $data['first_name']);
@@ -215,6 +217,8 @@ class BeneficiaryController extends BaseController
 
         $query = "UPDATE " . $this->table_name . " SET 
                   branch_id = :branch_id, 
+                  beneficiary_type = :btype,
+                  population_name = :popname,
                   document_type_id = :document_type_id, 
                   document_number = :document_number, 
                   first_name = :first_name, 
@@ -255,6 +259,8 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":pae_id", $pae_id);
         $stmt->bindParam(":id", $id);
         $stmt->bindParam(":branch_id", $data['branch_id']);
+        $stmt->bindParam(":btype", $data['beneficiary_type']);
+        $stmt->bindParam(":popname", $data['population_name']);
         $stmt->bindParam(":document_type_id", $data['document_type_id']);
         $stmt->bindParam(":document_number", $data['document_number']);
         $stmt->bindParam(":first_name", $data['first_name']);

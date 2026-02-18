@@ -221,12 +221,31 @@ var BeneficiariesView = {
                                     <!-- Tab 2: Enrollment -->
                                     <div class="tab-pane fade" id="tab-enrollment">
                                         <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">Centro / Institución *</label>
-                                                <select class="form-select" id="school-id" onchange="BeneficiariesView.onSchoolChange(this.value)" required></select>
+                                        <!-- Tipo de Población -->
+                                        <div class="col-md-12 mb-2">
+                                            <label class="form-label d-block fw-bold">Tipo de Beneficiario *</label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="beneficiaryType" id="type-student" value="student" checked onchange="BeneficiariesView.toggleBeneficiaryType()">
+                                                <label class="form-check-label" for="type-student"><i class="fas fa-user-graduate me-1"></i>Estudiante (Grados)</label>
                                             </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-bold">Punto de Atención *</label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="beneficiaryType" id="type-other" value="other" onchange="BeneficiariesView.toggleBeneficiaryType()">
+                                                <label class="form-check-label" for="type-other"><i class="fas fa-users me-1"></i>Otra Población (Adulto Mayor, Gestantes, etc.)</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12" id="population-name-container" style="display:none;">
+                                            <label class="form-label fw-bold text-primary">Descripción de la Población *</label>
+                                            <input type="text" class="form-control" id="population-name" placeholder="Ej: Madres Gestantes, Adulto Mayor, Docentes...">
+                                            <div class="form-text">Esta descripción agrupará a los beneficiarios en los reportes (Nutricionalmente usan la columna GENERAL).</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Centro / Institución *</label>
+                                            <select class="form-select" id="school-id" onchange="BeneficiariesView.onSchoolChange(this.value)" required></select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">Punto de Atención *</label>
                                                 <select class="form-select" id="branch-id" required disabled>
                                                     <option value="">Seleccione primero un centro</option>
                                                 </select>
@@ -398,6 +417,30 @@ var BeneficiariesView = {
         const birthDateInput = document.getElementById('birth-date');
         if (birthDateInput) {
             birthDateInput.addEventListener('change', () => this.calculateSuggestedAgeGroup());
+        }
+    },
+
+    toggleBeneficiaryType() {
+        const isStudent = document.getElementById('type-student').checked;
+        const gradeSelect = document.getElementById('grade');
+        const popContainer = document.getElementById('population-name-container');
+        const popInput = document.getElementById('population-name');
+
+        if (isStudent) {
+            popContainer.style.display = 'none';
+            popInput.required = false;
+            popInput.value = ''; // Limpiar si vuelve a estudiante
+
+            gradeSelect.disabled = false;
+            gradeSelect.required = true;
+            // Restore visual required check if needed
+        } else {
+            popContainer.style.display = 'block';
+            popInput.required = true;
+
+            gradeSelect.value = '';
+            gradeSelect.disabled = true;
+            gradeSelect.required = false;
         }
     },
 
@@ -645,6 +688,16 @@ var BeneficiariesView = {
                 document.getElementById('branch-id').value = b.branch_id;
             });
 
+            // Set Beneficiary Type Logic
+            const bType = b.beneficiary_type || 'student';
+            if (bType === 'other') {
+                document.getElementById('type-other').checked = true;
+            } else {
+                document.getElementById('type-student').checked = true;
+            }
+            document.getElementById('population-name').value = b.population_name || '';
+            this.toggleBeneficiaryType(); // Aplica visibilidad
+
             document.getElementById('grade').value = b.grade;
             document.getElementById('group').value = b.group_name || '';
             document.getElementById('shift').value = b.shift;
@@ -725,6 +778,9 @@ var BeneficiariesView = {
             sisben_category: document.getElementById('sisben').value,
             data_authorization: document.getElementById('data-authorization').checked,
             is_overage: document.getElementById('is-overage').checked ? 1 : 0,
+
+            beneficiary_type: document.querySelector('input[name="beneficiaryType"]:checked').value,
+            population_name: document.getElementById('population-name').value,
 
             branch_id: document.getElementById('branch-id').value,
             grade: document.getElementById('grade').value,
