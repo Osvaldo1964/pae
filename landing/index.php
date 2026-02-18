@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAE Control | Alimentación Escolar</title>
+    <title>Program Control | Programas de Alimentación </title>
     <!-- Bootstrap 5 CSS -->
     <link href="landing/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -80,7 +80,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-utensils me-2"></i>PAE Control</a>
+            <a class="navbar-brand" href="#"><i class="fas fa-utensils me-2"></i>Program Control</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -94,7 +94,7 @@
                     <li class="nav-item ms-3">
                         <button class="btn btn-outline-light btn-sm px-3 rounded-pill" data-bs-toggle="modal"
                             data-bs-target="#createPaeModal">
-                            <i class="fas fa-plus-circle me-1"></i> Crear PAE
+                            <i class="fas fa-plus-circle me-1"></i> Crear Programa
                         </button>
                     </li>
                     <li class="nav-item ms-2">
@@ -194,7 +194,7 @@
                             <span class="badge bg-success mb-2">Nutrición</span>
                             <h5>Feria Gastronómica</h5>
                             <p class="text-muted small">Mar 20, 2026</p>
-                            <p class="card-text">Muestra de alimentos autóctonos integrados al ciclo de menús del PAE.
+                            <p class="card-text">Muestra de alimentos autóctonos integrados a ciclos de menús.
                             </p>
                         </div>
                     </div>
@@ -206,7 +206,7 @@
     <!-- Footer -->
     <footer class="text-center">
         <div class="container">
-            <p class="mb-2">© 2026 PAE Control - Todos los derechos reservados.</p>
+            <p class="mb-2">© 2026 Programs Control - Todos los derechos reservados.</p>
             <small>Transparencia y Eficiencia en la Alimentación Escolar</small>
         </div>
     </footer>
@@ -254,7 +254,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="fas fa-seedling me-2"></i>Crear Nuevo Programa PAE</h5>
+                    <h5 class="modal-title"><i class="fas fa-seedling me-2"></i>Crear Nuevo Programa</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

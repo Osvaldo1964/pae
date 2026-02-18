@@ -92,7 +92,13 @@ class MenuCycleController
 
             $this->conn->beginTransaction();
 
-            // 1. Obtener la plantilla y sus días
+            // 1. Obtener la plantilla y sus días (Validando que la plantilla pertenezca al PAE)
+            $stmtCheckTemp = $this->conn->prepare("SELECT id FROM cycle_templates WHERE id = ? AND pae_id = ?");
+            $stmtCheckTemp->execute([$template_id, $pae_id]);
+            if (!$stmtCheckTemp->fetch()) {
+                throw new Exception("La plantilla seleccionada no existe o no pertenece a su programa.");
+            }
+
             $stmtTemp = $this->conn->prepare("SELECT * FROM cycle_template_days WHERE template_id = ? ORDER BY day_number ASC");
             $stmtTemp->execute([$template_id]);
             $templateDays = $stmtTemp->fetchAll(PDO::FETCH_ASSOC);
@@ -103,7 +109,7 @@ class MenuCycleController
             // 2. Definir las fechas a procesar
             // Si el frontend envía fechas específicas, usamos esas. Si no, calculamos días hábiles como fallback (legacy)
             $dates_mapping = [];
-            
+
             if (!empty($specific_dates)) {
                 // Ordenar fechas por seguridad
                 sort($specific_dates);
@@ -158,7 +164,8 @@ class MenuCycleController
                             break;
                         }
                     }
-                    if (!$found) continue;
+                    if (!$found)
+                        continue;
                 }
 
                 $stmtMenu = $this->conn->prepare("INSERT INTO menus (pae_id, cycle_id, name, day_number) VALUES (?, ?, ?, ?)");
@@ -168,7 +175,7 @@ class MenuCycleController
                 $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
                 $diaSemana = $dias[$dateObj->format('w')];
                 $menu_name = "Día " . $rel_day . " - " . $diaSemana . " " . $dateObj->format('d/m');
-                
+
                 $stmtMenu->execute([$pae_id, $cycle_id, $menu_name, $rel_day]);
                 $menu_id = $this->conn->lastInsertId();
 
@@ -216,11 +223,12 @@ class MenuCycleController
             // 2. Limpiar proyecciones previas si existen (por seguridad)
             $this->conn->prepare("DELETE FROM cycle_projections WHERE cycle_id = ?")->execute([$id]);
 
-            // 3. Obtener población por Sede, Tipo de Ración y Grado (para mapear a Grupo Etario)
-            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type_id, grade, COUNT(*) as total 
+            // 3. Obtener población por Sede, Tipo de Ración, Grado y Fecha de Nacimiento
+            // Se incluye birth_date para motor de clasificación por edad (fallback para programas no escolares)
+            $stmtPop = $this->conn->prepare("SELECT branch_id, ration_type_id, grade, birth_date, COUNT(*) as total 
                                             FROM beneficiaries 
                                             WHERE pae_id = ? AND status = 'ACTIVO' 
-                                            GROUP BY branch_id, ration_type_id, grade");
+                                            GROUP BY branch_id, ration_type_id, grade, birth_date");
             $stmtPop->execute([$pae_id]);
             $populations = $stmtPop->fetchAll(PDO::FETCH_ASSOC);
 
@@ -229,6 +237,7 @@ class MenuCycleController
 
             // 4. Obtener la explosión de recetas vinculadas al ciclo
             // Buscamos: Ciclo -> Menús -> Recetas -> ItemsReceta
+            // IMPORTANTE: Filtrar por pae_id del ciclo para evitar fugas entre programas
             $queryExplosion = "SELECT 
                                 mr.ration_type_id, 
                                 ri.age_group, 
@@ -239,9 +248,9 @@ class MenuCycleController
                                JOIN recipe_items ri ON mr.recipe_id = ri.recipe_id
                                JOIN items i ON ri.item_id = i.id
                                JOIN measurement_units mu ON i.measurement_unit_id = mu.id
-                               WHERE mr.menu_id IN (SELECT id FROM menus WHERE cycle_id = ?)";
+                               WHERE mr.menu_id IN (SELECT id FROM menus WHERE cycle_id = ? AND pae_id = ?)";
             $stmtExp = $this->conn->prepare($queryExplosion);
-            $stmtExp->execute([$id]);
+            $stmtExp->execute([$id, $pae_id]);
             $recipeDetails = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
 
             if (!$recipeDetails)
@@ -255,7 +264,7 @@ class MenuCycleController
             foreach ($populations as $pop) {
                 $totalBeneficiaries += $pop['total'];
                 $branch_id = $pop['branch_id'];
-                $age_group = $this->getAgeGroupForGrade($pop['grade']);
+                $age_group = $this->getAgeGroup($pop['grade'], $pop['birth_date']);
                 $ration_type_id = $pop['ration_type_id'];
 
                 foreach ($recipeDetails as $recipe) {
@@ -306,16 +315,48 @@ class MenuCycleController
         }
     }
 
-    private function getAgeGroupForGrade($grade)
+    /**
+     * Motor de clasificación híbrido: Grado (Escolar) -> Edad (Fallback) -> GENERAL
+     */
+    private function getAgeGroup($grade, $birth_date = null)
     {
-        $grade = trim(strtoupper($grade));
+        $grade = trim(strtoupper($grade ?? ''));
+
+        // 1. Clasificación por Grado (Prioridad PAE)
         if (in_array($grade, ['TRANSICIÓN', 'TRANSICION', 'JARDIN', 'JARDÍN', 'PRE-JARDIN', '0', '0°']))
             return 'PREESCOLAR';
         if (in_array($grade, ['1', '1°', '2', '2°', '3', '3°']))
             return 'PRIMARIA_A';
         if (in_array($grade, ['4', '4°', '5', '5°']))
             return 'PRIMARIA_B';
-        return 'SECUNDARIA'; // 6 a 11
+        if (in_array($grade, ['6', '6°', '7', '7°', '8', '8°', '9', '9°', '10', '10°', '11', '11°']))
+            return 'SECUNDARIA';
+
+        // 2. Clasificación por Edad (Fallback para programas no escolares como Adulto Mayor)
+        if ($birth_date) {
+            $birth = new \DateTime($birth_date);
+            $now = new \DateTime();
+            $age = $now->diff($birth)->y;
+
+            if ($age <= 5)
+                return 'PREESCOLAR';
+            if ($age >= 6 && $age <= 8)
+                return 'PRIMARIA_A';
+            if ($age >= 9 && $age <= 11)
+                return 'PRIMARIA_B';
+            if ($age >= 12 && $age <= 17)
+                return 'SECUNDARIA';
+
+            // Si es mayor de edad o no encaja en PAE -> GENERAL
+            return 'GENERAL';
+        }
+
+        // 3. Fallback final
+        if (strpos($grade, 'ADULTO') !== false || strpos($grade, 'GENERAL') !== false) {
+            return 'GENERAL';
+        }
+
+        return ($grade) ? 'SECUNDARIA' : 'GENERAL';
     }
 
     /**

@@ -156,6 +156,7 @@ window.RecetarioView = {
                                                 <th class="text-center text-uppercase">Pri A</th>
                                                 <th class="text-center text-uppercase">Pri B</th>
                                                 <th class="text-center text-uppercase">Secu.</th>
+                                                <th class="text-center text-uppercase text-primary">Gral.</th>
                                                 <th class="pe-3 text-uppercase">Notas</th>
                                             </tr>
                                         </thead>
@@ -166,7 +167,8 @@ window.RecetarioView = {
                                                     <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</span></td>
                                                     <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</span></td>
                                                     <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</span></td>
-                                                    <td class="text-end"><span class="badge bg-primary-light text-primary border">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</span></td>
+                                                    <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</span></td>
+                                                    <td class="text-end"><span class="badge bg-primary-light text-primary border">${Helper.formatNumber(i.quantities.GENERAL, 3)}</span></td>
                                                     <td class="pe-3 small text-muted">${i.preparation || '-'}</td>
                                                 </tr>
                                             `).join('')}
@@ -287,8 +289,9 @@ window.RecetarioView = {
                                             <th class="ps-3" style="width: 30%">Ingrediente</th>
                                             <th class="text-center" style="width: 12%">Preesc.</th>
                                             <th class="text-center" style="width: 12%">Prim. A</th>
-                                            <th class="text-center" style="width: 12%">Prim. B</th>
-                                            <th class="text-center" style="width: 12%">Secund.</th>
+                                            <th class="text-center" style="width: 11%">Prim. B</th>
+                                            <th class="text-center" style="width: 11%">Secund.</th>
+                                            <th class="text-center text-primary" style="width: 11%">General</th>
                                             <th>Preparación</th>
                                             <th style="width: 5%"></th>
                                         </tr>
@@ -332,7 +335,7 @@ window.RecetarioView = {
         const tr = document.createElement('tr');
         tr.className = 'ingredient-row bg-white';
 
-        const q = data ? data.quantities : { PREESCOLAR: '', PRIMARIA_A: '', PRIMARIA_B: '', SECUNDARIA: '' };
+        const q = data ? data.quantities : { PREESCOLAR: '', PRIMARIA_A: '', PRIMARIA_B: '', SECUNDARIA: '', GENERAL: '' };
 
         tr.innerHTML = `
             <td class="ps-2">
@@ -344,7 +347,8 @@ window.RecetarioView = {
             <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pre" value="${q.PREESCOLAR}" placeholder="0" required title="Preescolar"></td>
             <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_pria" value="${q.PRIMARIA_A}" placeholder="0" required title="Primaria A"></td>
             <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_prib" value="${q.PRIMARIA_B}" placeholder="0" required title="Primaria B"></td>
-            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent fw-bold text-primary" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" required title="Secundaria"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent" name="qty_sec" value="${q.SECUNDARIA}" placeholder="0" required title="Secundaria"></td>
+            <td><input type="number" step="0.001" class="form-control form-control-sm text-end border-0 bg-transparent fw-bold text-primary" name="qty_gen" value="${q.GENERAL}" placeholder="0" required title="General / Adulto Mayor"></td>
             <td><input type="text" class="form-control form-control-sm border-0 bg-transparent" name="preparation" value="${data ? data.preparation || '' : ''}" placeholder="Picar..."></td>
             <td class="text-center"><button type="button" class="btn btn-link text-danger p-0" onclick="this.closest('tr').remove()"><i class="fas fa-minus-circle"></i></button></td>
         `;
@@ -735,7 +739,8 @@ window.RecetarioView = {
                         PREESCOLAR: row.querySelector('[name="qty_pre"]').value || 0,
                         PRIMARIA_A: row.querySelector('[name="qty_pria"]').value || 0,
                         PRIMARIA_B: row.querySelector('[name="qty_prib"]').value || 0,
-                        SECUNDARIA: row.querySelector('[name="qty_sec"]').value || 0
+                        SECUNDARIA: row.querySelector('[name="qty_sec"]').value || 0,
+                        GENERAL: row.querySelector('[name="qty_gen"]').value || 0
                     },
                     preparation: row.querySelector('[name="preparation"]').value
                 });

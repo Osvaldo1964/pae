@@ -655,6 +655,39 @@ if ($resource === 'auth') {
     } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->index();
     }
+} elseif ($resource === 'hr-payroll') {
+    $controller = new \Controllers\HRPayrollController();
+    if ($action === 'config') {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET')
+            $controller->getConfig();
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST')
+            $controller->saveConfig();
+    } elseif ($action === 'periods') {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET')
+            $controller->getPeriods();
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST')
+            $controller->storePeriod();
+    } elseif ($action === 'calculate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->calculatePayroll($id_param);
+    } elseif ($action === 'results' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getPayrollResults($id_param);
+    } elseif ($action === 'novelties') {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET')
+            $controller->getNovelties($id_param);
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST')
+            $controller->saveNovelty();
+        elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE')
+            $controller->deleteNovelty($id_param);
+    } elseif ($action === 'concepts') {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET')
+            $controller->getConcepts();
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST')
+            $controller->saveConcept();
+        elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE')
+            $controller->deleteConcept($id_param);
+    } elseif ($action === 'report' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getPayrollReport($id_param);
+    }
 } elseif ($resource === 'population-types') {
     $controller = new \Controllers\PopulationTypeController();
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {

@@ -67,12 +67,18 @@ class MenuController
         }
     }
 
-    /**
-     * GET /api/menu-cycles/{id}/days - Obtener los menus organizado por días
-     */
     public function getCycleDays($cycle_id)
     {
         try {
+            $pae_id = $this->getPaeIdFromToken();
+
+            // Validar que el ciclo pertenezca al PAE
+            $stmtCheck = $this->conn->prepare("SELECT id FROM menu_cycles WHERE id = ? AND pae_id = ?");
+            $stmtCheck->execute([$cycle_id, $pae_id]);
+            if (!$stmtCheck->fetch()) {
+                throw new Exception("Ciclo no encontrado o no autorizado");
+            }
+
             // Obtener todos los menus del ciclo con sus recetas y raciones
             $query = "SELECT m.id as menu_id, m.day_number, m.name as day_name,
                              mr.recipe_id, mr.meal_type, mr.ration_type_id,
@@ -81,10 +87,11 @@ class MenuController
                       LEFT JOIN menu_recipes mr ON m.id = mr.menu_id
                       LEFT JOIN recipes r ON mr.recipe_id = r.id
                       LEFT JOIN pae_ration_types rt ON mr.ration_type_id = rt.id
-                      WHERE m.cycle_id = :cycle_id 
+                      WHERE m.cycle_id = :cycle_id AND m.pae_id = :pae_id
                       ORDER BY m.day_number, rt.id, mr.meal_type";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':cycle_id', $cycle_id);
+            $stmt->bindParam(':pae_id', $pae_id);
             $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -125,10 +132,13 @@ class MenuController
     public function getMenuDetail($menu_id)
     {
         try {
-            // 1. Datos básicos del menú
-            $query = "SELECT * FROM menus WHERE id = :id";
+            $pae_id = $this->getPaeIdFromToken();
+
+            // 1. Datos básicos del menú (Filtrando por PAE)
+            $query = "SELECT * FROM menus WHERE id = :id AND pae_id = :pae_id";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':id', $menu_id);
+            $stmt->bindParam(':pae_id', $pae_id);
             $stmt->execute();
             $menu = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -171,6 +181,7 @@ class MenuController
     {
         try {
             $data = json_decode(file_get_contents("php://input"), true);
+            $pae_id = $this->getPaeIdFromToken();
 
             $query = "UPDATE menus SET 
                         name = :name, 
@@ -178,7 +189,7 @@ class MenuController
                         meal_type = :meal_type,
                         day_number = :day_number,
                         age_group = :age_group
-                      WHERE id = :id";
+                      WHERE id = :id AND pae_id = :pae_id";
 
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':name', $data['name']);
@@ -187,6 +198,7 @@ class MenuController
             $stmt->bindParam(':day_number', $data['day_number']);
             $stmt->bindParam(':age_group', $data['age_group']);
             $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':pae_id', $pae_id);
             $stmt->execute();
 
             echo json_encode(['success' => true, 'message' => 'Minuta actualizada']);

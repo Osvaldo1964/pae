@@ -137,6 +137,11 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":grade", $data['grade']);
         $stmt->bindParam(":group_name", $data['group_name']);
         $stmt->bindParam(":status", $data['status']);
+        // Logic to sync main ration_type_id from rights array
+        if (isset($data['ration_rights']) && is_array($data['ration_rights']) && count($data['ration_rights']) > 0) {
+            $data['ration_type_id'] = $data['ration_rights'][0];
+        }
+
         $stmt->bindParam(":enrollment_date", $data['enrollment_date']);
         $stmt->bindParam(":modality", $data['modality']);
         $stmt->bindParam(":ration_type", $data['ration_type']);
@@ -274,6 +279,11 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":grade", $data['grade']);
         $stmt->bindParam(":group_name", $data['group_name']);
         $stmt->bindParam(":status", $data['status']);
+        // Logic to sync main ration_type_id from rights array
+        if (isset($data['ration_rights']) && is_array($data['ration_rights']) && count($data['ration_rights']) > 0) {
+            $data['ration_type_id'] = $data['ration_rights'][0];
+        }
+
         $stmt->bindParam(":enrollment_date", $data['enrollment_date']);
         $stmt->bindParam(":modality", $data['modality']);
         $stmt->bindParam(":ration_type", $data['ration_type']);

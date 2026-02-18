@@ -250,6 +250,9 @@ const App = {
                     'consumos': 'consumos',
                     'hr-positions': 'hr_positions',
                     'hr-employees': 'hr_employees',
+                    'hr-payroll-config': 'hr_payroll_config',
+                    'hr-payroll-concepts': 'hr_payroll_concepts',
+                    'hr-payrolls': 'hr_payrolls',
                     'ration-types': 'ration_types',
                     'population-types': 'ration_types',
                     'reports-insumos': 'reports_insumos',
@@ -258,7 +261,8 @@ const App = {
                     'fin-terceros': 'fin_terceros',
                     'fin-presupuesto': 'fin_presupuesto',
                     'fin-movimientos': 'fin_movimientos',
-                    'fin-traslados': 'fin_traslados'
+                    'fin-traslados': 'fin_traslados',
+                    'reports-pay': 'reports_payroll'
                 };
 
                 const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm'];
@@ -740,6 +744,7 @@ const App = {
             modulesToRender.push({ name: 'Financieros', route: 'reports-fin', icon: 'fas fa-file-invoice-dollar', description: 'Balances, costos y presupuestos', virtual: true, color: 'danger' });
             modulesToRender.push({ name: 'Alimentación', route: 'reports-ali', icon: 'fas fa-utensils', description: 'Insumos, recetas y minutas', virtual: true, color: 'success' });
             modulesToRender.push({ name: 'Administrativos', route: 'reports-adm', icon: 'fas fa-clipboard-list', description: 'Asistencia, personal y gestión', virtual: true, color: 'primary' });
+            modulesToRender.push({ name: 'Talento Humano', route: 'reports-pay', icon: 'fas fa-user-tie', description: 'Nómina general y desprendibles', virtual: true, color: 'info' });
         }
 
         // 3. APPLY MANUAL ORDERING AND CUSTOM GROUPS

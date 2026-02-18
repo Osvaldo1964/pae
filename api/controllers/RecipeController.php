@@ -90,7 +90,7 @@ class RecipeController
                                 'item_name' => $it['item_name'],
                                 'unit' => $it['unit'],
                                 'preparation' => $it['preparation_method'],
-                                'quantities' => ['PREESCOLAR' => 0, 'PRIMARIA_A' => 0, 'PRIMARIA_B' => 0, 'SECUNDARIA' => 0]
+                                'quantities' => ['PREESCOLAR' => 0, 'PRIMARIA_A' => 0, 'PRIMARIA_B' => 0, 'SECUNDARIA' => 0, 'GENERAL' => 0]
                             ];
                         }
                         $groupedItems[$iid]['quantities'][$it['age_group']] = $it['quantity'];
@@ -154,7 +154,8 @@ class RecipeController
                             'PREESCOLAR' => 0,
                             'PRIMARIA_A' => 0,
                             'PRIMARIA_B' => 0,
-                            'SECUNDARIA' => 0
+                            'SECUNDARIA' => 0,
+                            'GENERAL' => 0
                         ]
                     ];
                 }
@@ -229,7 +230,7 @@ class RecipeController
 
     private function recalculateNutrition($recipe_id)
     {
-        $groups = ['PREESCOLAR', 'PRIMARIA_A', 'PRIMARIA_B', 'SECUNDARIA'];
+        $groups = ['PREESCOLAR', 'PRIMARIA_A', 'PRIMARIA_B', 'SECUNDARIA', 'GENERAL'];
 
         foreach ($groups as $group) {
             $query = "SELECT 

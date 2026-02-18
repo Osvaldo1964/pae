@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PAE Control | Admin</title>
+    <title>Program Control | Admin</title>
     <?php
     $base_path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/';
     $assets_path = $base_path . 'assets/';
@@ -97,7 +97,7 @@
         <div id="sidebar" class="d-flex flex-column p-3 d-none">
             <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                 <i class="fas fa-utensils me-2 fa-lg"></i>
-                <span class="fs-4 fw-bold">PAE Control</span>
+                <span class="fs-4 fw-bold">Program Control</span>
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto" id="sidebar-list">
