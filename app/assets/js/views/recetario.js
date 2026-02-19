@@ -443,6 +443,14 @@ window.RecetarioView = {
         }
     },
 
+    _getDisplayUnit(unit) {
+        if (!unit) return '';
+        const u = unit.toUpperCase();
+        if (u === 'KG' || u === 'KILOGRAMO' || u === 'KILOS') return 'g';
+        if (u === 'L' || u === 'LT' || u === 'LITRO' || u === 'LITROS') return 'cc';
+        return unit;
+    },
+
     _generateRecipesExcel(recipes) {
         let rows = '';
         recipes.forEach(r => {
@@ -468,6 +476,7 @@ window.RecetarioView = {
                     <th>Prim. A</th>
                     <th>Prim. B</th>
                     <th>Secund.</th>
+                    <th>General</th>
                     <th colspan="2">Observaciones</th>
                 </tr>
             `;
@@ -477,17 +486,18 @@ window.RecetarioView = {
                 rows += `
                     <tr>
                         <td>${i.item_name}</td>
-                        <td style="text-align:center;">${i.unit}</td>
+                        <td style="text-align:center;">${this._getDisplayUnit(i.unit)}</td>
                         <td>${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
                         <td>${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
                         <td>${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                         <td>${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                        <td>${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
                         <td colspan="2">${i.preparation || '-'}</td>
                     </tr>
                 `;
             });
             // Spacer
-            rows += `<tr><td colspan="8" style="background:#ffffff; border:none; height:15px;"></td></tr>`;
+            rows += `<tr><td colspan="9" style="background:#ffffff; border:none; height:15px;"></td></tr>`;
         });
 
         const html = `
@@ -526,11 +536,12 @@ window.RecetarioView = {
             let itemRows = r.items.map(i => `
                 <tr class="small">
                     <td>${i.item_name}</td>
-                    <td class="text-center">${i.unit}</td>
+                    <td class="text-center">${this._getDisplayUnit(i.unit)}</td>
                     <td class="text-end">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
                     <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
                     <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                     <td class="text-end">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                    <td class="text-end">${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
                 </tr>
             `).join('');
 
@@ -549,6 +560,7 @@ window.RecetarioView = {
                                 <th>Prim A</th>
                                 <th>Prim B</th>
                                 <th>Secund</th>
+                                <th>General</th>
                             </tr>
                         </thead>
                         <tbody>${itemRows}</tbody>
@@ -588,10 +600,12 @@ window.RecetarioView = {
         let itemRows = r.items.map(i => `
             <tr>
                 <td>${i.item_name}</td>
+                <td style="text-align:center;">${this._getDisplayUnit(i.unit)}</td>
                 <td>${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
                 <td>${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
                 <td>${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                 <td>${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                <td>${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
                 <td>${i.preparation || '-'}</td>
             </tr>
         `).join('');
@@ -606,10 +620,12 @@ window.RecetarioView = {
                 <table border="1" cellspacing="0" cellpadding="5">
                     <tr style="background:#f0f0f0; font-weight:bold;">
                         <th>INGREDIENTE</th>
+                        <th>UNID</th>
                         <th>PREESCOLAR</th>
                         <th>PRIMARIA A</th>
                         <th>PRIMARIA B</th>
                         <th>SECUNDARIA</th>
+                        <th>GENERAL</th>
                         <th>OBSERVACIONES</th>
                     </tr>
                     ${itemRows}
@@ -632,10 +648,12 @@ window.RecetarioView = {
         let itemRows = r.items.map(i => `
             <tr>
                 <td class="fw-bold">${i.item_name}</td>
+                <td class="text-center">${this._getDisplayUnit(i.unit)}</td>
                 <td class="text-end">${Helper.formatNumber(i.quantities.PREESCOLAR, 3)}</td>
                 <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_A, 3)}</td>
                 <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                 <td class="text-end">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
+                <td class="text-end">${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
                 <td>${i.preparation || '-'}</td>
             </tr>
         `).join('');
@@ -694,7 +712,8 @@ window.RecetarioView = {
                     <thead class="table-light text-center small">
                         <tr>
                             <th rowspan="2" class="align-middle">INGREDIENTE</th>
-                            <th colspan="4">GRAMAJE SEGÚN GRUPO</th>
+                            <th rowspan="2" class="align-middle">UNID</th>
+                            <th colspan="5">GRAMAJE SEGÚN GRUPO</th>
                             <th rowspan="2" class="align-middle">OBSERVACIONES</th>
                         </tr>
                         <tr>
@@ -702,6 +721,7 @@ window.RecetarioView = {
                             <th>PRIM. A</th>
                             <th>PRIM. B</th>
                             <th>SECUND.</th>
+                            <th>GENERAL</th>
                         </tr>
                     </thead>
                     <tbody>${itemRows}</tbody>
