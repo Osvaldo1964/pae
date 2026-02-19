@@ -30,14 +30,9 @@ class NeedsReportController
 
             // 2. Get Active Beneficiaries and Classify them by Branch, Ration Type and AGE GROUP (by GRADE)
             // SINCRONIZADO: Se usa el Grado escolar igual que en el calculador central
-            // MODIFICAMOS para usar beneficiary_ration_rights
-            $sqlBen = "SELECT b.id, b.branch_id, brr.ration_type_id, b.grade, b.birth_date, b.beneficiary_type 
-                       FROM beneficiaries b
-                       JOIN beneficiary_ration_rights brr ON b.id = brr.beneficiary_id
-                       WHERE b.status = 'ACTIVO' AND b.pae_id = :pae_id AND brr.pae_id = :pae_id_rights";
-
+            $sqlBen = "SELECT id, branch_id, ration_type_id, grade, birth_date, beneficiary_type FROM beneficiaries WHERE status = 'ACTIVO' AND pae_id = :pae_id";
             $stmtBen = $this->conn->prepare($sqlBen);
-            $stmtBen->execute([':pae_id' => $pae_id, ':pae_id_rights' => $pae_id]);
+            $stmtBen->execute([':pae_id' => $pae_id]);
             $beneficiaries = $stmtBen->fetchAll(PDO::FETCH_ASSOC);
 
             // Structure: $census[branch_id][ration_type_id][age_group] = count
