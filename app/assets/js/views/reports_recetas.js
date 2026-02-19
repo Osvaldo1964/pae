@@ -20,38 +20,53 @@ window.ReportsRecetasView = {
     },
 
     render() {
+        // Breadcrumb
+        const breadcrumbHtml = `
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#dashboard" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="#group/5" class="text-decoration-none">Reportes</a></li>
+                    <li class="breadcrumb-item"><a href="#module/reports-ali" class="text-decoration-none">Alimentación</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Recetario</li>
+                </ol>
+            </nav>
+        `;
+
         document.getElementById('app').innerHTML = `
-            <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-                <div class="card shadow-lg border-0" style="width: 100%; max-width: 600px; overflow: hidden;">
-                    <!-- Header inspired by the image -->
-                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-3">
-                        <h4 class="mb-0 fw-bold"><i class="fas fa-file-alt me-2"></i>Reporte del Recetario</h4>
-                        <a href="#module/reports-ali" class="text-white opacity-75 hover-opacity-100"><i class="fas fa-times fa-lg"></i></a>
-                    </div>
-                    
-                    <div class="card-body p-4 bg-white">
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold text-secondary text-uppercase mb-2">Filtrar por Tipo de Ración</label>
-                            <select id="report-filter-ration" class="form-select form-select-lg border-2">
-                                <option value="">Todos los tipos...</option>
-                                ${this.rationTypes.map(rt => `<option value="${rt.id}">${rt.name}</option>`).join('')}
-                            </select>
+            <div class="container-fluid fade-in">
+                ${breadcrumbHtml}
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+                    <div class="card shadow-lg border-0" style="width: 100%; max-width: 600px; overflow: hidden;">
+                        <!-- Header inspired by the image -->
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center py-3">
+                            <h4 class="mb-0 fw-bold"><i class="fas fa-file-alt me-2"></i>Reporte del Recetario</h4>
+                            <a href="#module/reports-ali" class="text-white opacity-75 hover-opacity-100"><i class="fas fa-times fa-lg"></i></a>
                         </div>
-
-                        <div class="alert alert-light border d-flex align-items-center mb-4 py-3">
-                            <i class="fas fa-info-circle fa-lg text-secondary me-3"></i>
-                            <div class="small text-muted">
-                                Seleccione el formato de salida para el listado de recetas seleccionadas.
+                        
+                        <div class="card-body p-4 bg-white">
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-secondary text-uppercase mb-2">Filtrar por Tipo de Ración</label>
+                                <select id="report-filter-ration" class="form-select form-select-lg border-2">
+                                    <option value="">Todos los tipos...</option>
+                                    ${this.rationTypes.map(rt => `<option value="${rt.id}">${rt.name}</option>`).join('')}
+                                </select>
                             </div>
-                        </div>
 
-                        <div class="d-grid gap-3">
-                            <button class="btn btn-outline-primary btn-lg fw-bold py-3 d-flex align-items-center justify-content-center" onclick="ReportsRecetasView.exportPDF()">
-                                <i class="fas fa-print me-3"></i> Vista de Impresión (PDF)
-                            </button>
-                            <button class="btn btn-outline-success btn-lg fw-bold py-3 d-flex align-items-center justify-content-center" onclick="ReportsRecetasView.exportExcel()">
-                                <i class="fas fa-file-excel me-3"></i> Exportar a Excel
-                            </button>
+                            <div class="alert alert-light border d-flex align-items-center mb-4 py-3">
+                                <i class="fas fa-info-circle fa-lg text-secondary me-3"></i>
+                                <div class="small text-muted">
+                                    Seleccione el formato de salida para el listado de recetas seleccionadas.
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-3">
+                                <button class="btn btn-outline-primary btn-lg fw-bold py-3 d-flex align-items-center justify-content-center" onclick="ReportsRecetasView.exportPDF()">
+                                    <i class="fas fa-print me-3"></i> Vista de Impresión (PDF)
+                                </button>
+                                <button class="btn btn-outline-success btn-lg fw-bold py-3 d-flex align-items-center justify-content-center" onclick="ReportsRecetasView.exportExcel()">
+                                    <i class="fas fa-file-excel me-3"></i> Exportar a Excel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -101,7 +116,7 @@ window.ReportsRecetasView = {
             html += `
                 <table border="1" style="margin-bottom: 20px;">
                     <tr style="background:#1B4F72; color:white;">
-                        <th colspan="7">${recipe.name.toUpperCase()} - ${recipe.ration_type_name}</th>
+                        <th colspan="8">${recipe.name.toUpperCase()} - ${recipe.ration_type_name}</th>
                     </tr>
                     <tr style="background:#f2f2f2; font-weight:bold;">
                         <th>Ingrediente</th>
@@ -111,6 +126,7 @@ window.ReportsRecetasView = {
                         <th>Primaria A</th>
                         <th>Primaria B</th>
                         <th>Secundaria</th>
+                        <th>GENERAL</th>
                     </tr>
             `;
 
@@ -125,11 +141,12 @@ window.ReportsRecetasView = {
                             <td>${item.quantities.PRIMARIA_A}</td>
                             <td>${item.quantities.PRIMARIA_B}</td>
                             <td>${item.quantities.SECUNDARIA}</td>
+                            <td>${item.quantities.GENERAL || 0}</td>
                         </tr>
                     `;
                 });
             } else {
-                html += '<tr><td colspan="7">Sin ingredientes registrados</td></tr>';
+                html += '<tr><td colspan="8">Sin ingredientes registrados</td></tr>';
             }
             html += '</table><br>';
         });
@@ -165,11 +182,12 @@ window.ReportsRecetasView = {
                             <td class="text-end">${item.quantities.PRIMARIA_A}</td>
                             <td class="text-end">${item.quantities.PRIMARIA_B}</td>
                             <td class="text-end">${item.quantities.SECUNDARIA}</td>
+                            <td class="text-end fw-bold">${item.quantities.GENERAL || 0}</td>
                         </tr>
                     `;
                 });
             } else {
-                itemsRows = '<tr><td colspan="6" class="text-center text-muted">No hay ingredientes vinculados</td></tr>';
+                itemsRows = '<tr><td colspan="7" class="text-center text-muted">No hay ingredientes vinculados</td></tr>';
             }
 
             recipesHtml += `
@@ -184,12 +202,13 @@ window.ReportsRecetasView = {
                     <table class="table table-bordered table-sm align-middle">
                         <thead class="bg-light text-center small uppercase">
                             <tr>
-                                <th style="width: 40%">Ingrediente</th>
+                                <th style="width: 35%">Ingrediente</th>
                                 <th>Und</th>
                                 <th>Pre-esc</th>
                                 <th>Prim A</th>
                                 <th>Prim B</th>
                                 <th>Secun</th>
+                                <th>GENERAL</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -49,8 +49,10 @@ class BranchController extends BaseController
 
         $data = json_decode(file_get_contents("php://input"));
         // Enforce casing
-        if (isset($data->name)) $data->name = mb_strtoupper($data->name, 'UTF-8');
-        if (isset($data->manager_name)) $data->manager_name = mb_strtoupper($data->manager_name, 'UTF-8');
+        if (isset($data->name))
+            $data->name = mb_strtoupper($data->name, 'UTF-8');
+        if (isset($data->manager_name))
+            $data->manager_name = mb_strtoupper($data->manager_name, 'UTF-8');
 
 
         if (empty($data->school_id) || empty($data->name)) {
@@ -65,8 +67,8 @@ class BranchController extends BaseController
         }
 
         $query = "INSERT INTO " . $this->table_name . " 
-                  (school_id, pae_id, dane_code, name, address, phone, manager_name, area_type) 
-                  VALUES (:school_id, :pae_id, :dane_code, :name, :address, :phone, :manager_name, :area_type)";
+                  (school_id, pae_id, dane_code, name, address, phone, manager_name, area_type, total_beneficiaries) 
+                  VALUES (:school_id, :pae_id, :dane_code, :name, :address, :phone, :manager_name, :area_type, :total_beneficiaries)";
 
         $stmt = $this->conn->prepare($query);
         $params = [
@@ -77,7 +79,8 @@ class BranchController extends BaseController
             ":address" => $data->address ?? null,
             ":phone" => $data->phone ?? null,
             ":manager_name" => $data->manager_name ?? null,
-            ":area_type" => $data->area_type ?? null
+            ":area_type" => $data->area_type ?? null,
+            ":total_beneficiaries" => $data->total_beneficiaries ?? 0
         ];
 
         if ($stmt->execute($params)) {
@@ -96,8 +99,10 @@ class BranchController extends BaseController
 
         $data = json_decode(file_get_contents("php://input"));
         // Enforce casing
-        if (isset($data->name)) $data->name = mb_strtoupper($data->name, 'UTF-8');
-        if (isset($data->manager_name)) $data->manager_name = mb_strtoupper($data->manager_name, 'UTF-8');
+        if (isset($data->name))
+            $data->name = mb_strtoupper($data->name, 'UTF-8');
+        if (isset($data->manager_name))
+            $data->manager_name = mb_strtoupper($data->manager_name, 'UTF-8');
 
 
         // Verify ownership
@@ -109,7 +114,7 @@ class BranchController extends BaseController
 
         $query = "UPDATE " . $this->table_name . " 
                   SET dane_code = :dane_code, name = :name, address = :address, phone = :phone, 
-                      manager_name = :manager_name, area_type = :area_type 
+                      manager_name = :manager_name, area_type = :area_type, total_beneficiaries = :total_beneficiaries
                   WHERE id = :id AND pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);
@@ -120,6 +125,7 @@ class BranchController extends BaseController
             ":phone" => $data->phone ?? null,
             ":manager_name" => $data->manager_name ?? null,
             ":area_type" => $data->area_type ?? null,
+            ":total_beneficiaries" => $data->total_beneficiaries ?? 0,
             ":id" => $id,
             ":pae_id" => $pae_id
         ];

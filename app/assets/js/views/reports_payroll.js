@@ -12,9 +12,22 @@ var ReportsPayrollView = {
     },
 
     render: () => {
+        // Breadcrumb
+        const breadcrumbHtml = `
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#dashboard" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="#group/5" class="text-decoration-none">Reportes</a></li>
+                    <li class="breadcrumb-item"><a href="#module/reports-rh" class="text-decoration-none">Talento Humano</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Nómina</li>
+                </ol>
+            </nav>
+        `;
+
         const container = document.getElementById('app-container');
         container.innerHTML = `
-            <div class="container-fluid">
+            <div class="container-fluid fade-in">
+                ${breadcrumbHtml}
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <a href="#group/5" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>

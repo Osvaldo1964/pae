@@ -193,6 +193,10 @@ var SchoolsView = {
                                     <input type="text" class="form-control" id="branch-manager">
                                 </div>
                                 <div class="mb-3">
+                                    <label class="form-label">Total Beneficiarios (SIMAT)</label>
+                                    <input type="number" class="form-control" id="branch-total-beneficiaries" placeholder="0">
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label">Dirección</label>
                                     <input type="text" class="form-control" id="branch-address">
                                 </div>
@@ -342,6 +346,7 @@ var SchoolsView = {
                             <h6 class="mb-1">${b.name} ${b.name === 'PRINCIPAL' ? '<span class="badge bg-info text-white ms-2" style="font-size:0.7em">MATRIZ</span>' : ''}</h6>
                             <small class="text-primary d-block fw-bold mb-1" style="font-size: 0.8rem;">COD: ${b.dane_code || '-'}</small>
                             <small class="text-muted"><i class="fas fa-user me-1"></i>${b.manager_name || '-'}</small><br>
+                            <small class="text-secondary fw-bold" style="font-size: 0.85rem;"><i class="fas fa-users me-1"></i>SIMAT: ${b.total_beneficiaries || 0}</small><br>
                             <small class="text-muted"><i class="fas fa-phone me-1"></i>${b.phone || '-'}</small>
                         </div>
                         <div class="btn-group">
@@ -493,6 +498,7 @@ var SchoolsView = {
             document.getElementById('branch-dane').value = branch.dane_code || '';
             document.getElementById('branch-name').value = branch.name;
             document.getElementById('branch-manager').value = branch.manager_name || '';
+            document.getElementById('branch-total-beneficiaries').value = branch.total_beneficiaries || 0;
             document.getElementById('branch-address').value = branch.address || '';
             document.getElementById('branch-phone').value = branch.phone || '';
             document.getElementById('branch-area').value = branch.area_type;
@@ -514,6 +520,7 @@ var SchoolsView = {
             dane_code: document.getElementById('branch-dane').value.toUpperCase(),
             name: document.getElementById('branch-name').value.toUpperCase(),
             manager_name: document.getElementById('branch-manager').value.toUpperCase(),
+            total_beneficiaries: document.getElementById('branch-total-beneficiaries').value || 0,
             address: document.getElementById('branch-address').value,
             phone: document.getElementById('branch-phone').value,
             area_type: document.getElementById('branch-area').value
