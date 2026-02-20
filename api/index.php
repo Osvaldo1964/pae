@@ -592,6 +592,8 @@ if ($resource === 'auth') {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if ($action === 'branches') {
             $controller->getBranches();
+        } elseif ($action === 'asignaciones') {
+            $controller->getAsignaciones();
         } elseif ($action && is_numeric($action)) {
             $controller->show($action);
         } else {

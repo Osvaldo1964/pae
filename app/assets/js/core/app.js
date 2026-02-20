@@ -262,7 +262,8 @@ const App = {
                     'fin-presupuesto': 'fin_presupuesto',
                     'fin-movimientos': 'fin_movimientos',
                     'fin-traslados': 'fin_traslados',
-                    'reports-pay': 'reports_payroll'
+                    'reports-pay': 'reports_payroll',
+                    'reports-presupuesto': 'reports_presupuesto'
                 };
 
                 const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm'];
@@ -878,7 +879,8 @@ const App = {
             icon = 'fas fa-file-invoice-dollar';
             color = 'danger';
             modules = [
-                { name: 'Costos por Ciclo', route: 'reports-costs', icon: 'fas fa-dollar-sign', description: 'Análisis de inversión por período' }
+                { name: 'Costos por Ciclo', route: 'reports-costs', icon: 'fas fa-dollar-sign', description: 'Análisis de inversión por período' },
+                { name: 'Presupuesto Inicial', route: 'reports-presupuesto', icon: 'fas fa-money-bill-wave', description: 'Generar reporte de presupuesto inicial' }
             ];
         } else if (category === 'reports-adm') {
             title = 'Reportes Administrativos';

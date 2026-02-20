@@ -19,7 +19,7 @@ window.PresupuestoView = {
                 Helper.fetchAPI('/presupuesto'),
                 Helper.fetchAPI('/presupuesto/branches')
             ]);
-            
+
             // Calculate totals for parents based on children
             this.items = this.calculateSummaries(Array.isArray(items) ? items : []);
             this.branches = Array.isArray(branches) ? branches : [];
@@ -54,10 +54,10 @@ window.PresupuestoView = {
         // Sum up (bottom-up approach by code length/nesting would be ideal, 
         // but for now we iterate and add to immediate parent)
         // Note: This logic assumes simple parent-child. For deep nesting, it needs recursion.
-        
+
         // Strategy: Sort by code length descending to process children first
         const sorted = [...items].sort((a, b) => b.codigo.length - a.codigo.length);
-        
+
         sorted.forEach(item => {
             if (item.padre_id && map[item.padre_id]) {
                 map[item.padre_id].valor_total_oficial += parseFloat(item.valor_total_oficial);
@@ -307,7 +307,7 @@ window.PresupuestoView = {
                 }
 
                 // If is parent, we don't validate values
-                const isParentCheck = PresupuestoView.items.some(i => i.padre_id == editId);
+                const isParentCheck = editId ? PresupuestoView.items.some(i => i.padre_id == editId) : false;
                 if (isParentCheck) return { codigo, nombre, padre_id: document.getElementById('bud-padre').value, descripcion: document.getElementById('bud-descripcion').value };
 
                 const totalGlobal = parseFloat(document.getElementById('bud-total-global').dataset.val) || 0;
@@ -380,10 +380,12 @@ window.PresupuestoView = {
             Helper.loading(true);
             try {
                 const res = await Helper.fetchAPI(`/presupuesto/${id}`, { method: 'DELETE' });
-                Helper.init();
                 if (res.success) {
                     Helper.alert('success', 'Rubro eliminado');
                     this.init();
+                } else {
+                    Helper.loading(false);
+                    Helper.alert('error', res.message || 'No se pudo eliminar');
                 }
             } catch (e) {
                 Helper.loading(false);

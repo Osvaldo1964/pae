@@ -19,15 +19,19 @@ class PresupuestoController
     private function getPaeIdFromToken()
     {
         $headers = null;
-        if (isset($_SERVER['Authorization'])) $headers = trim($_SERVER["Authorization"]);
-        else if (isset($_SERVER['HTTP_AUTHORIZATION'])) $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+        if (isset($_SERVER['Authorization']))
+            $headers = trim($_SERVER["Authorization"]);
+        else if (isset($_SERVER['HTTP_AUTHORIZATION']))
+            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
         elseif (function_exists('apache_request_headers')) {
             $requestHeaders = apache_request_headers();
             $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) $headers = trim($requestHeaders['Authorization']);
+            if (isset($requestHeaders['Authorization']))
+                $headers = trim($requestHeaders['Authorization']);
         }
 
-        if (!$headers) return null;
+        if (!$headers)
+            return null;
         $arr = explode(" ", $headers);
         $jwt = isset($arr[1]) ? $arr[1] : "";
         if ($jwt) {
@@ -57,6 +61,24 @@ class PresupuestoController
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode($items);
+    }
+
+    public function getAsignaciones()
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        if (!$pae_id) {
+            http_response_code(403);
+            echo json_encode(["message" => "Acceso denegado."]);
+            return;
+        }
+
+        $query = "SELECT * FROM presupuesto_asignacion WHERE pae_id = :pae_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":pae_id", $pae_id);
+        $stmt->execute();
+        $asignaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode($asignaciones);
     }
 
     public function getBranches()
