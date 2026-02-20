@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 14 de Febrero 2026, 9:25 PM
-**Versión Doc:** 1.9.8 | **Versión Código:** 1.9.8 (Instituciones Beneficiarias y Ciclos Flexibles)
+**Última actualización**: 20 de Febrero 2026, 12:30 PM
+**Versión Doc:** 1.9.9 | **Versión Código:** 1.9.9 (Finanzas Integrales y Costo Empleador)
 
 ---
 
@@ -240,6 +240,13 @@
 ---
 
 ## 🔧 CORRECCIONES RECIENTES (v1.9.0)
+
+### v1.9.9 (20 Feb 2026 - Finanzas Integrales)
+- ✅ **Presupuesto Inicial:** Implementación de Fila de Totales y Exportación Nativa a MS Excel generada dinámicamente en memoria.
+- ✅ **Fix Operacional:** Correcciones sustanciales en la eliminación de ítems de presupuesto (Constraints) y en el paso de IDs para el flujo de edición.
+- ✅ **Nómina - Exoneración de Aportes:** Integración de bandera `is_exonerated` en el backend para apagar los cobros patronales y parafiscales según aplique de acuerdo a la Ley 1819, aislando configuración por programa.
+- ✅ **Nómina - Riesgos ARL:** Ampliación dinámica que inserta la tarifa de ARL (`arl_risk_percent`) personalizada en la vista de la parametrización de Cargos de Recursos Humanos.
+- ✅ **Reporte Costo Total Empleador:** Construcción completa de una tercera modalidad de Nómina Integral. Ahora el software puede descontar bases salariales para inferir automáticamente provisiones (Cesantías, Vacaciones, Primas) y Aportes Patronales por empleado, visualmente consolidados en una tabla web, con conversor HTML-to-Excel nativo implementado y PDF Print arreglado.
 
 ### v1.9.8 (15 Feb 2026 - Tarde)
 - ✅ **Generalización de Instituciones:**
