@@ -22,8 +22,10 @@ class HRPositionController
         if (preg_match('/Bearer\s(\S+)/', $auth, $matches)) {
             try {
                 $decoded = \Utils\JWT::decode($matches[1]);
-                if (is_object($decoded)) return $decoded->data->pae_id ?? null;
-                if (is_array($decoded)) return $decoded['data']['pae_id'] ?? null;
+                if (is_object($decoded))
+                    return $decoded->data->pae_id ?? null;
+                if (is_array($decoded))
+                    return $decoded['data']['pae_id'] ?? null;
             } catch (Exception $e) {
                 return null;
             }
@@ -52,11 +54,12 @@ class HRPositionController
             $data = json_decode(file_get_contents("php://input"), true);
             $pae_id = $this->getPaeIdFromToken();
 
-            $query = "INSERT INTO hr_positions (pae_id, description, status) VALUES (:pae_id, :description, :status)";
+            $query = "INSERT INTO hr_positions (pae_id, description, arl_risk_percent, status) VALUES (:pae_id, :description, :arl_risk_percent, :status)";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':pae_id' => $pae_id,
                 ':description' => $data['description'],
+                ':arl_risk_percent' => $data['arl_risk_percent'] ?? 0.522,
                 ':status' => $data['status'] ?? 'ACTIVO'
             ]);
 
@@ -71,11 +74,12 @@ class HRPositionController
     {
         try {
             $data = json_decode(file_get_contents("php://input"), true);
-            $query = "UPDATE hr_positions SET description = :description, status = :status WHERE id = :id";
+            $query = "UPDATE hr_positions SET description = :description, arl_risk_percent = :arl_risk_percent, status = :status WHERE id = :id";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':id' => $id,
                 ':description' => $data['description'],
+                ':arl_risk_percent' => $data['arl_risk_percent'] ?? 0.522,
                 ':status' => $data['status']
             ]);
 

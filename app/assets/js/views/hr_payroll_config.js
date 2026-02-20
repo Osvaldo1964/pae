@@ -31,6 +31,7 @@ var HRPayrollConfigView = {
                                     <th class="ps-4">Año</th>
                                     <th>Salario Mínimo (SMLV)</th>
                                     <th>Auxilio Transporte</th>
+                                    <th>Exoneración L1819</th>
                                     <th>Estado</th>
                                     <th class="text-end pe-4">Acciones</th>
                                 </tr>
@@ -56,6 +57,10 @@ var HRPayrollConfigView = {
                     ? '<span class="badge bg-success-light text-success">ACTIVO</span>'
                     : '<span class="badge bg-danger-light text-danger">INACTIVO</span>';
 
+                const exoneradoBadge = item.is_exonerated == 1
+                    ? '<span class="badge bg-success-light text-success"><i class="fas fa-check"></i> SÍ</span>'
+                    : '<span class="badge bg-secondary-light text-secondary"><i class="fas fa-times"></i> NO</span>';
+
                 html += `
                     <tr>
                         <td class="ps-4 fw-bold text-dark">${item.year}</td>
@@ -65,6 +70,7 @@ var HRPayrollConfigView = {
                         <td>
                             <div class="fw-bold">${Helper.formatCurrency(item.aux_transporte)}</div>
                         </td>
+                        <td>${exoneradoBadge}</td>
                         <td>${statusBadge}</td>
                         <td class="text-end pe-4">
                             <button class="btn btn-sm btn-light text-primary me-2" onclick='HRPayrollConfigView.openModal(${JSON.stringify(item)})'>
@@ -100,6 +106,11 @@ var HRPayrollConfigView = {
                         <label class="form-label small fw-bold text-uppercase">Auxilio Transporte</label>
                         <input type="number" id="cfg-aux" class="form-control" value="${item ? item.aux_transporte : ''}" placeholder="Ej: 162000">
                     </div>
+                    <div class="mb-3 form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" id="cfg-exonerado" ${item && item.is_exonerated == 1 ? 'checked' : ''}>
+                        <label class="form-check-label small fw-bold text-uppercase" for="cfg-exonerado">¿Aplica Exoneración Ley 1819?</label>
+                        <div class="form-text small text-muted">Exime de aportes patronales a Salud (8.5%), SENA (2%) e ICBF (3%)</div>
+                    </div>
                 </div>
             `,
             showCancelButton: true,
@@ -109,12 +120,13 @@ var HRPayrollConfigView = {
                 const year = document.getElementById('cfg-year').value;
                 const smlv = document.getElementById('cfg-smlv').value;
                 const aux = document.getElementById('cfg-aux').value;
+                const is_exonerated = document.getElementById('cfg-exonerado').checked ? 1 : 0;
 
                 if (!year || !smlv || !aux) {
                     Swal.showValidationMessage('Todos los campos son obligatorios');
                     return false;
                 }
-                return { year, smlv, aux_transporte: aux };
+                return { year, smlv, aux_transporte: aux, is_exonerated };
             }
         }).then(async (result) => {
             if (result.isConfirmed) {

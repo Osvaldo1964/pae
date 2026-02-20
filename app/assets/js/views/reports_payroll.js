@@ -84,6 +84,32 @@ var ReportsPayrollView = {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Nómina Integral (Costo Total) -->
+                    <div class="col-md-12 mt-2">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4 row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    <div class="icon-circle bg-success-light mb-0 d-inline-flex mx-auto" style="width: 80px; height: 80px;">
+                                        <i class="fas fa-chart-pie text-success fa-2x"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-2">Nómina Integral (Costo Empleador)</h5>
+                                    <p class="text-muted small mb-0">Genera un documento detallado con todos los salarios, sumando provisiones (Cesantías, Vacaciones, Primas) y aportes a Seguridad Social (Salud, Pensión, ARL, Parafiscales) por empleado.</p>
+                                </div>
+                                <div class="col-md-4 text-end border-start ps-4">
+                                    <label class="form-label small fw-bold text-start w-100">PERIODO DE PAGO</label>
+                                    <select id="report-pay-period-int" class="form-select select-periods-report mb-3">
+                                        <option value="">-- Seleccione Periodo --</option>
+                                    </select>
+                                    <button class="btn btn-success text-white w-100 fw-bold rounded-pill" onclick="ReportsPayrollView.generate('integral')">
+                                        <i class="fas fa-chart-bar me-2"></i> Generar Nómina Integral
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -103,9 +129,10 @@ var ReportsPayrollView = {
     },
 
     generate: async (type) => {
-        const periodId = type === 'general'
-            ? document.getElementById('report-pay-period-gen').value
-            : document.getElementById('report-pay-period-ind').value;
+        let periodId = '';
+        if (type === 'general') periodId = document.getElementById('report-pay-period-gen').value;
+        else if (type === 'individual') periodId = document.getElementById('report-pay-period-ind').value;
+        else if (type === 'integral') periodId = document.getElementById('report-pay-period-int').value;
 
         if (!periodId) {
             Helper.alert('warning', 'Seleccione un periodo');
@@ -120,8 +147,10 @@ var ReportsPayrollView = {
             const period = ReportsPayrollView.periods.find(p => p.id == periodId);
             if (type === 'general') {
                 ReportsPayrollView.printGeneral(res.data, period);
-            } else {
+            } else if (type === 'individual') {
                 ReportsPayrollView.printIndividual(res.data, period);
+            } else if (type === 'integral') {
+                ReportsPayrollView.printIntegral(res.data, period, res.is_exonerated);
             }
         } else {
             Helper.alert('info', 'No hay datos liquidados en este periodo.');
@@ -287,6 +316,155 @@ var ReportsPayrollView = {
                         <button class="btn btn-primary" onclick="window.print()">Imprimir Todo</button>
                     </div>
                     ${slipsHtml}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    },
+
+    printIntegral: (data, period, is_exonerated) => {
+        const printWindow = window.open('', '_blank');
+        let rowsHtml = '';
+        let sums = { devengado: 0, salud: 0, pension: 0, arl: 0, paraf: 0, cesantias: 0, intereses: 0, prima: 0, vacac: 0, total: 0 };
+
+        data.forEach(r => {
+            // Extraer auxilio de transporte para descontarlo de la base (las prestaciones y seg. soc. lo ignoran donde manda la norma)
+            let auxTrans = 0;
+            if (r.details) {
+                const auxDet = r.details.find(d => d.description.toUpperCase().includes('AUXILIO') && d.description.toUpperCase().includes('TRANSPORTE'));
+                if (auxDet) auxTrans = parseFloat(auxDet.amount);
+            }
+
+            const totalDev = parseFloat(r.total_devengado);
+            const baseSinAux = totalDev - auxTrans;
+            const arlPercent = r.arl_risk_percent ? (parseFloat(r.arl_risk_percent) / 100) : 0.00522; // Default Riesgo I
+
+            // Calculos Empresariales
+            const saludEmp = is_exonerated ? 0 : baseSinAux * 0.085;
+            const pensionEmp = baseSinAux * 0.12;
+            const arlEmp = baseSinAux * arlPercent;
+            const parafiscales = is_exonerated ? (baseSinAux * 0.04) : (baseSinAux * 0.09); // CCF 4% (exonerated), CCF+SENA+ICBF 9% (non-exonerated)
+
+            const cesantias = totalDev * 0.0833;
+            const intereses = cesantias * 0.12;
+            const prima = totalDev * 0.0833;
+            // Vacaciones se provisionan sobre base salarial real sin subsidio de transporte
+            const vacaciones = baseSinAux * 0.0417;
+
+            const totalCosto = totalDev + saludEmp + pensionEmp + arlEmp + parafiscales + cesantias + intereses + prima + vacaciones;
+
+            // acumular
+            sums.devengado += totalDev;
+            sums.salud += saludEmp;
+            sums.pension += pensionEmp;
+            sums.arl += arlEmp;
+            sums.paraf += parafiscales;
+            sums.cesantias += cesantias;
+            sums.intereses += intereses;
+            sums.prima += prima;
+            sums.vacac += vacaciones;
+            sums.total += totalCosto;
+
+            rowsHtml += `
+                <tr>
+                    <td><b>${r.first_name} ${r.last_name1}</b><br><small class="text-muted">${r.document_number}</small></td>
+                    <td><small>${r.position_name || 'N/A'}</small></td>
+                    <td class="text-end">${Helper.formatCurrency(totalDev)}</td>
+                    <td class="text-end text-danger">${Helper.formatCurrency(saludEmp)}</td>
+                    <td class="text-end text-danger">${Helper.formatCurrency(pensionEmp)}</td>
+                    <td class="text-end text-danger" title="Riesgo ARL: ${(arlPercent * 100).toFixed(3)}%">${Helper.formatCurrency(arlEmp)}</td>
+                    <td class="text-end text-danger">${Helper.formatCurrency(parafiscales)}</td>
+                    <td class="text-end text-warning">${Helper.formatCurrency(cesantias)}</td>
+                    <td class="text-end text-warning">${Helper.formatCurrency(intereses)}</td>
+                    <td class="text-end text-warning">${Helper.formatCurrency(prima)}</td>
+                    <td class="text-end text-warning">${Helper.formatCurrency(vacaciones)}</td>
+                    <td class="text-end fw-bold bg-light">${Helper.formatCurrency(totalCosto)}</td>
+                </tr>
+            `;
+        });
+
+        const excelScript = `
+            function exportExcel() {
+                var tableStr = document.getElementById('integral-table').outerHTML;
+                var htmlStr = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body>' + tableStr + '</body></html>';
+                var defaultFileName = 'Nomina_Integral_${period.name.replace(/ /g, '_')}.xls';
+                
+                var blob = new Blob([htmlStr], { type: 'application/vnd.ms-excel' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = defaultFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        `;
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Nómina Integral - ${period.name}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body { padding: 30px; font-family: Arial, sans-serif; font-size: 9pt; }
+                        .header-rep { border-bottom: 2px solid #1a1a1a; margin-bottom: 20px; padding-bottom: 10px; }
+                        table th { background: #f8f9fa !important; border-top: 2px solid #000 !important; font-size: 8.5pt; vertical-align: middle; text-align: center; }
+                        table td { vertical-align: middle; padding: 4px 6px !important; }
+                        @media print { 
+                            @page { size: landscape; margin: 1cm; }
+                            .no-print { display: none !important; } 
+                        }
+                    </style>
+                    <script>${excelScript}</script>
+                </head>
+                <body>
+                    <div class="text-end no-print mb-4">
+                        <button class="btn btn-success me-2" onclick="exportExcel()">Exportar a Excel</button>
+                        <button class="btn btn-primary" onclick="window.print()">Imprimir PDF</button>
+                    </div>
+                    <div class="header-rep d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fw-bold">NÓMINA INTEGRAL (COSTO TOTAL EMPLEADOR)</h2>
+                            <h5 class="text-muted mb-0">${period.name.toUpperCase()} (${period.start_date} al ${period.end_date})</h5>
+                        </div>
+                        <div class="text-end">
+                            ${is_exonerated ? '<span class="badge bg-info p-2">APLICA EXONERACIÓN LEY 1819</span>' : '<span class="badge bg-secondary p-2">NO APLICA EXONERACIÓN LEY 1819</span>'}
+                        </div>
+                    </div>
+                    <table id="integral-table" class="table table-bordered table-sm align-middle mt-4 w-100">
+                        <thead>
+                            <tr>
+                                <th>Empleado</th>
+                                <th>Cargo</th>
+                                <th>T. Devengado</th>
+                                <th>Salud (Emp)</th>
+                                <th>Pensión (Emp)</th>
+                                <th>ARL (Emp)</th>
+                                <th>Parafiscales</th>
+                                <th>Cesantías</th>
+                                <th>Int. Cesan</th>
+                                <th>Prima</th>
+                                <th>Vacaciones</th>
+                                <th class="bg-light">COSTO TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                        <tfoot>
+                            <tr class="table-dark">
+                                <td colspan="2" class="text-end fw-bold">TOTALES GENERALES:</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.devengado)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.salud)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.pension)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.arl)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.paraf)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.cesantias)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.intereses)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.prima)}</td>
+                                <td class="text-end fw-bold">${Helper.formatCurrency(sums.vacac)}</td>
+                                <td class="text-end fw-bold fs-6">${Helper.formatCurrency(sums.total)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </body>
             </html>
         `);

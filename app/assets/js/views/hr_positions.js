@@ -30,6 +30,7 @@ const HRPositionsView = {
                                 <tr>
                                     <th class="ps-4">ID</th>
                                     <th>Descripción / Nombre</th>
+                                    <th>Riesgo ARL (%)</th>
                                     <th>Estado</th>
                                     <th class="text-end pe-4">Acciones</th>
                                 </tr>
@@ -63,6 +64,7 @@ const HRPositionsView = {
                     <tr>
                         <td class="ps-4 text-muted small">#${item.id}</td>
                         <td class="fw-bold text-dark">${item.description}</td>
+                        <td><span class="badge bg-secondary-light text-secondary">${item.arl_risk_percent}%</span></td>
                         <td>${statusBadge}</td>
                         <td class="text-end pe-4">
                             <button class="btn btn-sm btn-light text-primary me-2" onclick='HRPositionsView.openModal(${JSON.stringify(item)})'>
@@ -93,6 +95,10 @@ const HRPositionsView = {
                         <input id="pos-name" class="form-control" placeholder="Ej: Coordinador, Manipuladora" value="${item ? item.description : ''}">
                     </div>
                     <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Riesgo ARL (%)</label>
+                        <input id="pos-arl" type="number" step="0.001" class="form-control" placeholder="0.522 o 1.044" value="${item ? item.arl_risk_percent : '0.522'}">
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label small fw-bold text-muted text-uppercase">Estado</label>
                         <select id="pos-status" class="form-select">
                             <option value="ACTIVO" ${item && item.status === 'ACTIVO' ? 'selected' : ''}>ACTIVO</option>
@@ -106,12 +112,14 @@ const HRPositionsView = {
             confirmButtonColor: '#1B4F72',
             preConfirm: () => {
                 const name = document.getElementById('pos-name').value;
-                if (!name) {
-                    Swal.showValidationMessage('El nombre es obligatorio');
+                const arl = document.getElementById('pos-arl').value;
+                if (!name || arl === '') {
+                    Swal.showValidationMessage('Nombre y % de Riesgo son obligatorios');
                     return false;
                 }
                 return {
                     description: name,
+                    arl_risk_percent: parseFloat(arl),
                     status: document.getElementById('pos-status').value
                 };
             }

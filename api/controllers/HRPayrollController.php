@@ -53,16 +53,18 @@ class HRPayrollController
             $data = json_decode(file_get_contents("php://input"), true);
             $pae_id = $this->getPaeIdFromToken();
 
-            $stmt = $this->conn->prepare("INSERT INTO hr_payroll_config (pae_id, year, smlv, aux_transporte, status) 
-                                          VALUES (:pae_id, :year, :smlv, :aux_transporte, 'ACTIVO')
-                                          ON DUPLICATE KEY UPDATE smlv = :smlv2, aux_transporte = :aux_transporte2");
+            $stmt = $this->conn->prepare("INSERT INTO hr_payroll_config (pae_id, year, smlv, aux_transporte, is_exonerated, status) 
+                                          VALUES (:pae_id, :year, :smlv, :aux_transporte, :is_exonerated, 'ACTIVO')
+                                          ON DUPLICATE KEY UPDATE smlv = :smlv2, aux_transporte = :aux_transporte2, is_exonerated = :is_exonerated2");
             $stmt->execute([
                 ':pae_id' => $pae_id,
                 ':year' => $data['year'],
                 ':smlv' => $data['smlv'],
                 ':aux_transporte' => $data['aux_transporte'],
+                ':is_exonerated' => $data['is_exonerated'] ?? 0,
                 ':smlv2' => $data['smlv'],
-                ':aux_transporte2' => $data['aux_transporte']
+                ':aux_transporte2' => $data['aux_transporte'],
+                ':is_exonerated2' => $data['is_exonerated'] ?? 0
             ]);
 
             echo json_encode(['success' => true, 'message' => 'Configuración guardada correctamente']);
@@ -346,8 +348,18 @@ class HRPayrollController
         try {
             $pae_id = $this->getPaeIdFromToken();
 
-            // 1. Cabeceras con datos de empleado y cargo
-            $query = "SELECT r.*, e.first_name, e.last_name1, e.document_number, p.description as position_name
+            // Obtener el año del periodo para buscar la configuracion
+            $stmtP = $this->conn->prepare("SELECT year(start_date) as year FROM hr_payroll_periods WHERE id = ?");
+            $stmtP->execute([$period_id]);
+            $year = $stmtP->fetchColumn();
+
+            $stmtC = $this->conn->prepare("SELECT is_exonerated FROM hr_payroll_config WHERE pae_id = ? AND year = ?");
+            $stmtC->execute([$pae_id, $year]);
+            $is_exonerated = $stmtC->fetchColumn() ?: 0;
+
+            // 1. Cabeceras con datos de empleado y cargo, ahora incluyendo el porcentaje arl asociado
+            $query = "SELECT r.*, e.first_name, e.last_name1, e.document_number, 
+                             p.description as position_name, IFNULL(p.arl_risk_percent, 0.522) as arl_risk_percent
                       FROM hr_payrolls r
                       JOIN hr_employees e ON r.employee_id = e.id
                       LEFT JOIN hr_positions p ON e.position_id = p.id
@@ -363,7 +375,7 @@ class HRPayrollController
                 $res['details'] = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
             }
 
-            echo json_encode(['success' => true, 'data' => $results]);
+            echo json_encode(['success' => true, 'is_exonerated' => $is_exonerated, 'data' => $results]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
