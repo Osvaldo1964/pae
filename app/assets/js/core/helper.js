@@ -236,5 +236,32 @@ const Helper = {
                 Swal.close();
             }
         }
+    },
+
+    /**
+     * Dynamically load a JS script and execute callback
+     */
+    loadScript: (url, callback) => {
+        let script = document.querySelector(`script[src^="${url.split('?')[0]}"]`);
+        if (script) {
+            if (callback) callback();
+            return;
+        }
+        script = document.createElement('script');
+        script.type = 'text/javascript';
+        if (script.readyState) {  // IE
+            script.onreadystatechange = function () {
+                if (script.readyState === 'loaded' || script.readyState === 'complete') {
+                    script.onreadystatechange = null;
+                    if (callback) callback();
+                }
+            };
+        } else {  // Others
+            script.onload = function () {
+                if (callback) callback();
+            };
+        }
+        script.src = url;
+        document.getElementsByTagName('head')[0].appendChild(script);
     }
 };

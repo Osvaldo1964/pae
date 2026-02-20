@@ -701,6 +701,11 @@ if ($resource === 'auth') {
     } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
         $controller->delete($action);
     }
+} elseif ($resource === 'dashboard') {
+    $controller = new \Controllers\DashboardController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getIndex();
+    }
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);

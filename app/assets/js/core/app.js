@@ -3,7 +3,8 @@ const App = {
     state: {
         user: null,
         token: localStorage.getItem('pae_token') || null,
-        menu: []
+        menu: [],
+        version: window.APP_VERSION || '1.0.0'
     },
 
     restoreUserFromToken: () => {
@@ -207,18 +208,11 @@ const App = {
             App.renderSidebar();
 
             if (hash === 'dashboard') {
-                // Simplified Dashboard View
-                appContainer.innerHTML = `
-                    <div class="row mt-5 justify-content-center fade-in">
-                        <div class="col-md-8 text-center">
-                            <h2 class="text-secondary mb-3">Panel de Control General</h2>
-                            <div class="my-5">
-                                <i class="fas fa-chart-line fa-4x text-muted opacity-25"></i>
-                            </div>
-                            <p class="text-muted">Seleccione un módulo del menú lateral para comenzar a trabajar.</p>
-                        </div>
-                    </div>
-                `;
+                App.renderSidebar();
+                const v = `${Config.BASE_URL}assets/js/views/dashboard.js?v=${App.state.version}`;
+                Helper.loadScript(v, () => {
+                    if (typeof DashboardView !== 'undefined') DashboardView.init();
+                });
             } else if (hash.startsWith('group/')) {
                 const groupId = hash.split('/')[1];
                 App.renderGroupHub(groupId);

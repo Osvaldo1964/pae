@@ -196,6 +196,9 @@
     </script>
     <script src="<?= $assets_path ?>js/core/config.js?v=<?= $version ?>"></script>
     <script src="<?= $assets_path ?>js/core/helper.js?v=<?= $version ?>"></script>
+    <!-- Chart.js v4 Local -->
+    <script src="<?= $assets_path ?>js/libs/chart.min.js?v=<?= $version ?>"></script>
+    <!-- App Logic -->
     <script src="<?= $assets_path ?>js/core/app.js?v=<?= $version ?>"></script>
     <!-- Views Helpers -->
     <script src="<?= $assets_path ?>js/views/print-list.js?v=<?= $version ?>"></script>

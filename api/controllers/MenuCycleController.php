@@ -264,33 +264,35 @@ class MenuCycleController
             if (!$recipeDetails)
                 throw new Exception("El ciclo no tiene recetas o ingredientes configurados.");
 
-            // 5. Motor de Cálculo (Cruce Matriz)
+            // 5. Motor de Cálculo Optimizado (Cruce Matriz O(N+M))
             $projections = []; // [branch_id][item_id] => quantity
             $totalBeneficiaries = 0;
 
-            // Mapeo de MealType a RationType (Nombres simplificados y emparejados en DB)
+            // 5.1 Pre-agrupar recetas por ración y edad para evitar el bucle N*M
+            $groupedRecipes = [];
+            foreach ($recipeDetails as $recipe) {
+                $key = $recipe['ration_type_id'] . '|' . $recipe['age_group'];
+                $groupedRecipes[$key][] = $recipe;
+            }
+
             foreach ($populations as $pop) {
                 $totalBeneficiaries += $pop['total'];
                 $branch_id = $pop['branch_id'];
                 $pop['grade'] = $pop['grade'] ?? '';
-                $pop['beneficiary_type'] = $pop['beneficiary_type'] ?? 'student'; // Compatibilidad
+                $pop['beneficiary_type'] = $pop['beneficiary_type'] ?? 'student';
                 $age_group = $this->getAgeGroup($pop['grade'], $pop['birth_date'], $pop['beneficiary_type']);
                 $ration_type_id = $pop['ration_type_id'];
 
-                foreach ($recipeDetails as $recipe) {
-                    $targetRationId = $recipe['ration_type_id'];
+                $key = $ration_type_id . '|' . $age_group;
 
-                    // Solo sumar si el tipo de ración del niño coincide con el plato
-                    // Y el grupo etario coincide con el gramaje de la receta
-                    if ($ration_type_id == $targetRationId && $age_group === $recipe['age_group']) {
+                if (isset($groupedRecipes[$key])) {
+                    foreach ($groupedRecipes[$key] as $recipe) {
                         $item_id = $recipe['item_id'];
-                        // Convertir de Gramos (receta) a la Unidad del Ítem (ej: KG) usando el factor
                         $conversion_factor = (isset($recipe['conversion_factor']) && $recipe['conversion_factor'] > 0)
                             ? $recipe['conversion_factor']
                             : 1;
-                        $quantity = ($recipe['quantity'] * $pop['total']) / $conversion_factor;
 
-                        error_log("DEBUG: Item $item_id, RecipeQty: {$recipe['quantity']}, Pop: {$pop['total']}, Factor: $conversion_factor, Result: $quantity");
+                        $quantity = ($recipe['quantity'] * $pop['total']) / $conversion_factor;
 
                         if (!isset($projections[$branch_id]))
                             $projections[$branch_id] = [];
