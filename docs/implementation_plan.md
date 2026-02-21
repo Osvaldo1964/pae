@@ -1,54 +1,47 @@
-# Dashboard Principal - PAE Control
+# Dashboard Enhancements Plan
 
-Implementación del panel de control analítico y operativo de la plataforma, priorizando la ejecución local sin dependencias externas (CDNs) para garantizar autonomía y velocidad.
+Update the dashboard to be more informative and fix production deployment issues.
 
 ## Proposed Changes
 
-### 1. Archivos Externos (Librerías Locales)
-#### [NEW] `chart.js`(file:///c:/xampp/htdocs/pae/app/assets/js/libs/chart.min.js)
-- Descarga y alojamiento local de la librería Chart.js v4 para la renderización de las gráficas de dona y líneas.
+### 1. Fix Chart.js 404 in Production
+- **Action**: Move `chart.min.js` from `app/assets/libs/` to `app/assets/js/libs/` on Hostinger.
+- **Status**: Completed (Manually by user after diagnosis).
 
-### Dashboard (KPI Presupuesto)
-Alinear el cálculo del presupuesto en el tablero con la visualización del módulo de Planeación.
+### 2. Detailed Menu Display
+- **Backend**: Modify `DashboardController::getIndex()` to join `menu_recipes` and `recipes`.
+- **Frontend**: Update `DashboardView.renderAlerts()` in `dashboard.js` to show the list of dishes.
+- **Status**: Completed.
 
-#### [MODIFY] [DashboardController.php](file:///c:/xampp/htdocs/pae/api/controllers/DashboardController.php)
-- Modificar la consulta del KPI de presupuesto para unirla con la tabla `presupuesto_items` y filtrar únicamente por rubros con `estado = 1` (Activos).
+### 3. Improved Branch Display in Budget Report
+- **Goal**: Change "↳ PRINCIPAL" to "↳ INSTITUTION - PRINCIPAL" to distinguish between entities.
+- **File**: `app/assets/js/views/reports_presupuesto.js`.
+- **Logic**: Use `branch.school_name` combined with `branch.name`.
 
-## Verification Plan:
-  - `kpis`: Totales (beneficiarios, sedes, presupuesto, raciones hoy).
-  - `charts`: Datos agrupados para las gráficas (entregas de los últimos 7 días, distribución de sedes/raciones).
-  - `alerts`: Listados operativos (top 5 insumos críticos, minuto del día).
+### 4. Breadcrumb Homogenization in Reports
+- **Problem**: Sub-hubs (Feeding, Financial, Administrativo) lack breadcrumbs. Virtual routes aren't handled by the global breadcrumb function.
+- **File**: `app/assets/js/core/app.js`.
+- **Changes**:
+    - Update `updateBreadcrumbs()` to handle `reports-ali`, `reports-fin`, `reports-adm`, and `reports-rh`.
+    - Inject the breadcrumb container into `renderReportsSubHub()`.
 
-### 2. Backend (API)
-#### [NEW] `DashboardController.php`(file:///c:/xampp/htdocs/pae/api/controllers/DashboardController.php)
-- Controlador encargado de recolectar estadísticas consolidadas. Retornará un payload estructurado con:
-  - `kpis`: Totales (beneficiarios, sedes, presupuesto, raciones hoy).
-  - `charts`: Datos agrupados para las gráficas (entregas de los últimos 7 días, distribución de sedes/raciones).
-  - `alerts`: Listados operativos (top 5 insumos críticos, minuto del día).
+### 5. New HR Reports (Positions and Staff)
+- **Goal**: Provide downloadable/printable listings of cargos and employees with filters.
+- **File: [app.js](file:///c:/xampp/htdocs/pae/app/assets/js/core/app.js)**:
+    - Add `reports-hr-positions` and `reports-hr-employees` to the router.
+    - Add the new cards to `renderReportsSubHub('reports-rh')`.
+    - Update `updateBreadcrumbs` to include mapping for the new modules.
+- **New File: [reports_hr_positions.js](file:///c:/xampp/htdocs/pae/app/assets/js/views/reports_hr_positions.js)**:
+    - Interactive listing of all HR positions.
+    - Export to Excel and PDF.
+- **New File: [reports_hr_employees.js](file:///c:/xampp/htdocs/pae/app/assets/js/views/reports_hr_employees.js)**:
+    - Listing of employees with a filter for "Position" (Cargo).
+    - Export to Excel and PDF.
 
-#### [MODIFY] `index.php`(file:///c:/xampp/htdocs/pae/api/index.php)
-- Añadir la ruta `GET /dashboard` e instanciar el nuevo controlador.
+## Verification Plan
 
-### 3. Frontend (UI)
-#### [NEW] `dashboard.js`(file:///c:/xampp/htdocs/pae/app/assets/js/views/dashboard.js)
-- Vista principal que será cargada al iniciar sesión. Contendrá:
-  - Layout Grid de Bootstrap 5.
-  - Invocación a Chart.js para inicializar los lienzos (canvas).
-  - Funciones de formateo (moneda y números).
-
-#### [MODIFY] `app.js`(file:///c:/xampp/htdocs/pae/app/assets/js/core/app.js)
-- Actualizar el router para que la ruta `#module/dashboard` e inicial default carguen `DashboardView`.
-
-#### [MODIFY] `index.php`(file:///c:/xampp/htdocs/pae/app/index.php)
-- Incluir la etiqueta `<script>` para pre-cargar `chart.min.js` y `dashboard.js` localmente.
-
----
-
-## 4. Optimización de Rendimiento (Ciclos)
-El motor de explosión de víveres actualmente tiene una complejidad de $O(N \times M)$ y genera miles de líneas de log, lo que causa bloqueos en el navegador.
-
-### Backend (Optimización)
-#### [MODIFY] [MenuCycleController.php](file:///c:/xampp/htdocs/pae/api/controllers/MenuCycleController.php)
-- **Eliminar `error_log`** dentro de los bucles de cálculo de demanda.
-- **Agrupar recetas por ración y edad** antes de procesar la población para reducir iteraciones.
-- **Transacción atómica** para la inserción masiva de resultados.
+### Manual Verification
+- Log in to the dashboard.
+- Check "Ciclos Activos" section.
+- Ensure recipe names and descriptions appear under the cycle header.
+- Verify Chart.js still loads correctly without 404 errors.
