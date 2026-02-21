@@ -131,19 +131,43 @@ class DashboardController
             $stmt->execute([$pae_id]);
             $lowStockAlerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Cycle actual
+            // Cycle actual (modificado para incluir recetas del día)
             $stmt = $this->conn->prepare("
-                SELECT c.name, m.name as menu_name, m.day_number
+                SELECT c.name, m.name as menu_name, m.day_number,
+                       r.name as recipe_name, r.description as recipe_description
                 FROM menu_cycles c
                 JOIN menus m ON c.id = m.cycle_id
+                LEFT JOIN menu_recipes mr ON m.id = mr.menu_id
+                LEFT JOIN recipes r ON mr.recipe_id = r.id
                 WHERE c.pae_id = ? 
                 AND c.status IN ('ACTIVO', 'active') 
                 AND CURRENT_DATE BETWEEN c.start_date AND c.end_date
                 ORDER BY m.day_number ASC
-                LIMIT 5
+                LIMIT 20
             ");
             $stmt->execute([$pae_id]);
-            $activeCycles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $cyclesData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Agrupar recetas por ciclo
+            $activeCycles = [];
+            foreach ($cyclesData as $row) {
+                $cycleKey = $row['name'] . '|' . $row['menu_name'];
+                if (!isset($activeCycles[$cycleKey])) {
+                    $activeCycles[$cycleKey] = [
+                        'name' => $row['name'],
+                        'menu_name' => $row['menu_name'],
+                        'day_number' => $row['day_number'],
+                        'recipes' => []
+                    ];
+                }
+                if ($row['recipe_name']) {
+                    $activeCycles[$cycleKey]['recipes'][] = [
+                        'name' => $row['recipe_name'],
+                        'description' => $row['recipe_description']
+                    ];
+                }
+            }
+            $activeCycles = array_values($activeCycles);
 
             echo json_encode([
                 'success' => true,

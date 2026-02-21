@@ -331,13 +331,31 @@ const DashboardView = {
             alerts.cycles.forEach(cy => {
                 const isAm = cy.type_id == 1; // Assuming 1 is Desayuno/Am
                 const icon = isAm ? 'fa-sun text-warning' : 'fa-hamburger text-primary';
+                let recipesHtml = '';
+                if (cy.recipes && cy.recipes.length > 0) {
+                    recipesHtml = '<div class="mt-2 pt-2 border-top border-secondary-subtle">';
+                    cy.recipes.forEach(r => {
+                        recipesHtml += `
+                            <div class="mb-1">
+                                <span class="fw-bold text-dark small"><i class="fas fa-utensils text-muted me-1"></i>${r.name}</span>
+                                <div class="text-muted" style="font-size: 0.70rem; padding-left: 17px;">${r.description || ''}</div>
+                            </div>
+                        `;
+                    });
+                    recipesHtml += '</div>';
+                }
+
                 html += `
                     <div class="list-group-item px-0 border-0 mb-2">
-                        <div class="d-flex align-items-center bg-light rounded-3 p-3">
-                            <div class="me-3 fs-3"><i class="fas ${icon}"></i></div>
-                            <div>
-                                <h6 class="mb-1 fw-bold text-dark">${cy.name}</h6>
-                                <p class="mb-0 text-muted small"><i class="fas fa-clock me-1"></i>Vigente hoy</p>
+                        <div class="d-flex align-items-start bg-light rounded-3 p-3">
+                            <div class="me-3 fs-3 mt-1"><i class="fas ${icon}"></i></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold text-dark">${cy.name}</h6>
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size: 0.65rem;">${cy.menu_name || 'Menú de Hoy'}</span>
+                                </div>
+                                <p class="mb-1 text-muted small"><i class="fas fa-clock me-1"></i>Vigente hoy</p>
+                                ${recipesHtml}
                             </div>
                         </div>
                     </div>
