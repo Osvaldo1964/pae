@@ -42,7 +42,11 @@
   - ✅ Impresión de Insumos (Filtros por grupo/estado).
   - ✅ Impresión de Recetas (Ficha técnica visual).
   - ✅ Minutas x Ciclo x Sede (Calendario hábil y detalles de ración).
-- 🟡 **Módulo Móvil de Entregas (PWA):** *REFINANDO*
+- ✅ **Hub de Reportes (Talento Humano):**
+  - ✅ Nómina y Pagos (Costo total empleador).
+  - ✅ Listado de Cargos (Riesgos ARL).
+  - ✅ Listado de Personal (Directorio con filtros).
+- ✅ **Módulo Móvil de Entregas (PWA):** Funcional y estable.
 
 ### 6. **Finanzas** ✅ ⭐ FASE COMPLETADA
 - ✅ Terceros (Directorio de proveedores y contratistas)
@@ -52,8 +56,9 @@
 
 ### 7. **UX / Navegación**
 - ✅ **Reordenamiento Sidebar:** Recurso Humano posicionado antes de Reportes para flujo lógico.
-- ✅ **Hub Cocina:** Ordenamiento manual (Ítems > Tipos de Ración > Recetario > Ciclos).
+- ✅ **Hub Cocina/Reportes:** Ordenamiento manual y simétrico.
 - ✅ **Navegación Circular:** Retorno automático al menú de módulo tras finalizar cargas o procesos masivos.
+- ✅ **Breadcrumbs Inteligentes:** Sistema de navegación multinivel para hubs de reportes.
 
 ---
 
@@ -78,4 +83,4 @@
 
 ---
 
-**Última actualización**: 15 de Febrero 2026, 2:30 PM
+**Última actualización**: 21 de Febrero 2026, 12:00 AM

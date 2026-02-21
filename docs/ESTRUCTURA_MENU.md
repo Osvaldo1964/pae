@@ -1,6 +1,6 @@
 # Estructura del Menú - PAE Control
 
-**Actualizado:** 06 de Febrero de 2026, 14:45
+**Actualizado:** 21 de Febrero de 2026, 00:00
 
 ## 🎯 Navegación por Rol
 
@@ -37,7 +37,13 @@
 ├── 🍽️ Cocina
 │   └── 🥕 Ítems
 ├── 📊 Reportes
-│   └── 📈 Consumos (Reporte QR)
+│   ├── 📅 Consumos (Reporte QR)
+│   ├── 🥯 Alimentación (Hub)
+│   ├── 💰 Financiero (Hub)
+│   └── 👥 Talento Humano (Hub)
+│       ├── 💵 Nómina y Pagos
+│       ├── 👔 Listado de Cargos
+│       └── 🆔 Listado de Personal
 └── ⚙️ Configuración ← Click aquí
     └── 📦 Hub de Configuración
         ├── 🔐 Roles y Permisos

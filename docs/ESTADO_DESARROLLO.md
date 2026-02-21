@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 20 de Febrero 2026, 12:30 PM
-**Versión Doc:** 1.9.9 | **Versión Código:** 1.9.9 (Finanzas Integrales y Costo Empleador)
+**Última actualización**: 21 de Febrero 2026, 12:00 AM
+**Versión Doc:** 1.9.10 | **Versión Código:** 1.9.10 (Navegación Unificada y Reportes de Talento Humano)
 
 ---
 
@@ -183,7 +183,10 @@
 - [x] **Gestión de Cargos:** CRUD de posiciones con descripción y salario
 - [x] **Gestión de Empleados:** Registro completo con datos personales y laborales
 - [x] **Vinculación:** Asignación de empleados a cargos y sedes
-- [x] **Reportes:** Nómina y listados por cargo/sede
+- [x] **Hub de Reportes:** 
+    - [x] **Nómina y Pagos:** Consolidado de costos y desprendibles.
+    - [x] **Listado de Cargos:** Reporte técnico de roles y riesgos ARL.
+    - [x] **Listado de Personal:** Directorio filtrable por cargo.
 
 ### 16. Módulo de Finanzas (Presupuesto y Gastos) ✅ ⭐ COMPLETADO
 - [x] **Gestión de Terceros:** CRUD completo de proveedores, empleados y contratistas con aislamiento por PAE.
@@ -212,14 +215,15 @@
   - **Enriquecimiento:** Exposición de recetas detalladas (preparación analítica) en el reporte
   - **Cumplimiento:** Formato optimizado según Resolución 0003 de 2026
 - [x] **Exportación:** Motor unificado para PDF/Print y Excel en todos los reportes operativos
+- [x] **Homogenización:** Sistema de breadcrumbs centralizado que reconoce sub-hubs de categorías.
 
 ---
 
 ## 🚧 EN DESARROLLO
 
 - [x] **Conversión de Unidades:** Motor automático de Gramos (receta) a Kilogramos (almacén).
-- [x] **Hub de Reportes:** Fase Alimentación completada al 100%.
-- [ ] **Dashboard Principal:** Widgets de estadísticas operativas y KPIs en tiempo real.
+- [x] **Hub de Reportes:** Fase Alimentación y Talento Humano completadas al 100%.
+- [x] **Dashboard Principal:** Visualización detallada de recetas programadas por ciclo.
 - [ ] **Módulo de Novedades:** Reporte de ausentismos y alertas de retiros.
 
 ---
@@ -239,7 +243,12 @@
 
 ---
 
-## 🔧 CORRECCIONES RECIENTES (v1.9.0)
+### v1.9.10 (21 Feb 2026 - Navegación Unificada)
+- ✅ **Homogenización de Breadcrumbs:** Centralización de la lógica en `app.js` para soportar navegación multinivel en todos los reportes (`Dashboard > Reportes > Categoría > Módulo`).
+- ✅ **Reportes de Talento Humano:** Implementación de "Listado de Cargos" y "Listado de Personal" con filtros dinámicos y exportación PDF/Excel.
+- ✅ **Navegación Circular:** Corrección de bucles de navegación en el hub de Talento Humano para asegurar un flujo lógico de entrada y salida.
+- ✅ **Dashboard Enriquecido:** Ahora muestra el listado de recetas y descripciones programadas para el día actual en cada ciclo activo.
+- ✅ **Presupuesto - Identificación de Sedes:** Se concatenó el nombre de la Institución con el de la Sede en los reportes detallados para evitar ambigüedades.
 
 ### v1.9.9 (20 Feb 2026 - Finanzas Integrales)
 - ✅ **Presupuesto Inicial:** Implementación de Fila de Totales y Exportación Nativa a MS Excel generada dinámicamente en memoria.
