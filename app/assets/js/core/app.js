@@ -146,11 +146,41 @@ const App = {
                         'fin-traslados': 'Traslados'
                     };
                     foundModule = { name: finNames[route] };
+                } else if (route === 'reports-ali') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Alimentación' };
+                } else if (route === 'reports-fin') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Financiero' };
+                } else if (route === 'reports-adm') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Administrativo' };
+                } else if (route === 'reports-rh') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Talento Humano' };
                 }
             }
 
             if (foundGroup) {
                 html += `<li class="breadcrumb-item"><a href="#group/${foundGroup.id}" class="text-decoration-none">${foundGroup.name}</a></li>`;
+
+                // Add intermediate Hub for Reports
+                if (foundGroup.id == 5 && foundModule) {
+                    const hubMap = {
+                        'reports-insumos': { name: 'Alimentación', route: 'reports-ali' },
+                        'reports-recetas': { name: 'Alimentación', route: 'reports-ali' },
+                        'reports-minutas': { name: 'Alimentación', route: 'reports-ali' },
+                        'reports-presupuesto': { name: 'Financiero', route: 'reports-fin' },
+                        'reports-costs': { name: 'Financiero', route: 'reports-fin' },
+                        'reports-pay': { name: 'Talento Humano', route: 'reports-rh' },
+                        'reports-hr-positions': { name: 'Talento Humano', route: 'reports-rh' },
+                        'reports-hr-employees': { name: 'Talento Humano', route: 'reports-rh' }
+                    };
+                    const hub = hubMap[route];
+                    if (hub && route !== hub.route) {
+                        html += `<li class="breadcrumb-item"><a href="#module/${hub.route}" class="text-decoration-none">${hub.name}</a></li>`;
+                    }
+                }
             }
             if (foundModule) {
                 html += `<li class="breadcrumb-item active" aria-current="page">${foundModule.name}</li>`;
@@ -257,10 +287,12 @@ const App = {
                     'fin-movimientos': 'fin_movimientos',
                     'fin-traslados': 'fin_traslados',
                     'reports-pay': 'reports_payroll',
-                    'reports-presupuesto': 'reports_presupuesto'
+                    'reports-presupuesto': 'reports_presupuesto',
+                    'reports-hr-positions': 'reports_hr_positions',
+                    'reports-hr-employees': 'reports_hr_employees'
                 };
 
-                const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm'];
+                const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm', 'reports-rh'];
                 if (reportCategories.includes(route)) {
                     App.renderReportsSubHub(route);
                 } else {
@@ -739,7 +771,7 @@ const App = {
             modulesToRender.push({ name: 'Financieros', route: 'reports-fin', icon: 'fas fa-file-invoice-dollar', description: 'Balances, costos y presupuestos', virtual: true, color: 'danger' });
             modulesToRender.push({ name: 'Alimentación', route: 'reports-ali', icon: 'fas fa-utensils', description: 'Insumos, recetas y minutas', virtual: true, color: 'success' });
             modulesToRender.push({ name: 'Administrativos', route: 'reports-adm', icon: 'fas fa-clipboard-list', description: 'Asistencia, personal y gestión', virtual: true, color: 'primary' });
-            modulesToRender.push({ name: 'Talento Humano', route: 'reports-pay', icon: 'fas fa-user-tie', description: 'Nómina general y desprendibles', virtual: true, color: 'info' });
+            modulesToRender.push({ name: 'Talento Humano', route: 'reports-rh', icon: 'fas fa-user-tie', description: 'Nómina general y desprendibles', virtual: true, color: 'info' });
         }
 
         // 3. APPLY MANUAL ORDERING AND CUSTOM GROUPS
@@ -882,6 +914,15 @@ const App = {
             color = 'primary';
             modules = [
                 { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' }
+            ];
+        } else if (category === 'reports-rh') {
+            title = 'Reportes de Talento Humano';
+            icon = 'fas fa-users-cog';
+            color = 'info';
+            modules = [
+                { name: 'Nómina y Pagos', route: 'reports-pay', icon: 'fas fa-file-invoice-dollar', description: 'Consolidados y desprendibles de nómina' },
+                { name: 'Listado de Cargos', route: 'reports-hr-positions', icon: 'fas fa-briefcase', description: 'Listado maestro de cargos y riesgos ARL' },
+                { name: 'Listado de Personal', route: 'reports-hr-employees', icon: 'fas fa-id-card-alt', description: 'Fichas de personal y datos de contacto' }
             ];
         }
 

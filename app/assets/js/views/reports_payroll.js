@@ -12,25 +12,12 @@ var ReportsPayrollView = {
     },
 
     render: () => {
-        // Breadcrumb
-        const breadcrumbHtml = `
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#dashboard" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="#group/5" class="text-decoration-none">Reportes</a></li>
-                    <li class="breadcrumb-item"><a href="#module/reports-rh" class="text-decoration-none">Talento Humano</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Nómina</li>
-                </ol>
-            </nav>
-        `;
-
         const container = document.getElementById('app-container');
         container.innerHTML = `
             <div class="container-fluid fade-in">
-                ${breadcrumbHtml}
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <a href="#group/5" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>
+                        <a href="#module/reports-rh" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>
                         <h2 class="mb-1"><i class="fas fa-user-tie me-2 text-info"></i>Talento Humano</h2>
                         <p class="text-muted mb-0">Generación de soportes de pago y consolidados de nómina</p>
                     </div>

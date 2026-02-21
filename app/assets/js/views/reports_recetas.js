@@ -20,21 +20,8 @@ window.ReportsRecetasView = {
     },
 
     render() {
-        // Breadcrumb
-        const breadcrumbHtml = `
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#dashboard" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="#group/5" class="text-decoration-none">Reportes</a></li>
-                    <li class="breadcrumb-item"><a href="#module/reports-ali" class="text-decoration-none">Alimentación</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Recetario</li>
-                </ol>
-            </nav>
-        `;
-
         document.getElementById('app').innerHTML = `
             <div class="container-fluid fade-in">
-                ${breadcrumbHtml}
                 <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
                     <div class="card shadow-lg border-0" style="width: 100%; max-width: 600px; overflow: hidden;">
                         <!-- Header inspired by the image -->
