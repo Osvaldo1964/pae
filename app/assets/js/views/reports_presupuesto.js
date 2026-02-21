@@ -285,7 +285,7 @@ window.ReportsPresupuestoView = {
             if (this.config.tipo === 'detallado' && !isParent && item.distribucion && item.distribucion.length > 0) {
                 item.distribucion.forEach(d => {
                     const branch = this.branches.find(b => b.id == d.branch_id);
-                    const branchName = branch ? branch.name : 'SEDE DESCONOCIDA';
+                    const branchName = branch ? `${branch.school_name} - ${branch.name}` : 'SEDE DESCONOCIDA';
                     tableHtml += `
                         <tr>
                             <td></td>
