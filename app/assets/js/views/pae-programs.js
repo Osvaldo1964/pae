@@ -36,6 +36,7 @@ var PaeProgramsView = {
                                                 <th>Programa</th>
                                                 <th>Entidad</th>
                                                 <th>Operador</th>
+                                                <th>Servicios</th>
                                                 <th>Ubicación</th>
                                                 <th>Logos</th>
                                                 <th class="text-end">Acciones</th>
@@ -274,7 +275,7 @@ var PaeProgramsView = {
         tbody.innerHTML = '';
 
         if (this.programs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No se encontraron programas registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No se encontraron programas registrados</td></tr>';
             return;
         }
 
@@ -302,6 +303,13 @@ var PaeProgramsView = {
                     <td>
                         ${pae.operator_name || '-'}<br>
                         <small class="text-muted">NIT: ${pae.operator_nit || '-'}</small>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-1" style="max-width: 200px;">
+                            ${pae.services && pae.services.length > 0
+                    ? pae.services.map(s => `<span class="badge bg-primary" style="font-size: 0.7rem;">${s.name}</span>`).join('')
+                    : '<span class="text-muted small">Sin servicios</span>'}
+                        </div>
                     </td>
                     <td>
                         ${pae.city || '-'}, ${pae.department || '-'}
