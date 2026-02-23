@@ -91,12 +91,12 @@
                     <li class="nav-item"><a class="nav-link" href="#eventos">Eventos</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal"
                             data-bs-target="#pqrModal">PQR</a></li>
-                    <li class="nav-item ms-3">
+                    <!-- <li class="nav-item ms-3">
                         <button class="btn btn-outline-light btn-sm px-3 rounded-pill" data-bs-toggle="modal"
                             data-bs-target="#createPaeModal">
                             <i class="fas fa-plus-circle me-1"></i> Crear Programa
                         </button>
-                    </li>
+                    </li> -->
                     <li class="nav-item ms-2">
                         <a href="app/" class="btn btn-success btn-sm px-4 rounded-pill">Acceso Funcionarios</a>
                     </li>

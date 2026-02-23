@@ -706,7 +706,16 @@ if ($resource === 'auth') {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $controller->getIndex();
     }
+} elseif ($resource === 'services') {
+    $controller = new \Controllers\ServiceController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);
 }
+?>

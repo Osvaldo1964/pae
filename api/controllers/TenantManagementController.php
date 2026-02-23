@@ -37,10 +37,20 @@ class TenantManagementController
             $stmt->execute();
             $programs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            // Validate logo existence
+            // Validate logo existence and get services
             foreach ($programs as &$pae) {
                 $pae['entity_logo_path'] = $this->validateLogoPath($pae['entity_logo_path']);
                 $pae['operator_logo_path'] = $this->validateLogoPath($pae['operator_logo_path']);
+
+                // Get services
+                $stmtServices = $this->db->prepare("
+                    SELECT s.id, s.name 
+                    FROM program_services s
+                    JOIN pae_program_services ps ON s.id = ps.service_id
+                    WHERE ps.pae_id = ?
+                ");
+                $stmtServices->execute([$pae['id']]);
+                $pae['services'] = $stmtServices->fetchAll(\PDO::FETCH_ASSOC);
             }
 
             echo json_encode($programs);
@@ -122,6 +132,16 @@ class TenantManagementController
                 $id
             ]);
 
+            // Sync services
+            $this->db->prepare("DELETE FROM pae_program_services WHERE pae_id = ?")->execute([$id]);
+            if (!empty($_POST['services'])) {
+                $services = is_array($_POST['services']) ? $_POST['services'] : explode(',', $_POST['services']);
+                $stmtService = $this->db->prepare("INSERT INTO pae_program_services (pae_id, service_id) VALUES (?, ?)");
+                foreach ($services as $serviceId) {
+                    $stmtService->execute([$id, $serviceId]);
+                }
+            }
+
             echo json_encode(['success' => true, 'message' => 'Programa actualizado exitosamente']);
         } catch (\PDOException $e) {
             http_response_code(500);
@@ -187,7 +207,8 @@ class TenantManagementController
 
     private function validateLogoPath($path)
     {
-        if (!$path) return null;
+        if (!$path)
+            return null;
 
         // If it starts with assets/, it's already in the new format or a default
         $fullPath = __DIR__ . '/../../app/' . $path;

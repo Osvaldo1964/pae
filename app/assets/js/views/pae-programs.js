@@ -1,6 +1,9 @@
 // Use var or global assignment to avoid "already declared" errors on SPA navigation
 var PaeProgramsView = {
     programs: [],
+    state: {
+        availableServices: []
+    },
 
     /**
      * Render the view
@@ -12,11 +15,11 @@ var PaeProgramsView = {
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h2><i class="fas fa-building me-2"></i>Programas PAE</h2>
+                                <h2><i class="fas fa-building me-2"></i>Crear Programa</h2>
                                 <p class="text-muted">Gestión de entidades y operadores del programa</p>
                             </div>
                             <button class="btn btn-success" onclick="PaeProgramsView.openModal()">
-                                <i class="fas fa-plus me-2"></i>Nuevo Programa
+                                <i class="fas fa-plus me-2"></i>Crear Programa
                             </button>
                         </div>
                     </div>
@@ -55,7 +58,7 @@ var PaeProgramsView = {
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                             <h5 class="modal-title" id="modalPaeTitle">
-                                <i class="fas fa-building me-2"></i>Nuevo Programa PAE
+                                <i class="fas fa-building me-2"></i>Crear Programa
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -78,6 +81,20 @@ var PaeProgramsView = {
                                     </div>
                                 </div>
 
+                                <!-- Servicios del Programa -->
+                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                                    <i class="fas fa-concierge-bell me-2"></i>Servicios del Programa
+                                </h6>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Seleccione los servicios disponibles para este programa *</label>
+                                        <div id="services-container" class="d-flex flex-wrap gap-3 p-3 bg-light rounded border">
+                                            <!-- Services will be loaded here -->
+                                            <div class="text-muted small">Cargando servicios...</div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Datos de la Entidad -->
                                 <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
                                     <i class="fas fa-landmark me-2"></i>Datos de la Entidad Territorial
@@ -93,7 +110,10 @@ var PaeProgramsView = {
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Logo Entidad</label>
-                                        <input type="file" class="form-control" id="entity-logo" accept="image/*">
+                                        <input type="file" class="form-control" id="entity-logo" accept="image/*" onchange="PaeProgramsView.previewImage(this, 'entity-preview')">
+                                        <div id="entity-preview" class="mt-2 text-center border rounded p-1" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                            <span class="text-muted small">Sin logo</span>
+                                        </div>
                                         <small class="text-muted" id="entity-logo-current"></small>
                                     </div>
                                 </div>
@@ -127,7 +147,10 @@ var PaeProgramsView = {
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Logo Operador</label>
-                                        <input type="file" class="form-control" id="operator-logo" accept="image/*">
+                                        <input type="file" class="form-control" id="operator-logo" accept="image/*" onchange="PaeProgramsView.previewImage(this, 'operator-preview')">
+                                        <div id="operator-preview" class="mt-2 text-center border rounded p-1" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                            <span class="text-muted small">Sin logo</span>
+                                        </div>
                                         <small class="text-muted" id="operator-logo-current"></small>
                                     </div>
                                 </div>
@@ -143,6 +166,23 @@ var PaeProgramsView = {
                                     <div class="col-md-4">
                                         <label class="form-label">Email</label>
                                         <input type="email" class="form-control" id="operator-email">
+                                    </div>
+                                </div>
+
+                                <!-- Usuario Administrador -->
+                                <div id="admin-user-section">
+                                    <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                                        <i class="fas fa-user-shield me-2"></i>Usuario Administrador
+                                    </h6>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email Admin *</label>
+                                            <input type="email" class="form-control" id="admin-email">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Contraseña *</label>
+                                            <input type="password" class="form-control" id="admin-password">
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -166,7 +206,41 @@ var PaeProgramsView = {
      * Initialize the view
      */
     async init() {
+        await this.loadServices();
         await this.loadPrograms();
+    },
+
+    /**
+     * Load available services
+     */
+    async loadServices() {
+        try {
+            const services = await Helper.fetchAPI('/services');
+            this.state.availableServices = services;
+            this.renderServices();
+        } catch (error) {
+            console.error('Error loading services:', error);
+        }
+    },
+
+    /**
+     * Render services checkboxes
+     */
+    renderServices() {
+        const container = document.getElementById('services-container');
+        if (!container) return;
+
+        if (!this.state.availableServices || this.state.availableServices.length === 0) {
+            container.innerHTML = '<div class="text-muted small">No hay servicios disponibles</div>';
+            return;
+        }
+
+        container.innerHTML = this.state.availableServices.map(service => `
+            <div class="form-check form-check-inline">
+                <input class="form-check-input service-checkbox" type="checkbox" value="${service.id}" id="service-${service.id}">
+                <label class="form-check-label" for="service-${service.id}">${service.name}</label>
+            </div>
+        `).join('');
     },
 
     /**
@@ -269,8 +343,20 @@ var PaeProgramsView = {
         document.getElementById('entity-logo-current').textContent = '';
         document.getElementById('operator-logo-current').textContent = '';
 
+        // Reset previews
+        document.getElementById('entity-preview').innerHTML = '<span class="text-muted small">Sin logo</span>';
+        document.getElementById('operator-preview').innerHTML = '<span class="text-muted small">Sin logo</span>';
+
+        // Reset services
+        document.querySelectorAll('.service-checkbox').forEach(cb => cb.checked = false);
+
+        // Show/Hide admin section (only for create)
+        document.getElementById('admin-user-section').style.display = isEdit ? 'none' : 'block';
+        document.getElementById('admin-email').required = !isEdit;
+        document.getElementById('admin-password').required = !isEdit;
+
         if (isEdit) {
-            document.getElementById('modalPaeTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Programa PAE';
+            document.getElementById('modalPaeTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Editar Programa';
             document.getElementById('pae-id').value = pae.id;
             document.getElementById('pae-name').value = pae.name || '';
             document.getElementById('pae-email').value = pae.email || '';
@@ -287,9 +373,19 @@ var PaeProgramsView = {
 
             if (pae.entity_logo_path) {
                 document.getElementById('entity-logo-current').textContent = `Actual: ${pae.entity_logo_path.split('/').pop()}`;
+                document.getElementById('entity-preview').innerHTML = `<img src="${pae.entity_logo_path}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
             }
             if (pae.operator_logo_path) {
                 document.getElementById('operator-logo-current').textContent = `Actual: ${pae.operator_logo_path.split('/').pop()}`;
+                document.getElementById('operator-preview').innerHTML = `<img src="${pae.operator_logo_path}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+            }
+
+            // Pre-select services
+            if (pae.services) {
+                pae.services.forEach(s => {
+                    const cb = document.getElementById(`service-${s.id}`);
+                    if (cb) cb.checked = true;
+                });
             }
         } else {
             document.getElementById('modalPaeTitle').innerHTML = '<i class="fas fa-plus me-2"></i>Nuevo Programa PAE';
@@ -309,7 +405,9 @@ var PaeProgramsView = {
             !document.getElementById('entity-name').value ||
             !document.getElementById('entity-nit').value ||
             !document.getElementById('operator-name').value ||
-            !document.getElementById('operator-nit').value) {
+            !document.getElementById('operator-nit').value ||
+            (!isEdit && !document.getElementById('admin-email').value) ||
+            (!isEdit && !document.getElementById('admin-password').value)) {
             Helper.alert('warning', 'Complete los campos obligatorios');
             return;
         }
@@ -328,6 +426,15 @@ var PaeProgramsView = {
         formData.append('operator_address', document.getElementById('operator-address').value);
         formData.append('operator_phone', document.getElementById('operator-phone').value);
         formData.append('operator_email', document.getElementById('operator-email').value);
+
+        // Add services
+        const selectedServices = Array.from(document.querySelectorAll('.service-checkbox:checked')).map(cb => cb.value);
+        selectedServices.forEach(id => formData.append('services[]', id));
+
+        if (!isEdit) {
+            formData.append('admin_email', document.getElementById('admin-email').value);
+            formData.append('admin_password', document.getElementById('admin-password').value);
+        }
 
         // Add logos if selected
         const entityLogo = document.getElementById('entity-logo').files[0];
@@ -376,6 +483,22 @@ var PaeProgramsView = {
         } catch (error) {
             console.error('Error deleting PAE:', error);
             Helper.alert('error', 'Error al eliminar programa');
+        }
+    },
+
+    /**
+     * Preview selected image
+     */
+    previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.innerHTML = '<span class="text-muted small">Sin logo</span>';
         }
     }
 };

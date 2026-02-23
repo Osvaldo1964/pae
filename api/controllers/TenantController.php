@@ -107,6 +107,18 @@ class TenantController
                 $stmtUser->bindParam(":fullname", $fullName);
                 $stmtUser->execute();
 
+                // 4. Associate Services
+                if (!empty($_POST['services'])) {
+                    $services = is_array($_POST['services']) ? $_POST['services'] : explode(',', $_POST['services']);
+                    $sqlService = "INSERT INTO pae_program_services (pae_id, service_id) VALUES (:pae, :service)";
+                    $stmtService = $this->conn->prepare($sqlService);
+                    foreach ($services as $serviceId) {
+                        $stmtService->bindParam(":pae", $paeId);
+                        $stmtService->bindParam(":service", $serviceId);
+                        $stmtService->execute();
+                    }
+                }
+
                 $this->conn->commit();
 
                 http_response_code(201);

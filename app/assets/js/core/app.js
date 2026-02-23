@@ -130,7 +130,7 @@ const App = {
             if (!foundModule) {
                 if (route === 'pae-programs') {
                     foundGroup = App.state.menu.find(g => g.name === 'Configuración');
-                    foundModule = { name: 'Programas PAE' };
+                    foundModule = { name: 'Crear Programa' };
                 } else if (route === 'team') {
                     foundGroup = App.state.menu.find(g => g.name === 'Configuración');
                     foundModule = { name: 'Mi Equipo' };
@@ -747,7 +747,7 @@ const App = {
         // 2. Inject Virtual Modules based on Group
         if (group.name === 'Configuración') {
             if (App.state.user && App.state.user.role_id === 1) {
-                modulesToRender.push({ name: 'Programas PAE', route: 'pae-programs', icon: 'fas fa-building', description: 'Gestión de entidades', virtual: true, color: 'primary' });
+                modulesToRender.push({ name: 'Crear Programa', route: 'pae-programs', icon: 'fas fa-building', description: 'Gestión de entidades', virtual: true, color: 'primary' });
             }
             if (App.state.user && App.state.user.role_id !== 1 && App.state.user.pae_id) {
                 modulesToRender.push({ name: 'Mi Equipo', route: 'team', icon: 'fas fa-users', description: 'Gestión de miembros', virtual: true, color: 'success' });
