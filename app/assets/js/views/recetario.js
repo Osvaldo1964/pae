@@ -157,6 +157,7 @@ window.RecetarioView = {
                                                 <th class="text-center text-uppercase">Pri B</th>
                                                 <th class="text-center text-uppercase">Secu.</th>
                                                 <th class="text-center text-uppercase text-primary">Gral.</th>
+                                                <th class="text-center text-uppercase text-danger">Costo (G)</th>
                                                 <th class="pe-3 text-uppercase">Notas</th>
                                             </tr>
                                         </thead>
@@ -169,6 +170,7 @@ window.RecetarioView = {
                                                     <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</span></td>
                                                     <td class="text-end"><span class="badge bg-light text-dark border">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</span></td>
                                                     <td class="text-end"><span class="badge bg-primary-light text-primary border">${Helper.formatNumber(i.quantities.GENERAL, 3)}</span></td>
+                                                    <td class="text-end fw-bold text-danger">${Helper.formatCurrency(this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost))}</td>
                                                     <td class="pe-3 small text-muted">${i.preparation || '-'}</td>
                                                 </tr>
                                             `).join('')}
@@ -451,6 +453,18 @@ window.RecetarioView = {
         return unit;
     },
 
+    _calculateItemCost(qty, unit, unitCost) {
+        if (!unitCost) return 0;
+        const quantity = parseFloat(qty) || 0;
+        const u = (unit || '').toUpperCase();
+        const cost = parseFloat(unitCost) || 0;
+
+        if (['KG', 'KILOGRAMO', 'KILOS', 'L', 'LT', 'LITRO', 'LITROS'].includes(u)) {
+            return (quantity / 1000) * cost;
+        }
+        return quantity * cost;
+    },
+
     _generateRecipesExcel(recipes) {
         let rows = '';
         recipes.forEach(r => {
@@ -463,6 +477,7 @@ window.RecetarioView = {
                     <td>${parseFloat(r.total_proteins).toFixed(1)}</td>
                     <td>${parseFloat(r.total_carbohydrates).toFixed(1)}</td>
                     <td>${parseFloat(r.total_fats).toFixed(1)}</td>
+                    <td style="color:#d9534f;">${Helper.formatCurrency(r.items.reduce((acc, i) => acc + this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost), 0))}</td>
                     <td>RECETA PADRE</td>
                 </tr>
             `;
@@ -477,6 +492,7 @@ window.RecetarioView = {
                     <th>Prim. B</th>
                     <th>Secund.</th>
                     <th>General</th>
+                    <th>Costo (G)</th>
                     <th colspan="2">Observaciones</th>
                 </tr>
             `;
@@ -492,6 +508,7 @@ window.RecetarioView = {
                         <td>${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                         <td>${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
                         <td>${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
+                        <td style="text-align:right;">${Helper.formatCurrency(this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost))}</td>
                         <td colspan="2">${i.preparation || '-'}</td>
                     </tr>
                 `;
@@ -513,6 +530,7 @@ window.RecetarioView = {
                         <th>PROT</th>
                         <th>HC</th>
                         <th>GRAS</th>
+                        <th>COSTO TOT.</th>
                         <th>NOTAS</th>
                     </tr>
                     ${rows}
@@ -542,6 +560,7 @@ window.RecetarioView = {
                     <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                     <td class="text-end">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
                     <td class="text-end">${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
+                    <td class="text-end fw-bold text-danger">${Helper.formatCurrency(this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost))}</td>
                 </tr>
             `).join('');
 
@@ -561,9 +580,16 @@ window.RecetarioView = {
                                 <th>Prim B</th>
                                 <th>Secund</th>
                                 <th>General</th>
+                                <th>Costo (G)</th>
                             </tr>
                         </thead>
                         <tbody>${itemRows}</tbody>
+                        <tfoot class="bg-light fw-bold">
+                            <tr>
+                                <td colspan="7" class="text-end">COSTO TOTAL RECETA (GENERAL):</td>
+                                <td class="text-end text-danger">${Helper.formatCurrency(r.items.reduce((acc, i) => acc + this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost), 0))}</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             `;
@@ -606,6 +632,7 @@ window.RecetarioView = {
                 <td>${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                 <td>${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
                 <td>${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
+                <td style="text-align:right;">${Helper.formatCurrency(this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost))}</td>
                 <td>${i.preparation || '-'}</td>
             </tr>
         `).join('');
@@ -626,6 +653,7 @@ window.RecetarioView = {
                         <th>PRIMARIA B</th>
                         <th>SECUNDARIA</th>
                         <th>GENERAL</th>
+                        <th>COSTO (G)</th>
                         <th>OBSERVACIONES</th>
                     </tr>
                     ${itemRows}
@@ -654,6 +682,7 @@ window.RecetarioView = {
                 <td class="text-end">${Helper.formatNumber(i.quantities.PRIMARIA_B, 3)}</td>
                 <td class="text-end">${Helper.formatNumber(i.quantities.SECUNDARIA, 3)}</td>
                 <td class="text-end">${Helper.formatNumber(i.quantities.GENERAL, 3)}</td>
+                <td class="text-end text-danger fw-bold">${Helper.formatCurrency(this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost))}</td>
                 <td>${i.preparation || '-'}</td>
             </tr>
         `).join('');
@@ -722,9 +751,16 @@ window.RecetarioView = {
                             <th>PRIM. B</th>
                             <th>SECUND.</th>
                             <th>GENERAL</th>
+                            <th>COSTO (G)</th>
                         </tr>
                     </thead>
                     <tbody>${itemRows}</tbody>
+                    <tfoot class="bg-light fw-bold">
+                        <tr>
+                            <td colspan="7" class="text-end">COSTO TOTAL RECETA (GENERAL):</td>
+                            <td class="text-end text-danger">${Helper.formatCurrency(r.items.reduce((acc, i) => acc + this._calculateItemCost(i.quantities.GENERAL, i.unit, i.unit_cost), 0))}</td>
+                        </tr>
+                    </tfoot>
                 </table>
                 
                 <div class="mt-5 pt-5 row">

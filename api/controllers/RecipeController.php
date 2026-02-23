@@ -72,7 +72,7 @@ class RecipeController
 
             if ($include_items && count($recipes) > 0) {
                 foreach ($recipes as &$recipe) {
-                    $queryItems = "SELECT ri.*, i.name as item_name, i.code as item_code, mu.abbreviation as unit 
+                    $queryItems = "SELECT ri.*, i.name as item_name, i.code as item_code, i.unit_cost, mu.abbreviation as unit 
                                    FROM recipe_items ri 
                                    JOIN items i ON ri.item_id = i.id 
                                    JOIN measurement_units mu ON i.measurement_unit_id = mu.id
@@ -89,6 +89,7 @@ class RecipeController
                                 'item_id' => $iid,
                                 'item_name' => $it['item_name'],
                                 'unit' => $it['unit'],
+                                'unit_cost' => $it['unit_cost'],
                                 'preparation' => $it['preparation_method'],
                                 'quantities' => ['PREESCOLAR' => 0, 'PRIMARIA_A' => 0, 'PRIMARIA_B' => 0, 'SECUNDARIA' => 0, 'GENERAL' => 0]
                             ];
@@ -128,7 +129,7 @@ class RecipeController
                 throw new Exception("Receta no encontrada");
 
             // Ingredientes organizados por grupo
-            $queryItems = "SELECT ri.*, i.name as item_name, i.code as item_code, mu.abbreviation as unit 
+            $queryItems = "SELECT ri.*, i.name as item_name, i.code as item_code, i.unit_cost, mu.abbreviation as unit 
                            FROM recipe_items ri 
                            JOIN items i ON ri.item_id = i.id 
                            JOIN measurement_units mu ON i.measurement_unit_id = mu.id
@@ -149,6 +150,7 @@ class RecipeController
                         'item_name' => $it['item_name'],
                         'item_code' => $it['item_code'],
                         'unit' => $it['unit'],
+                        'unit_cost' => $it['unit_cost'],
                         'preparation' => $it['preparation_method'],
                         'quantities' => [
                             'PREESCOLAR' => 0,
