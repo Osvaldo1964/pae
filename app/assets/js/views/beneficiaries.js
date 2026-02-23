@@ -296,8 +296,19 @@ var BeneficiariesView = {
                                                     <option value="BONO ALIMENTARIO">Bono Alimentario</option>
                                                 </select>
                                             </div>
+
+                                            <!-- Servicios Autorizados -->
                                             <div class="col-md-12">
-                                                <label class="form-label">Tipos de Ración Asignados *</label>
+                                                <label class="form-label fw-bold"><i class="fas fa-check-double me-2"></i>Servicios Autorizados para el Beneficiario *</label>
+                                                <div id="beneficiary-services-container" class="d-flex flex-wrap gap-3 p-3 bg-light rounded border">
+                                                    <!-- Services will be loaded here -->
+                                                    <div class="text-muted small">Cargando servicios del programa...</div>
+                                                </div>
+                                                <div class="form-text">Si no selecciona "ALIMENTACIÓN", no podrá asignar tipos de ración.</div>
+                                            </div>
+
+                                            <div class="col-md-12" id="ration-rights-section">
+                                                <label class="form-label fw-bold">Tipos de Ración Asignados *</label>
                                                 <div id="ration-types-container" class="border rounded p-3 bg-white" style="max-height: 150px; overflow-y: auto;">
                                                     <!-- Checkboxes will be loaded here -->
                                                 </div>
@@ -507,24 +518,13 @@ var BeneficiariesView = {
             // Populate Ration Checkboxes
             this.populateRationCheckboxes();
 
+            // Populate Program Services
+            this.populateProgramServices();
+
             // Filters
             this.populateSelect('filterSchool', this.schools, 'Todos los Centros');
         } catch (err) {
             console.error("Error loading master data:", err);
-        }
-    },
-
-    openBulkUploadModal: (showUploadTab = false) => {
-        document.getElementById('upload-results').classList.add('d-none');
-        document.getElementById('bulk-file').value = '';
-
-        const modal = new bootstrap.Modal(document.getElementById('modalBulkUpload'));
-        modal.show();
-
-        if (showUploadTab) {
-            // If we had tabs, we would switch here. 
-            // For now, just focus the input to be helpful
-            setTimeout(() => document.getElementById('bulk-file').focus(), 500);
         }
     },
 
@@ -546,6 +546,54 @@ var BeneficiariesView = {
             </div>
         `).join('');
         container.innerHTML = html;
+    },
+
+    async populateProgramServices() {
+        const container = document.getElementById('beneficiary-services-container');
+        if (!container) return;
+
+        try {
+            // Get services from program (current PAE in token)
+            const services = await Helper.fetchAPI('/services');
+            if (services && Array.isArray(services)) {
+                if (services.length === 0) {
+                    container.innerHTML = '<div class="text-muted small">El programa no tiene servicios asociados.</div>';
+                    return;
+                }
+
+                container.innerHTML = services.map(s => `
+                    <div class="form-check">
+                        <input class="form-check-input service-checkbox" type="checkbox" value="${s.id}" id="service-b-${s.id}" 
+                            ${s.name.toUpperCase() === 'ALIMENTACIÓN' ? 'data-is-food="true"' : ''} onchange="BeneficiariesView.toggleRationsVisibility()">
+                        <label class="form-check-label" for="service-b-${s.id}">
+                            ${s.name}
+                        </label>
+                    </div>
+                `).join('');
+
+                // Initial check
+                this.toggleRationsVisibility();
+            }
+        } catch (err) {
+            console.error("Error loading program services:", err);
+            container.innerHTML = '<div class="text-danger small">Error al cargar servicios.</div>';
+        }
+    },
+
+    toggleRationsVisibility() {
+        const foodCheckboxes = document.querySelectorAll('.service-checkbox[data-is-food="true"]');
+        const rationSection = document.getElementById('ration-rights-section');
+        if (!rationSection) return;
+
+        const isFoodEnabled = Array.from(foodCheckboxes).some(cb => cb.checked);
+
+        if (isFoodEnabled) {
+            rationSection.style.display = 'block';
+        } else {
+            rationSection.style.display = 'none';
+            // Uncheck all rations if food is disabled
+            document.querySelectorAll('.ration-checkbox').forEach(cb => cb.checked = false);
+        }
     },
 
     populateSelect(elementId, data, emptyText) {
@@ -665,6 +713,10 @@ var BeneficiariesView = {
         const firstTab = document.querySelector('#beneficiaryTabs button[data-bs-target="#tab-personal"]');
         bootstrap.Tab.getOrCreateInstance(firstTab).show();
 
+        // Reset checkboxes
+        document.querySelectorAll('.ration-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.service-checkbox').forEach(cb => cb.checked = false);
+
         if (isEdit) {
             document.getElementById('doc-type').value = b.document_type_id;
             document.getElementById('doc-number').value = b.document_number;
@@ -703,24 +755,27 @@ var BeneficiariesView = {
             document.getElementById('shift').value = b.shift;
             document.getElementById('enrollment-date').value = b.enrollment_date || '';
             document.getElementById('modality').value = b.modality;
-            document.getElementById('modality').value = b.modality;
 
             // Set Ration Checkboxes
-            const checkboxes = document.querySelectorAll('.ration-checkbox');
-            checkboxes.forEach(cb => cb.checked = false); // Reset all
-
             if (b.ration_rights_ids && Array.isArray(b.ration_rights_ids)) {
                 b.ration_rights_ids.forEach(id => {
                     const cb = document.getElementById(`ration-${id}`);
                     if (cb) cb.checked = true;
                 });
             } else if (b.ration_type_id) {
-                // Fallback for migration phase
                 const cb = document.getElementById(`ration-${b.ration_type_id}`);
                 if (cb) cb.checked = true;
             }
-            document.getElementById('status').value = b.status;
 
+            // Set Service Checkboxes
+            if (b.service_ids && Array.isArray(b.service_ids)) {
+                b.service_ids.forEach(id => {
+                    const cb = document.getElementById(`service-b-${id}`);
+                    if (cb) cb.checked = true;
+                });
+            }
+
+            document.getElementById('status').value = b.status;
             document.getElementById('address').value = b.address || '';
             document.getElementById('phone').value = b.phone || '';
             document.getElementById('email').value = b.email || '';
@@ -735,6 +790,7 @@ var BeneficiariesView = {
             document.getElementById('observations').value = b.observations || '';
         }
 
+        this.toggleRationsVisibility();
         new bootstrap.Modal(document.getElementById('modalBeneficiary')).show();
     },
 
@@ -788,11 +844,8 @@ var BeneficiariesView = {
             shift: document.getElementById('shift').value,
             enrollment_date: document.getElementById('enrollment-date').value,
             modality: document.getElementById('modality').value,
-            enrollment_date: document.getElementById('enrollment-date').value,
-            modality: document.getElementById('modality').value,
             ration_rights: Array.from(document.querySelectorAll('.ration-checkbox:checked')).map(cb => cb.value),
-            // ration_type_id: document.getElementById('ration-type-id').value, // Removed legacy
-            // ration_type: this.rationTypes.find(rt => rt.id == document.getElementById('ration-type-id').value)?.name || '', // Removed legacy
+            service_ids: Array.from(document.querySelectorAll('.service-checkbox:checked')).map(cb => cb.value),
             status: document.getElementById('status').value,
 
             address: document.getElementById('address').value,

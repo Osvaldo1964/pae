@@ -142,6 +142,15 @@ class TenantManagementController
                 }
             }
 
+            // Automatic Sync: Remove services from ALL beneficiaries that are no longer active for this program
+            $this->db->prepare("
+                DELETE FROM beneficiary_services 
+                WHERE pae_id = :pae_id 
+                AND service_id NOT IN (
+                    SELECT service_id FROM pae_program_services WHERE pae_id = :pae_id
+                )
+            ")->execute([':pae_id' => $id]);
+
             echo json_encode(['success' => true, 'message' => 'Programa actualizado exitosamente']);
         } catch (\PDOException $e) {
             http_response_code(500);

@@ -35,7 +35,10 @@ class BeneficiaryController extends BaseController
                           WHERE brr.beneficiary_id = b.id) as ration_rights_names,
                          (SELECT GROUP_CONCAT(brr.ration_type_id) 
                           FROM beneficiary_ration_rights brr 
-                          WHERE brr.beneficiary_id = b.id) as ration_rights_ids
+                          WHERE brr.beneficiary_id = b.id) as ration_rights_ids,
+                         (SELECT GROUP_CONCAT(bs.service_id) 
+                          FROM beneficiary_services bs 
+                          WHERE bs.beneficiary_id = b.id) as service_ids
                   FROM " . $this->table_name . " b
                   LEFT JOIN school_branches br ON b.branch_id = br.id
                   LEFT JOIN schools s ON br.school_id = s.id
@@ -56,6 +59,7 @@ class BeneficiaryController extends BaseController
         // Convert comma separated IDs to array
         foreach ($beneficiaries as &$b) {
             $b['ration_rights_ids'] = $b['ration_rights_ids'] ? array_map('intval', explode(',', $b['ration_rights_ids'])) : [];
+            $b['service_ids'] = $b['service_ids'] ? array_map('intval', explode(',', $b['service_ids'])) : [];
         }
 
         $this->sendResponse($beneficiaries);
@@ -164,6 +168,14 @@ class BeneficiaryController extends BaseController
                     $stmtRights = $this->conn->prepare("INSERT INTO beneficiary_ration_rights (pae_id, beneficiary_id, ration_type_id) VALUES (?, ?, ?)");
                     foreach ($data['ration_rights'] as $rationId) {
                         $stmtRights->execute([$pae_id, $beneficiary_id, $rationId]);
+                    }
+                }
+
+                // Save Services
+                if (isset($data['service_ids']) && is_array($data['service_ids'])) {
+                    $stmtServices = $this->conn->prepare("INSERT INTO beneficiary_services (pae_id, beneficiary_id, service_id) VALUES (?, ?, ?)");
+                    foreach ($data['service_ids'] as $serviceId) {
+                        $stmtServices->execute([$pae_id, $beneficiary_id, $serviceId]);
                     }
                 }
 
@@ -313,6 +325,19 @@ class BeneficiaryController extends BaseController
                     $stmtRights = $this->conn->prepare("INSERT INTO beneficiary_ration_rights (pae_id, beneficiary_id, ration_type_id) VALUES (?, ?, ?)");
                     foreach ($data['ration_rights'] as $rationId) {
                         $stmtRights->execute([$pae_id, $id, $rationId]);
+                    }
+                }
+
+                // Sync Services
+                if (isset($data['service_ids']) && is_array($data['service_ids'])) {
+                    // Delete existing services
+                    $stmtDelS = $this->conn->prepare("DELETE FROM beneficiary_services WHERE beneficiary_id = ?");
+                    $stmtDelS->execute([$id]);
+
+                    // Insert new services
+                    $stmtServices = $this->conn->prepare("INSERT INTO beneficiary_services (pae_id, beneficiary_id, service_id) VALUES (?, ?, ?)");
+                    foreach ($data['service_ids'] as $serviceId) {
+                        $stmtServices->execute([$pae_id, $id, $serviceId]);
                     }
                 }
 

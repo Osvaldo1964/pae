@@ -9,6 +9,12 @@ try {
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         echo "- " . $row['Field'] . " (" . $row['Type'] . ")\n";
     }
+
+    echo "\nCOLUMNS IN beneficiaries:\n";
+    $stmt = $conn->query("DESCRIBE beneficiaries");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "- " . $row['Field'] . " (" . $row['Type'] . ")\n";
+    }
 } catch (Throwable $e) {
     echo "ERROR: " . $e->getMessage();
 }
