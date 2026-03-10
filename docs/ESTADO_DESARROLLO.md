@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 21 de Febrero 2026, 12:00 AM
-**Versión Doc:** 1.9.10 | **Versión Código:** 1.9.10 (Navegación Unificada y Reportes de Talento Humano)
+**Última actualización**: 10 de Marzo 2026
+**Versión Doc:** 1.9.11 | **Versión Código:** 1.9.11 (Reportes Administrativos y Ajustes UX)
 
 ---
 
@@ -242,6 +242,11 @@
 - [ ] Sincronización con sistemas contables
 
 ---
+
+### v1.9.11 (10 Marzo 2026 - UX de Beneficiarios y Reportes)
+- ✅ **Impresión Masiva de Carnets:** Nuevo reporte dentro del Hub Administrativo para generar PDF con cuadrícula de carnets agrupados por Sede y Grado, ahorrando papel en impresión de lotes.
+- ✅ **UX Formularios:** Modal de Beneficiarios reestructurado visualmente. Se incrementó el ancho máximo a 1200px y se reorganizaron campos a 4 columnas por fila para reducir scroll vertical.
+- ✅ **Lógica de Carnet (Grado vs Población):** El tag descriptivo del carnet (individual y masivo) ahora respeta la lógica de negocio, mostrando el Grado si es estudiante, o la Descripción de Población (Ej. "ADULTO MAYOR") si pertenece a otro sector.
 
 ### v1.9.10 (21 Feb 2026 - Navegación Unificada)
 - ✅ **Homogenización de Breadcrumbs:** Centralización de la lógica en `app.js` para soportar navegación multinivel en todos los reportes (`Dashboard > Reportes > Categoría > Módulo`).

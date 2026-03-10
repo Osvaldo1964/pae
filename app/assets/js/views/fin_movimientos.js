@@ -103,7 +103,7 @@ window.MovimientosView = {
                 </td>
                 <td>
                     <div class="small fw-bold">${m.item_codigo} - ${m.item_nombre}</div>
-                    <div class="x-small text-muted" style="font-size: 0.75rem;">${m.branch_name}</div>
+                    <div class="x-small text-muted" style="font-size: 0.75rem;">${m.school_name} - ${m.branch_name}</div>
                 </td>
                 <td>
                     <div class="fw-bold text-primary-custom text-uppercase">${m.tercero_nombre}</div>
@@ -148,7 +148,7 @@ window.MovimientosView = {
             if (isSelected) saldo = parseFloat(item.saldo_disponible_con_mov);
 
             return `<option value="${b.id_asignacion}" ${isSelected ? 'selected' : ''} data-saldo="${saldo}">
-                ${b.codigo} - ${b.item_nombre} (${b.branch_name}) | Saldo: ${Helper.formatCurrency(saldo)}
+                ${b.codigo} - ${b.item_nombre} (${b.school_name} - ${b.branch_name}) | Saldo: ${Helper.formatCurrency(saldo)}
              </option>`;
         }).join('');
 
@@ -160,7 +160,7 @@ window.MovimientosView = {
 
         const { value: formValues } = await Swal.fire({
             title: `<strong>${editId ? 'Editar' : 'Nuevo'} Movimiento</strong>`,
-            width: '800px',
+            width: '1000px',
             html: `
                 <div class="text-start px-2 py-3">
                     <div class="row g-3">

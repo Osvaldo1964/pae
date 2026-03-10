@@ -40,6 +40,9 @@
 │   ├── 📅 Consumos (Reporte QR)
 │   ├── 🥯 Alimentación (Hub)
 │   ├── 💰 Financiero (Hub)
+│   ├── 📋 Administrativos (Hub)
+│   │   ├── 👥 Control de Asistencia
+│   │   └── 🪪 Impresión de Carnets
 │   └── 👥 Talento Humano (Hub)
 │       ├── 💵 Nómina y Pagos
 │       ├── 👔 Listado de Cargos

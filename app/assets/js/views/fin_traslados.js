@@ -76,14 +76,14 @@ window.TrasladosView = {
                 <td class="ps-4 fw-bold">${Helper.formatDate(t.fecha)}</td>
                 <td>
                     <div class="small fw-bold text-danger">${t.cod_origen} - ${t.nom_origen}</div>
-                    <div class="x-small text-muted">${t.branch_origen}</div>
+                    <div class="x-small text-muted">${t.school_origen} - ${t.branch_origen}</div>
                 </td>
                 <td class="text-center text-muted">
                     <i class="fas fa-long-arrow-alt-right fa-lg"></i>
                 </td>
                 <td>
                     <div class="small fw-bold text-success">${t.cod_destino} - ${t.nom_destino}</div>
-                    <div class="x-small text-muted">${t.branch_destino}</div>
+                    <div class="x-small text-muted">${t.school_destino} - ${t.branch_destino}</div>
                 </td>
                 <td class="text-end fw-bold text-dark">
                     ${Helper.formatCurrency(t.valor)}
@@ -119,7 +119,7 @@ window.TrasladosView = {
             if (isOrigen) saldo = parseFloat(item.saldo_disponible_origen_con_tras);
 
             return `<option value="${b.id_asignacion}" ${isOrigen ? 'selected' : (item?.destino_id == b.id_asignacion ? 'selected' : '')} data-saldo="${saldo}">
-                ${b.codigo} - ${b.item_nombre} (${b.branch_name}) | Saldo: ${Helper.formatCurrency(saldo)}
+                ${b.codigo} - ${b.item_nombre} (${b.school_name} - ${b.branch_name}) | Saldo: ${Helper.formatCurrency(saldo)}
              </option>`;
         }).join('');
 
@@ -127,7 +127,7 @@ window.TrasladosView = {
 
         const { value: formValues } = await Swal.fire({
             title: `<strong>${editId ? 'Editar' : 'Nuevo'} Traslado Presupuestal</strong>`,
-            width: '800px',
+            width: '1000px',
             html: `
                 <div class="text-start px-2 py-3">
                     <div class="row g-3">

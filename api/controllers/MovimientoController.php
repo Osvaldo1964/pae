@@ -73,12 +73,13 @@ class MovimientoController
             return;
         }
 
-        $query = "SELECT m.*, t.nombres as tercero_nombre, i.nombre as item_nombre, b.name as branch_name, i.codigo as item_codigo
+        $query = "SELECT m.*, t.nombres as tercero_nombre, i.nombre as item_nombre, b.name as branch_name, s.name as school_name, i.codigo as item_codigo
                   FROM presupuesto_movimientos m
                   JOIN terceros t ON m.tercero_id = t.id_tercero
                   JOIN presupuesto_asignacion a ON m.asignacion_id = a.id_asignacion
                   JOIN presupuesto_items i ON a.item_id = i.id_item
                   JOIN school_branches b ON a.branch_id = b.id
+                  JOIN schools s ON b.school_id = s.id
                   WHERE m.pae_id = :pae_id 
                   ORDER BY m.fecha DESC, m.datecreated DESC";
 
@@ -99,13 +100,14 @@ class MovimientoController
             return;
         }
 
-        $query = "SELECT a.id_asignacion, i.codigo, i.nombre as item_nombre, b.name as branch_name, 
+        $query = "SELECT a.id_asignacion, i.codigo, i.nombre as item_nombre, b.name as branch_name, s.name as school_name, 
                          (a.valor_inicial + a.valor_adiciones - a.valor_reducciones - a.valor_ejecutado) as saldo_disponible
                   FROM presupuesto_asignacion a
                   JOIN presupuesto_items i ON a.item_id = i.id_item
                   JOIN school_branches b ON a.branch_id = b.id
+                  JOIN schools s ON b.school_id = s.id
                   WHERE a.pae_id = :pae_id AND (a.valor_inicial + a.valor_adiciones - a.valor_reducciones - a.valor_ejecutado) > 0
-                  ORDER BY i.codigo, b.name";
+                  ORDER BY i.codigo, s.name, b.name";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":pae_id", $pae_id);
@@ -179,12 +181,13 @@ class MovimientoController
     public function show($id)
     {
         $pae_id = $this->getPaeIdFromToken();
-        $query = "SELECT m.*, i.nombre as item_nombre, b.name as branch_name, i.codigo as item_codigo,
+        $query = "SELECT m.*, i.nombre as item_nombre, b.name as branch_name, s.name as school_name, i.codigo as item_codigo,
                          (a.valor_inicial + a.valor_adiciones - a.valor_reducciones - a.valor_ejecutado + m.valor) as saldo_disponible_con_mov
                   FROM presupuesto_movimientos m
                   JOIN presupuesto_asignacion a ON m.asignacion_id = a.id_asignacion
                   JOIN presupuesto_items i ON a.item_id = i.id_item
                   JOIN school_branches b ON a.branch_id = b.id
+                  JOIN schools s ON b.school_id = s.id
                   WHERE m.id_movimiento = :id AND m.pae_id = :pae_id";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([":id" => $id, ":pae_id" => $pae_id]);

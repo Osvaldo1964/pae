@@ -19,14 +19,18 @@ class TrasladoController
     private function getPaeIdFromToken()
     {
         $headers = null;
-        if (isset($_SERVER['Authorization'])) $headers = trim($_SERVER["Authorization"]);
-        else if (isset($_SERVER['HTTP_AUTHORIZATION'])) $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+        if (isset($_SERVER['Authorization']))
+            $headers = trim($_SERVER["Authorization"]);
+        else if (isset($_SERVER['HTTP_AUTHORIZATION']))
+            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
         elseif (function_exists('apache_request_headers')) {
             $requestHeaders = apache_request_headers();
             $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) $headers = trim($requestHeaders['Authorization']);
+            if (isset($requestHeaders['Authorization']))
+                $headers = trim($requestHeaders['Authorization']);
         }
-        if (!$headers) return null;
+        if (!$headers)
+            return null;
         $arr = explode(" ", $headers);
         $jwt = isset($arr[1]) ? $arr[1] : "";
         if ($jwt) {
@@ -43,14 +47,18 @@ class TrasladoController
     private function getUserIdFromToken()
     {
         $headers = null;
-        if (isset($_SERVER['Authorization'])) $headers = trim($_SERVER["Authorization"]);
-        else if (isset($_SERVER['HTTP_AUTHORIZATION'])) $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+        if (isset($_SERVER['Authorization']))
+            $headers = trim($_SERVER["Authorization"]);
+        else if (isset($_SERVER['HTTP_AUTHORIZATION']))
+            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
         elseif (function_exists('apache_request_headers')) {
             $requestHeaders = apache_request_headers();
             $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            if (isset($requestHeaders['Authorization'])) $headers = trim($requestHeaders['Authorization']);
+            if (isset($requestHeaders['Authorization']))
+                $headers = trim($requestHeaders['Authorization']);
         }
-        if (!$headers) return null;
+        if (!$headers)
+            return null;
         $arr = explode(" ", $headers);
         $jwt = isset($arr[1]) ? $arr[1] : "";
         if ($jwt) {
@@ -74,15 +82,17 @@ class TrasladoController
         }
 
         $query = "SELECT t.*, 
-                         io.codigo as cod_origen, io.nombre as nom_origen, bo.name as branch_origen,
-                         id.codigo as cod_destino, id.nombre as nom_destino, bd.name as branch_destino
+                         io.codigo as cod_origen, io.nombre as nom_origen, bo.name as branch_origen, so.name as school_origen,
+                         id.codigo as cod_destino, id.nombre as nom_destino, bd.name as branch_destino, sd.name as school_destino
                   FROM presupuesto_traslados t
                   JOIN presupuesto_asignacion ao ON t.origen_id = ao.id_asignacion
                   JOIN presupuesto_items io ON ao.item_id = io.id_item
                   JOIN school_branches bo ON ao.branch_id = bo.id
+                  JOIN schools so ON bo.school_id = so.id
                   JOIN presupuesto_asignacion ad ON t.destino_id = ad.id_asignacion
                   JOIN presupuesto_items id ON ad.item_id = id.id_item
                   JOIN school_branches bd ON ad.branch_id = bd.id
+                  JOIN schools sd ON bd.school_id = sd.id
                   WHERE t.pae_id = :pae_id 
                   ORDER BY t.created_at DESC";
 
@@ -154,16 +164,18 @@ class TrasladoController
     {
         $pae_id = $this->getPaeIdFromToken();
         $query = "SELECT t.*, 
-                         io.codigo as cod_origen, io.nombre as nom_origen, bo.name as branch_origen,
-                         id.codigo as cod_destino, id.nombre as nom_destino, bd.name as branch_destino,
+                         io.codigo as cod_origen, io.nombre as nom_origen, bo.name as branch_origen, so.name as school_origen,
+                         id.codigo as cod_destino, id.nombre as nom_destino, bd.name as branch_destino, sd.name as school_destino,
                          (ao.valor_inicial + ao.valor_adiciones - ao.valor_reducciones - ao.valor_ejecutado + t.valor) as saldo_disponible_origen_con_tras
                   FROM presupuesto_traslados t
                   JOIN presupuesto_asignacion ao ON t.origen_id = ao.id_asignacion
                   JOIN presupuesto_items io ON ao.item_id = io.id_item
                   JOIN school_branches bo ON ao.branch_id = bo.id
+                  JOIN schools so ON bo.school_id = so.id
                   JOIN presupuesto_asignacion ad ON t.destino_id = ad.id_asignacion
                   JOIN presupuesto_items id ON ad.item_id = id.id_item
                   JOIN school_branches bd ON ad.branch_id = bd.id
+                  JOIN schools sd ON bd.school_id = sd.id
                   WHERE t.id_traslado = :id AND t.pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);

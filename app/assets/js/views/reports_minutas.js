@@ -267,11 +267,11 @@ window.ReportsMinutasView = {
 
                     <div class="header-box text-center">
                         <h1 class="text-uppercase">Minuta Patrón de Alimentación</h1>
-                        <h4 class="text-secondary">Programa de Alimentación Escolar - PAE</h4>
+                        <h4 class="text-secondary">Programa de Alimentación ${App.state.user?.pae || 'PAE'}</h4>
                         <hr>
                         <div class="info-grid">
                             <div>
-                                <strong>INSTITUCIÓN:</strong> ${school.name.toUpperCase()}<br>
+                                <strong>CENTRO:</strong> ${school.name.toUpperCase()}<br>
                                 <strong>SEDE:</strong> ${branch.name.toUpperCase()}
                             </div>
                             <div class="text-end">
@@ -300,8 +300,8 @@ window.ReportsMinutasView = {
             <head><meta charset="UTF-8"></head>
             <body>
                 <table border="1">
-                    <tr><th colspan="3" style="font-size:18pt; background:#198754; color:white;">MINUTA PAE - ${branch.name}</th></tr>
-                    <tr><td colspan="3"><b>INSTITUCIÓN:</b> ${school.name}</td></tr>
+                    <tr><th colspan="3" style="font-size:18pt; background:#198754; color:white;">MINUTA PATRÓN - ${branch.name}</th></tr>
+                    <tr><td colspan="3"><b>CENTRO:</b> ${school.name}</td></tr>
                     <tr><td colspan="3"><b>PERIODO:</b> ${start} al ${end}</td></tr>
                     <tr><td colspan="3"></td></tr>
                     <tr style="background:#f2f2f2; font-weight:bold;">

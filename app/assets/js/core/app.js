@@ -282,6 +282,7 @@ const App = {
                     'reports-insumos': 'reports_insumos',
                     'reports-recetas': 'reports_recetas',
                     'reports-minutas': 'reports_minutas',
+                    'reports-carnets': 'reports_carnets',
                     'fin-terceros': 'fin_terceros',
                     'fin-presupuesto': 'fin_presupuesto',
                     'fin-movimientos': 'fin_movimientos',
@@ -913,7 +914,8 @@ const App = {
             icon = 'fas fa-clipboard-list';
             color = 'primary';
             modules = [
-                { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' }
+                { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' },
+                { name: 'Impresión de Carnets', route: 'reports-carnets', icon: 'fas fa-id-badge', description: 'Generación masiva de carnets con QR para beneficiarios' }
             ];
         } else if (category === 'reports-rh') {
             title = 'Reportes de Talento Humano';

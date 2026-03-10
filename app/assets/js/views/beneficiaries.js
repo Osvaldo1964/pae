@@ -110,9 +110,8 @@ var BeneficiariesView = {
             </div>
 
 
-            <!-- Modal: Beneficiary Form -->
             <div class="modal fade" id="modalBeneficiary" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
+                <div class="modal-dialog" style="max-width: 1200px;">
                     <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                             <h5 class="modal-title" id="modalBeneficiaryTitle">Registro de Beneficiario</h5>
@@ -149,15 +148,15 @@ var BeneficiariesView = {
                                     <!-- Tab 1: Personal Data -->
                                     <div class="tab-pane fade show active" id="tab-personal">
                                         <div class="row g-3">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label fw-bold">Tipo de Documento *</label>
                                                 <select class="form-select" id="doc-type" required></select>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label fw-bold">Número de Documento *</label>
                                                 <input type="text" class="form-control" id="doc-number" required>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label fw-bold">ID Externo (Opcional)</label>
                                                 <input type="text" class="form-control" id="simat-id">
                                             </div>
@@ -179,11 +178,11 @@ var BeneficiariesView = {
                                                 <input type="text" class="form-control" id="second-name">
                                             </div>
                                             
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Fecha de Nacimiento *</label>
                                                 <input type="date" class="form-control" id="birth-date" required>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Género *</label>
                                                 <select class="form-select" id="gender" required>
                                                     <option value="MASCULINO">Masculino</option>
@@ -191,11 +190,11 @@ var BeneficiariesView = {
                                                     <option value="OTRO">Otro</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Etnia *</label>
                                                 <select class="form-select" id="ethnic-group" required></select>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Categorización (SISBEN)</label>
                                                 <input type="text" class="form-control" id="sisben" placeholder="Ej: A1, B2">
                                             </div>
@@ -240,11 +239,11 @@ var BeneficiariesView = {
                                             <div class="form-text">Esta descripción agrupará a los beneficiarios en los reportes (Nutricionalmente usan la columna GENERAL).</div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <label class="form-label fw-bold">Centro / Institución *</label>
                                             <select class="form-select" id="school-id" onchange="BeneficiariesView.onSchoolChange(this.value)" required></select>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <label class="form-label fw-bold">Punto de Atención *</label>
                                                 <select class="form-select" id="branch-id" required disabled>
                                                     <option value="">Seleccione primero un centro</option>
@@ -284,11 +283,11 @@ var BeneficiariesView = {
                                                     <option value="COMPLETA">Completa</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Fecha de Vinculación</label>
                                                 <input type="date" class="form-control" id="enrollment-date">
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Modalidad Atención *</label>
                                                 <select class="form-select" id="modality" required>
                                                     <option value="RACION PREPARADA EN SITIO">Preparada en Sitio</option>
@@ -317,7 +316,7 @@ var BeneficiariesView = {
 
 
 
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label class="form-label">Estado *</label>
                                                 <select class="form-select" id="status" required>
                                                     <option value="ACTIVO">Activo</option>
@@ -326,8 +325,9 @@ var BeneficiariesView = {
                                                     <option value="TRASLADADO">Trasladado</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-12" id="age-group-suggestion-container" style="display: none;">
-                                                <div class="alert alert-info d-flex align-items-center mb-0">
+                                            <div class="col-md-9" id="age-group-suggestion-container" style="display: none;">
+                                                <label class="form-label d-none d-md-block">&nbsp;</label>
+                                                <div class="alert alert-info d-flex align-items-center mb-0 p-2 border border-info rounded">
                                                     <i class="fas fa-info-circle me-2"></i>
                                                     <div>
                                                         Grupo Etario sugerido según edad: <strong id="suggested-age-group">-</strong>
@@ -1060,12 +1060,9 @@ var BeneficiariesView = {
                         </div>
                         <div class="student-name">${b.first_name} <br> ${b.last_name1}</div>
                         <div class="student-doc">${b.document_type_name}: ${b.document_number}</div>
-                        
                         <div class="grade-badge">
-                            Grado ${b.grade} - ${b.group_name || 'N/A'}
-                        </div>
-
-                        <div class="school-info"><strong>${b.school_name}</strong></div>
+                            ${b.beneficiary_type === 'ESTUDIANTE' ? `Grado ${b.grade || 'N/A'} - ${b.group_name || 'N/A'}` : (b.population_name || b.beneficiary_type || 'Otra Población')}
+                        </div>                        <div class="school-info"><strong>${b.school_name}</strong></div>
                         <div class="school-info">${b.branch_name}</div>
                         
                         <div class="qr-container">
