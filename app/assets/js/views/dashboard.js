@@ -64,7 +64,7 @@ const DashboardView = {
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm h-100 rounded-4">
                             <div class="card-body p-4">
-                                <h6 class="fw-bold mb-3 text-secondary">Top Sedes por Matrícula</h6>
+                                <h6 class="fw-bold mb-3 text-secondary">Top Sedes por Beneficiarios</h6>
                                 <div style="height: 300px; position:relative;" class="d-flex justify-content-center align-items-center">
                                     <canvas id="chart-distribution"></canvas>
                                 </div>
