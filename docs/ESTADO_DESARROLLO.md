@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 10 de Marzo 2026
-**Versión Doc:** 1.9.11 | **Versión Código:** 1.9.11 (Reportes Administrativos y Ajustes UX)
+**Última actualización**: 11 de Marzo 2026
+**Versión Doc:** 1.9.12 | **Versión Código:** 1.9.12 (Auditoría Integral y Consolidación de Reportes)
 
 ---
 
@@ -153,6 +153,7 @@
 - [x] **Estados:** Borrador, Enviada, Recibida, Cancelada
 - [x] **Generación de Entradas:** Conversión automática de OC a movimiento de inventario
 - [x] **Remisiones:** Registro de entregas parciales o totales
+- [x] **Cotizaciones:** Módulo independiente para gestión de propuestas de proveedores
 
 ### 12. Módulo de Entregas (Resolución 003) ✅
 - [x] **Identificación Digital:** Generador de Carnet Estudiantil (PDF/Print)
@@ -174,6 +175,8 @@
 - [x] **Trazabilidad:** Hora exacta de entrega (`created_at`)
 
 ### 14. Módulo de Almacén - Reporte de Necesidades ✅
+- [x] **Soporte Multi-Ración:** El motor cruza eficientemente beneficiarios con asignaciones múltiples (ej. Desayuno + Almuerzo) según la tabla `beneficiary_ration_rights` para conteos y explosión de menú precisa.
+- [x] **Costeo Directo:** Columnas de "Costo Unitario" y "Costo Total" insertadas directamente en el reporte Excel para validación financiera cruzada.
 - [x] **Comparativa Dinámica:** Reporte que cruza Inventario Actual vs Requerimientos de Menú
 - [x] **Cálculo de Déficit:** Identificación automática de insumos faltantes
 - [x] **Filtros:** Por rango de fechas y sedes
@@ -242,6 +245,10 @@
 - [ ] Sincronización con sistemas contables
 
 ---
+
+### v1.9.12 (11 Marzo 2026 - Auditoría Integral)
+- ✅ **Sincronización de Componentes:** Revisiones logísticas consolidadas (costeo de necesidades y lógica Multi-Ración en sistema de reportes) e integradas al estado de desarrollo base.
+- ✅ **Completitud Logística:** Acreditación formal de módulos operativos desplegados: Remisiones de Entradas, Salidas y Cotizaciones que robustecen los procesos logísticos y de almacén.
 
 ### v1.9.11 (10 Marzo 2026 - UX de Beneficiarios y Reportes)
 - ✅ **Impresión Masiva de Carnets:** Nuevo reporte dentro del Hub Administrativo para generar PDF con cuadrícula de carnets agrupados por Sede y Grado, ahorrando papel en impresión de lotes.
@@ -374,11 +381,15 @@
 ### Backend - Almacén
 - `api/controllers/InventoryController.php` - Gestión de stock, movimientos y costos
 - `api/controllers/PurchaseOrderController.php` - Órdenes de compra
+- `api/controllers/NeedsReportController.php` - Motor principal de recálculo de necesidades de insumos (Explosión de Menús)
 - `api/index.php` - Rutas de inventario (líneas 410-430)
 
 ### Frontend - Almacén
 - `app/assets/js/views/almacen.js` - Vista completa de gestión
 - `app/assets/js/views/compras.js` - Órdenes de compra
+- `app/assets/js/views/cotizaciones.js` - Módulo de cotizaciones para compras
+- `app/assets/js/views/remisiones_entradas.js` - Ingreso logístico de insumos
+- `app/assets/js/views/salidas.js` - Salidas logísticas de inventario
 - `app/assets/js/core/app.js` - Router
 
 ### Base de Datos - Almacén
