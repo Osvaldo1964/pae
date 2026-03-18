@@ -26,6 +26,7 @@
 
 ### 4. **Beneficiarios** ✅ ⭐ FASE COMPLETADA
 - ✅ Estudiantes (Gestión de matrícula con Resolución 0003)
+- ✅ **Extensión de Perfil:** Registro de Tallas de Dotación y Gestión de Documentación Digital (Carga de archivos integrada).
 - ✅ **Raciones Diferenciales:** Asignación de múltiples tipos de ración por estudiante.
   - ✅ **Tipos de Población:** Gestión de grupos (Indígena, Afro, etc.) vinculados a raciones.
 - ✅ **Carga Masiva Inteligente:**
@@ -60,6 +61,11 @@
 - ✅ **Navegación Circular:** Retorno automático al menú de módulo tras finalizar cargas o procesos masivos.
 - ✅ **Breadcrumbs Inteligentes:** Sistema de navegación multinivel para hubs de reportes.
 
+### 8. **Eventos y Convocatorias (Landing)** ✅ ⭐ NUEVO MÓDULO
+- ✅ **Landing Page:** Integración de portal promocional y tarjeta dinámica de eventos.
+- ✅ **Adulto Mayor:** Formulario de inscripción público multi-paso, conectando directamente al backend local.
+- ✅ **Autodiagnóstico y Filtros:** Validaciones rigurosas aplicadas a los requisitos del programa (Edad mínima, grupos de SISBEN IV).
+
 ---
 
 ## 🔧 Correcciones Recientes
@@ -83,4 +89,4 @@
 
 ---
 
-**Última actualización**: 21 de Febrero 2026, 12:00 AM
+**Última actualización**: 18 de Marzo 2026, 13:58 PM

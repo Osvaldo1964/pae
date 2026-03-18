@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 11 de Marzo 2026
-**Versión Doc:** 1.9.12 | **Versión Código:** 1.9.12 (Auditoría Integral y Consolidación de Reportes)
+**Última actualización**: 18 de Marzo 2026
+**Versión Doc:** 1.9.13 | **Versión Código:** 1.9.13 (Perfil Ampliado de Beneficiarios y Registro Público de Eventos)
 
 ---
 
@@ -245,6 +245,12 @@
 - [ ] Sincronización con sistemas contables
 
 ---
+
+### v1.9.13 (18 Marzo 2026 - Perfil Ampliado y Evento Adulto Mayor)
+- ✅ **Beneficiarios (Extensión):** Selección e integración de nueva data de dotación (tallas de zapato, camisa y pantalón).
+- ✅ **Beneficiarios (Documentos):** Funcionalidad de carga de formatos digitales (Doc. Identidad, SISBEN, Historia Clínica, Fotografía) en tiempo real con previsualización segura por inquilino.
+- ✅ **Convocatoria Pública:** Motor independiente construido para la captación directa (`adulto_mayor_registrations`) con un formulario optimizado por pasos inyectado en el Landing del sitio.
+- ✅ **Validación Normativa Limitada:** Inserción de controles backend/frontend para asegurar que los aplicantes cumplan con criterios duros (Ej. edad ≥ 60 años, exclusión de Grupo D SISBEN).
 
 ### v1.9.12 (11 Marzo 2026 - Auditoría Integral)
 - ✅ **Sincronización de Componentes:** Revisiones logísticas consolidadas (costeo de necesidades y lógica Multi-Ración en sistema de reportes) e integradas al estado de desarrollo base.
