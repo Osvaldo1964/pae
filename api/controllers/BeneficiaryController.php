@@ -104,13 +104,15 @@ class BeneficiaryController extends BaseController
                    birth_date, gender, ethnic_group_id, sisben_category, disability_type, is_victim, is_migrant, 
                    address, phone, email, guardian_name, guardian_phone, guardian_relationship, 
                    simat_id, shift, grade, group_name, status, enrollment_date, modality, ration_type, ration_type_id, 
-                   medical_restrictions, observations, data_authorization, is_overage) 
+                   medical_restrictions, observations, data_authorization, is_overage,
+                   talla_zapato, talla_camisa, talla_pantalon) 
                   VALUES 
                   (:pae_id, :branch_id, :document_type_id, :document_number, :first_name, :second_name, :last_name1, :last_name2, 
                    :birth_date, :gender, :ethnic_group_id, :sisben_category, :disability_type, :is_victim, :is_migrant, 
                    :address, :phone, :email, :guardian_name, :guardian_phone, :guardian_relationship, 
                    :simat_id, :shift, :grade, :group_name, :status, :enrollment_date, :modality, :ration_type, :ration_type_id, 
-                   :medical_restrictions, :observations, :data_authorization, :is_overage)";
+                   :medical_restrictions, :observations, :data_authorization, :is_overage,
+                   :talla_zapato, :talla_camisa, :talla_pantalon)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -156,6 +158,9 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":observations", $data['observations']);
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
         $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
+        $stmt->bindParam(":talla_zapato", $data['talla_zapato']);
+        $stmt->bindParam(":talla_camisa", $data['talla_camisa']);
+        $stmt->bindParam(":talla_pantalon", $data['talla_pantalon']);
 
         try {
             $this->conn->beginTransaction();
@@ -262,7 +267,10 @@ class BeneficiaryController extends BaseController
                   medical_restrictions = :medical_restrictions, 
                   observations = :observations, 
                   data_authorization = :data_authorization,
-                  is_overage = :is_overage
+                  is_overage = :is_overage,
+                  talla_zapato = :talla_zapato,
+                  talla_camisa = :talla_camisa,
+                  talla_pantalon = :talla_pantalon
                   WHERE id = :id AND pae_id = :pae_id";
 
         $stmt = $this->conn->prepare($query);
@@ -310,6 +318,9 @@ class BeneficiaryController extends BaseController
         $stmt->bindParam(":observations", $data['observations']);
         $stmt->bindParam(":data_authorization", $data['data_authorization'], PDO::PARAM_BOOL);
         $stmt->bindParam(":is_overage", $data['is_overage'], PDO::PARAM_INT);
+        $stmt->bindParam(":talla_zapato", $data['talla_zapato']);
+        $stmt->bindParam(":talla_camisa", $data['talla_camisa']);
+        $stmt->bindParam(":talla_pantalon", $data['talla_pantalon']);
 
         try {
             $this->conn->beginTransaction();
@@ -455,5 +466,95 @@ class BeneficiaryController extends BaseController
             "branch" => $branchInfo,
             "data" => $list
         ]);
+    }
+
+    /**
+     * Upload documents for a beneficiary
+     */
+    public function uploadDocuments($id)
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        if (!$pae_id) {
+            return $this->sendError("Acceso denegado.", 403);
+        }
+
+        // Security check: ensure beneficiary belongs to the current PAE program
+        $security_query = "SELECT id FROM " . $this->table_name . " WHERE id = :id AND pae_id = :pae_id";
+        $security_stmt = $this->conn->prepare($security_query);
+        $security_stmt->bindParam(":id", $id);
+        $security_stmt->bindParam(":pae_id", $pae_id);
+        $security_stmt->execute();
+        if ($security_stmt->rowCount() == 0) {
+            file_put_contents(__DIR__ . '/../../api_debug.log', "Beneficiario {$id} o pae {$pae_id} no encontrado\n", FILE_APPEND);
+            return $this->sendError("Beneficiario no encontrado o acceso denegado.", 404);
+        }
+
+        $uploadDir = __DIR__ . '/../../uploads/beneficiarios/' . $pae_id . '/' . $id . '/';
+        file_put_contents(__DIR__ . '/../../api_debug.log', "Upload Dir: $uploadDir\n", FILE_APPEND);
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+        $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+        $updates = [];
+        $params = [':id' => $id];
+
+        $filesToProcess = ['doc_identidad', 'doc_sisben', 'historia_clinica', 'fotografia'];
+        $uploadedKeys = [];
+
+        file_put_contents(__DIR__ . '/../../api_debug.log', "Files array: " . json_encode($_FILES) . "\n", FILE_APPEND);
+
+        foreach ($filesToProcess as $fileKey) {
+            if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
+                $fileTmpPath = $_FILES[$fileKey]['tmp_name'];
+                $fileName = $_FILES[$fileKey]['name'];
+                $fileSize = $_FILES[$fileKey]['size'];
+                $fileNameCmps = explode(".", $fileName);
+                $fileExtension = strtolower(end($fileNameCmps));
+
+                if (!in_array($fileExtension, $allowedExtensions)) {
+                    return $this->sendError("Tipo de archivo no permitido para $fileKey. Use PDF, JPG o PNG.", 400);
+                }
+
+                if ($fileSize > $maxFileSize) {
+                    return $this->sendError("El archivo $fileKey es demasiado grande. Máximo 5MB.", 400);
+                }
+
+                // Generate new file name
+                $newFileName = $fileKey . '_' . time() . '.' . $fileExtension;
+                $destPath = $uploadDir . $newFileName;
+
+                if (move_uploaded_file($fileTmpPath, $destPath)) {
+                    $dbPath = 'uploads/beneficiarios/' . $pae_id . '/' . $id . '/' . $newFileName;
+                    $updates[] = "{$fileKey}_path = :{$fileKey}";
+                    $params[":{$fileKey}"] = $dbPath;
+                    $uploadedKeys[] = $fileKey;
+                } else {
+                    return $this->sendError("Error al guardar el archivo $fileKey.", 500);
+                }
+            }
+        }
+
+        if (count($updates) > 0) {
+            $query = "UPDATE " . $this->table_name . " SET " . implode(', ', $updates) . " WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+
+            file_put_contents(__DIR__ . '/../../api_debug.log', "Executing: $query with params: " . json_encode($params) . "\n", FILE_APPEND);
+
+            if ($stmt->execute($params)) {
+                $this->sendResponse([
+                    "message" => "Documentos subidos exitosamente.",
+                    "uploaded" => $uploadedKeys
+                ]);
+            } else {
+                file_put_contents(__DIR__ . '/../../api_debug.log', "Execute failed: " . json_encode($stmt->errorInfo()) . "\n", FILE_APPEND);
+                $this->sendError("Error al actualizar la base de datos con los documentos.", 500);
+            }
+        } else {
+            file_put_contents(__DIR__ . '/../../api_debug.log', "No updates to perform\n", FILE_APPEND);
+            $this->sendResponse(["message" => "No se recibieron archivos válidos para subir.", "uploaded" => []]);
+        }
     }
 }

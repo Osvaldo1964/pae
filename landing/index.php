@@ -161,6 +161,24 @@
             <h2 class="text-center text-primary-custom mb-5">Próximos Eventos</h2>
             <div class="row g-4">
                 <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 border-primary" style="box-shadow: 0 0 15px rgba(27,79,114,0.3) !important;">
+                        <img src="https://placehold.co/800x500/8E44AD/FFFFFF?text=Programa+Adulto+Mayor"
+                            class="card-img-top event-img" alt="Adulto Mayor">
+                        <div class="card-body d-flex flex-column">
+                            <span class="badge bg-danger mb-2" style="width: fit-content;">Convocatoria Especial</span>
+                            <h5>Viajes Recreativos - Adulto Mayor</h5>
+                            <p class="text-muted small mb-2">Cupos disponibles: 2,160</p>
+                            <p class="card-text" style="font-size: 0.9rem;">
+                                <strong>Requisitos mínimos:</strong><br>
+                                &bull; Mayor de 60 años.<br>
+                                &bull; Ciudadano colombiano o residente (≥ 10 años).<br>
+                                &bull; SISBEN IV (Grupos A, B o C).<br>
+                                <span class="text-danger" style="font-size: 0.8rem;">* La inscripción está sujeta a revisión previa.</span>
+                            </p>
+                            <a href="landing/inscripcion_adulto_mayor.php" class="btn btn-warning mt-auto fw-bold text-dark"><i class="fas fa-edit me-2"></i>Inscríbete Aquí</a>
+                        </div>
+                    </div>
+                </div>
                     <div class="card shadow-sm border-0 h-100">
                         <img src="https://placehold.co/800x500/1B4F72/FFFFFF?text=Entrega+de+Raciones"
                             class="card-img-top event-img" alt="Entrega">

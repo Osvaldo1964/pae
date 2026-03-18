@@ -71,6 +71,19 @@ if ($resource === 'auth') {
         http_response_code(404);
         echo json_encode(["message" => "Auth Action Not Found"]);
     }
+} elseif ($resource === 'adulto_mayor') {
+    $controller = new \Controllers\AdultoMayorController();
+    if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->register();
+    } elseif ($action === 'schools' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getSchools();
+    } elseif ($action === 'branches' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $school_id = $_GET['school_id'] ?? null;
+        $controller->getBranches($school_id);
+    } else {
+        http_response_code(404);
+        echo json_encode(["message" => "Adulto Mayor Action Not Found"]);
+    }
 } elseif ($resource === 'tenant') {
     $controller = new \Controllers\TenantController();
     if ($action === 'register' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -352,6 +365,8 @@ if ($resource === 'auth') {
     } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($action === 'import') {
             $importController->import();
+        } elseif ($action === 'upload' && $id_param) {
+            $controller->uploadDocuments($id_param);
         } else {
             $controller->create();
         }

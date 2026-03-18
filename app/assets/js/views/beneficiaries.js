@@ -140,6 +140,11 @@ var BeneficiariesView = {
                                         <i class="fas fa-heartbeat me-2"></i>Salud y Otros
                                     </button>
                                 </li>
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-docs" type="button">
+                                        <i class="fas fa-file-pdf me-2"></i>Documentos
+                                    </button>
+                                </li>
                             </ul>
                             
                             <form id="formBeneficiary" class="p-4">
@@ -402,6 +407,81 @@ var BeneficiariesView = {
                                             <div class="col-md-12">
                                                 <label class="form-label">Observaciones Generales</label>
                                                 <textarea class="form-control" id="observations" rows="2"></textarea>
+                                            </div>
+                                            <div class="col-12"><hr></div>
+                                            <h6 class="mb-0">Tallas / Dotación</h6>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Talla Zapato</label>
+                                                <input type="text" class="form-control" id="talla-zapato" placeholder="Ej: 38">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Talla Camisa</label>
+                                                <input type="text" class="form-control" id="talla-camisa" placeholder="Ej: M o 12">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Talla Pantalón</label>
+                                                <input type="text" class="form-control" id="talla-pantalon" placeholder="Ej: 14">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tab 5: Documents -->
+                                    <div class="tab-pane fade" id="tab-docs">
+                                        <div class="alert alert-info py-2 mb-3">
+                                            <small><i class="fas fa-info-circle me-1"></i>Los documentos no son obligatorios para guardar el registro inicial. Podrán ser cargados o reemplazados posteriormente.</small>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Documento de Identidad (PDF/IMG)</label>
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <div class="me-2 border rounded d-flex justify-content-center align-items-center bg-white shadow-sm" style="width: 50px; height: 60px; overflow: hidden;" id="preview-box-doc-identidad">
+                                                        <i class="fas fa-file-alt fa-2x text-muted" id="preview-icon-doc-identidad"></i>
+                                                        <img src="" id="preview-img-doc-identidad" style="display:none; width: 100%; height: 100%; object-fit: cover;" />
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <input type="file" class="form-control form-control-sm" id="doc-identidad" accept=".pdf,image/*" onchange="BeneficiariesView.previewLocalFile(this, 'doc-identidad')">
+                                                        <div id="link-doc-identidad" class="mt-1 small"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Certificado SISBEN (PDF/IMG)</label>
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <div class="me-2 border rounded d-flex justify-content-center align-items-center bg-white shadow-sm" style="width: 50px; height: 60px; overflow: hidden;" id="preview-box-doc-sisben">
+                                                        <i class="fas fa-file-alt fa-2x text-muted" id="preview-icon-doc-sisben"></i>
+                                                        <img src="" id="preview-img-doc-sisben" style="display:none; width: 100%; height: 100%; object-fit: cover;" />
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <input type="file" class="form-control form-control-sm" id="doc-sisben" accept=".pdf,image/*" onchange="BeneficiariesView.previewLocalFile(this, 'doc-sisben')">
+                                                        <div id="link-doc-sisben" class="mt-1 small"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Historia Clínica (PDF/IMG)</label>
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <div class="me-2 border rounded d-flex justify-content-center align-items-center bg-white shadow-sm" style="width: 50px; height: 60px; overflow: hidden;" id="preview-box-historia-clinica">
+                                                        <i class="fas fa-file-alt fa-2x text-muted" id="preview-icon-historia-clinica"></i>
+                                                        <img src="" id="preview-img-historia-clinica" style="display:none; width: 100%; height: 100%; object-fit: cover;" />
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <input type="file" class="form-control form-control-sm" id="historia-clinica" accept=".pdf,image/*" onchange="BeneficiariesView.previewLocalFile(this, 'historia-clinica')">
+                                                        <div id="link-historia-clinica" class="mt-1 small"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">Fotografía (IMG)</label>
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <div class="me-2 border rounded d-flex justify-content-center align-items-center bg-white shadow-sm" style="width: 50px; height: 60px; overflow: hidden;" id="preview-box-fotografia">
+                                                        <i class="fas fa-file-alt fa-2x text-muted" id="preview-icon-fotografia"></i>
+                                                        <img src="" id="preview-img-fotografia" style="display:none; width: 100%; height: 100%; object-fit: cover;" />
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <input type="file" class="form-control form-control-sm" id="fotografia" accept="image/*" onchange="BeneficiariesView.previewLocalFile(this, 'fotografia')">
+                                                        <div id="link-fotografia" class="mt-1 small"></div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -717,6 +797,24 @@ var BeneficiariesView = {
         document.querySelectorAll('.ration-checkbox').forEach(cb => cb.checked = false);
         document.querySelectorAll('.service-checkbox').forEach(cb => cb.checked = false);
 
+        // Reset file inputs and links
+        const docFields = ['doc-identidad', 'doc-sisben', 'historia-clinica', 'fotografia'];
+        docFields.forEach(field => {
+            const input = document.getElementById(field);
+            if(input) input.value = '';
+            const linkDiv = document.getElementById(`link-${field}`);
+            if(linkDiv) linkDiv.innerHTML = '';
+
+            const iconEl = document.getElementById(`preview-icon-${field}`);
+            const imgEl = document.getElementById(`preview-img-${field}`);
+            if (iconEl && imgEl) {
+                iconEl.className = 'fas fa-file-alt fa-2x text-muted';
+                iconEl.style.display = 'block';
+                imgEl.style.display = 'none';
+                imgEl.src = '';
+            }
+        });
+
         if (isEdit) {
             document.getElementById('doc-type').value = b.document_type_id;
             document.getElementById('doc-number').value = b.document_number;
@@ -788,6 +886,39 @@ var BeneficiariesView = {
             document.getElementById('is-migrant').checked = !!b.is_migrant;
             document.getElementById('medical-restrictions').value = b.medical_restrictions || '';
             document.getElementById('observations').value = b.observations || '';
+            
+            document.getElementById('talla-zapato').value = b.talla_zapato || '';
+            document.getElementById('talla-camisa').value = b.talla_camisa || '';
+            document.getElementById('talla-pantalon').value = b.talla_pantalon || '';
+
+            // Set document links
+            const baseUrl = Config.API_URL.replace(/\/api\/?$/, '');
+            const setRemotePreview = (path, fieldId) => {
+                if (!path) return;
+                const url = `${baseUrl}/${path}`;
+                const isPdf = path.toLowerCase().endsWith('.pdf');
+                const linkDiv = document.getElementById(`link-${fieldId}`);
+                if (linkDiv) linkDiv.innerHTML = `<a href="${url}" target="_blank" class="text-primary"><i class="fas fa-external-link-alt me-1"></i>Ver actual</a>`;
+                
+                const iconEl = document.getElementById(`preview-icon-${fieldId}`);
+                const imgEl = document.getElementById(`preview-img-${fieldId}`);
+                if (iconEl && imgEl) {
+                    if (isPdf) {
+                        iconEl.className = 'fas fa-file-pdf fa-2x text-danger';
+                        iconEl.style.display = 'block';
+                        imgEl.style.display = 'none';
+                    } else {
+                        imgEl.src = url;
+                        imgEl.style.display = 'block';
+                        iconEl.style.display = 'none';
+                    }
+                }
+            };
+
+            setRemotePreview(b.doc_identidad_path, 'doc-identidad');
+            setRemotePreview(b.doc_sisben_path, 'doc-sisben');
+            setRemotePreview(b.historia_clinica_path, 'historia-clinica');
+            setRemotePreview(b.fotografia_path, 'fotografia');
         }
 
         this.toggleRationsVisibility();
@@ -859,7 +990,10 @@ var BeneficiariesView = {
             is_victim: document.getElementById('is-victim').checked,
             is_migrant: document.getElementById('is-migrant').checked,
             medical_restrictions: document.getElementById('medical-restrictions').value,
-            observations: document.getElementById('observations').value
+            observations: document.getElementById('observations').value,
+            talla_zapato: document.getElementById('talla-zapato').value,
+            talla_camisa: document.getElementById('talla-camisa').value,
+            talla_pantalon: document.getElementById('talla-pantalon').value
         };
 
         try {
@@ -872,6 +1006,40 @@ var BeneficiariesView = {
             });
 
             if (res.message) {
+                const beneficiaryId = res.id || id;
+                
+                // Upload documents if any
+                const filesToUpload = new FormData();
+                let hasFiles = false;
+                
+                const dId = document.getElementById('doc-identidad').files[0];
+                if (dId) { filesToUpload.append('doc_identidad', dId); hasFiles = true; }
+                
+                const dSis = document.getElementById('doc-sisben').files[0];
+                if (dSis) { filesToUpload.append('doc_sisben', dSis); hasFiles = true; }
+                
+                const hCli = document.getElementById('historia-clinica').files[0];
+                if (hCli) { filesToUpload.append('historia_clinica', hCli); hasFiles = true; }
+                
+                const foto = document.getElementById('fotografia').files[0];
+                if (foto) { filesToUpload.append('fotografia', foto); hasFiles = true; }
+
+                if (hasFiles && beneficiaryId) {
+                    try {
+                        let token = Config.getToken();
+                        const uploadRes = await fetch(`${Config.API_URL}/beneficiarios/upload/${beneficiaryId}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            body: filesToUpload
+                        });
+                        if (!uploadRes.ok) {
+                            console.warn("Error uploading docs");
+                        }
+                    } catch (e) {
+                        console.error('File upload error:', e);
+                    }
+                }
+
                 Helper.alert('success', res.message);
                 bootstrap.Modal.getInstance(document.getElementById('modalBeneficiary')).hide();
                 await this.loadBeneficiaries();
@@ -1389,6 +1557,42 @@ var BeneficiariesView = {
 
         // Search event
         document.getElementById('searchBeneficiary').addEventListener('keyup', () => this.filterTable());
+    },
+
+    previewLocalFile(inputElement, fieldId) {
+        const file = inputElement.files[0];
+        const iconEl = document.getElementById(`preview-icon-${fieldId}`);
+        const imgEl = document.getElementById(`preview-img-${fieldId}`);
+        
+        if (!iconEl || !imgEl) return;
+        
+        if (!file) {
+            iconEl.className = 'fas fa-file-alt fa-2x text-muted';
+            iconEl.style.display = 'block';
+            imgEl.style.display = 'none';
+            imgEl.src = '';
+            return;
+        }
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgEl.src = e.target.result;
+                imgEl.style.display = 'block';
+                iconEl.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        } else if (file.type === 'application/pdf') {
+            iconEl.className = 'fas fa-file-pdf fa-2x text-danger';
+            iconEl.style.display = 'block';
+            imgEl.style.display = 'none';
+            imgEl.src = '';
+        } else {
+            iconEl.className = 'fas fa-file fa-2x text-info';
+            iconEl.style.display = 'block';
+            imgEl.style.display = 'none';
+            imgEl.src = '';
+        }
     }
 };
 
