@@ -128,20 +128,21 @@
                     <!-- Right: User & Notifs -->
                     <div class="d-flex align-items-center">
                         <div class="dropdown me-3">
-                            <a href="#" class="text-secondary position-relative" id="notificationsDropdown"
+                            <a href="#module/pqrs" class="text-secondary position-relative" id="notificationsDropdown"
                                 data-bs-toggle="dropdown">
                                 <i class="fas fa-bell fa-lg"></i>
-                                <span
+                                <span id="pqr-badge"
                                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                    style="font-size: 0.5rem;">3</span>
+                                    style="font-size: 0.5rem; display: none;">0</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0"
-                                aria-labelledby="notificationsDropdown">
+                                aria-labelledby="notificationsDropdownLink" id="notificationsDropdownMenu" style="min-width: 240px;">
                                 <li>
                                     <h6 class="dropdown-header">Notificaciones</h6>
                                 </li>
-                                <li><a class="dropdown-item small" href="#">Nueva entrega registrada</a></li>
-                                <li><a class="dropdown-item small" href="#">Alerta de stock bajo</a></li>
+                                <div id="notifications-list">
+                                    <li><span class="dropdown-item small text-muted">Sin notificaciones</span></li>
+                                </div>
                             </ul>
                         </div>
                         <div class="dropdown">

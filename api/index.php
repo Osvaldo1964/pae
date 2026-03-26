@@ -43,7 +43,7 @@ $script_name = dirname($_SERVER['SCRIPT_NAME']);
 $base_path = rtrim($script_name, '/') . '/';
 
 // Remove the base path from the full URI to get the relative route
-if (strpos($full_uri, $base_path) === 0) {
+if (stripos($full_uri, $base_path) === 0) {
     $relative_path = substr($full_uri, strlen($base_path));
 } else {
     $relative_path = $full_uri;
@@ -180,14 +180,6 @@ if ($resource === 'auth') {
     } else {
         http_response_code(404);
         echo json_encode(["message" => "Tenant Action Not Found"]);
-    }
-} elseif ($resource === 'public') {
-    $controller = new \Controllers\PublicController();
-    if ($action === 'pqr' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $controller->submitPQR();
-    } else {
-        http_response_code(404);
-        echo json_encode(["message" => "Public Action Not Found"]);
     }
 } elseif ($resource === 'users') {
     require_once __DIR__ . '/utils/JWT.php';
@@ -729,8 +721,28 @@ if ($resource === 'auth') {
         http_response_code(405);
         echo json_encode(["message" => "Method Not Allowed"]);
     }
+} elseif ($resource === 'public') {
+    $controller = new \Controllers\PublicController();
+    if ($action === 'pqr' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $controller->submitPQR();
+    } elseif ($action === 'notifications' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->getPqrCount();
+    } else {
+        http_response_code(404);
+        echo json_encode(["message" => "Public Action Not Found"]);
+    }
+} elseif ($resource === 'pqrs') {
+    $controller = new \Controllers\PqrController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        $controller->index();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'PUT' && $action) {
+        $controller->update($action);
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);
 }
-?>
+

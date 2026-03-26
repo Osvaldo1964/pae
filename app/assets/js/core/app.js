@@ -49,6 +49,9 @@ const App = {
             if (window.location.hash === '' || window.location.hash === '#login') {
                 window.location.hash = '#dashboard';
             }
+
+            // Start PQR notification polling
+            App.startNotificationsPolling();
         } else {
             window.location.hash = '#login';
         }
@@ -290,7 +293,8 @@ const App = {
                     'reports-pay': 'reports_payroll',
                     'reports-presupuesto': 'reports_presupuesto',
                     'reports-hr-positions': 'reports_hr_positions',
-                    'reports-hr-employees': 'reports_hr_employees'
+                    'reports-hr-employees': 'reports_hr_employees',
+                    'pqrs': 'pqrs'
                 };
 
                 const reportCategories = ['reports-ali', 'reports-fin', 'reports-adm', 'reports-rh'];
@@ -341,6 +345,7 @@ const App = {
             App.restoreUserFromToken();
             localStorage.setItem('pae_token', res.token);
             await App.loadMenu();
+            App.startNotificationsPolling();
             window.location.hash = '#dashboard';
         } else {
             Swal.fire('Error', res.message || 'Login fallido', 'error');
@@ -358,6 +363,7 @@ const App = {
             App.restoreUserFromToken();
             localStorage.setItem('pae_token', res.token);
             await App.loadMenu();
+            App.startNotificationsPolling();
             window.location.hash = '#dashboard';
 
             // Close modal if open (manually remove backdrop if needed, usually simple re-render handles it)
@@ -990,6 +996,54 @@ const App = {
             `;
         };
         document.body.appendChild(script);
+    },
+
+    // ─── Notificaciones PQR ─────────────────────────────────────────────
+    loadNotifications: async () => {
+        if (!App.state.token) return;
+
+        try {
+            const resp = await fetch(`${App.apiBase}/public/notifications`, {
+                headers: { 'Authorization': `Bearer ${App.state.token}` }
+            });
+
+            if (!resp.ok) return;
+
+            const data = await resp.json();
+            const count = data.count || 0;
+
+            // Actualizar badge
+            const badge = document.getElementById('pqr-badge');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+
+            // Actualizar dropdown
+            const list = document.getElementById('notifications-list');
+            if (list) {
+                if (count > 0) {
+                    list.innerHTML = `
+                        <li>
+                            <a class="dropdown-item small d-flex align-items-center gap-2" href="#" onclick="window.location.hash='#module/pqrs'; return false;">
+                                <i class="fas fa-envelope-open-text text-danger"></i>
+                                <span><strong>${count}</strong> PQR${count > 1 ? 's' : ''} pendiente${count > 1 ? 's' : ''}</span>
+                            </a>
+                        </li>`;
+                } else {
+                    list.innerHTML = '<li><span class="dropdown-item small text-muted">Sin notificaciones</span></li>';
+                }
+            }
+        } catch (e) {
+            // Silently fail — don't disturb UX if endpoint is unreachable
+        }
+    },
+
+    startNotificationsPolling: () => {
+        // Load immediately and then every 60 s
+        App.loadNotifications();
+        if (App._notifInterval) clearInterval(App._notifInterval);
+        App._notifInterval = setInterval(App.loadNotifications, 60000);
     }
 };
 

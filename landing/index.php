@@ -1,3 +1,15 @@
+<?php
+require_once __DIR__ . '/../api/utils/Env.php';
+require_once __DIR__ . '/../api/config/Database.php';
+
+try {
+    $db = \Config\Database::getInstance()->getConnection();
+    $stmt = $db->query("SELECT id, name FROM pae_programs ORDER BY name ASC");
+    $programs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (\Exception $e) {
+    $programs = [];
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -87,7 +99,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link active" href="#inicio">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#avances">Avances</a></li>
                     <li class="nav-item"><a class="nav-link" href="#eventos">Eventos</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal"
                             data-bs-target="#pqrModal">PQR</a></li>
@@ -108,60 +119,24 @@
     <!-- Hero Section -->
     <section id="inicio" class="hero-section">
         <div class="container">
-            <h1 class="display-3 fw-bold mb-4">Alimentación Escolar Transparente</h1>
-            <p class="lead mb-4">Garantizando el bienestar nutricional de nuestros niños, niñas y adolescentes.</p>
+            <h1 class="display-3 fw-bold mb-4">Gestión Programa Adulto Mayor</h1>
+            <p class="lead mb-4">Garantizando el bienestar integral de nuestros adultos mayores.</p>
             <div class="d-flex justify-content-center gap-3">
                 <button class="btn btn-light btn-lg text-primary fw-bold" data-bs-toggle="modal"
                     data-bs-target="#pqrModal">Radicar PQR</button>
-                <a href="#avances" class="btn btn-outline-light btn-lg">Ver Avance</a>
             </div>
         </div>
     </section>
 
-    <!-- Avances / Stats -->
-    <section id="avances" class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center text-primary-custom mb-5">Impacto del Programa</h2>
-            <div class="row g-4 text-center">
-                <div class="col-md-3">
-                    <div class="card stat-card h-100 p-4 shadow-sm">
-                        <i class="fas fa-school fa-3x text-success mb-3"></i>
-                        <h3 class="fw-bold">150</h3>
-                        <p class="text-muted">Sedes Educativas</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card h-100 p-4 shadow-sm">
-                        <i class="fas fa-child fa-3x text-success mb-3"></i>
-                        <h3 class="fw-bold">25,000</h3>
-                        <p class="text-muted">Beneficiarios</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card h-100 p-4 shadow-sm">
-                        <i class="fas fa-apple-alt fa-3x text-success mb-3"></i>
-                        <h3 class="fw-bold">4.5M</h3>
-                        <p class="text-muted">Raciones Entregadas</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card h-100 p-4 shadow-sm">
-                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                        <h3 class="fw-bold">98%</h3>
-                        <p class="text-muted">Cumplimiento</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Eventos -->
     <section id="eventos" class="py-5">
         <div class="container">
             <h2 class="text-center text-primary-custom mb-5">Próximos Eventos</h2>
-            <div class="row g-4">
+            <div class="row g-4 justify-content-center">
                 <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100 border-primary" style="box-shadow: 0 0 15px rgba(27,79,114,0.3) !important;">
+                    <div class="card shadow-sm border-0 h-100 border-primary"
+                        style="box-shadow: 0 0 15px rgba(27,79,114,0.3) !important;">
                         <img src="https://placehold.co/800x500/8E44AD/FFFFFF?text=Programa+Adulto+Mayor"
                             class="card-img-top event-img" alt="Adulto Mayor">
                         <div class="card-body d-flex flex-column">
@@ -173,50 +148,17 @@
                                 &bull; Mayor de 60 años.<br>
                                 &bull; Ciudadano colombiano o residente (≥ 10 años).<br>
                                 &bull; SISBEN IV (Grupos A, B o C).<br>
-                                <span class="text-danger" style="font-size: 0.8rem;">* La inscripción está sujeta a revisión previa.</span>
+                                <span class="text-danger" style="font-size: 0.8rem;">* La inscripción está sujeta a
+                                    revisión previa.</span>
                             </p>
-                            <a href="landing/inscripcion_adulto_mayor.php" class="btn btn-warning mt-auto fw-bold text-dark"><i class="fas fa-edit me-2"></i>Inscríbete Aquí</a>
+                            <a href="landing/inscripcion_adulto_mayor.php"
+                                class="btn btn-warning mt-auto fw-bold text-dark"><i
+                                    class="fas fa-edit me-2"></i>Inscríbete Aquí</a>
                         </div>
                     </div>
                 </div>
-                    <div class="card shadow-sm border-0 h-100">
-                        <img src="https://placehold.co/800x500/1B4F72/FFFFFF?text=Entrega+de+Raciones"
-                            class="card-img-top event-img" alt="Entrega">
-                        <div class="card-body">
-                            <span class="badge bg-primary mb-2">Socialización</span>
-                            <h5>Inicio de Entrega R1</h5>
-                            <p class="text-muted small">Feb 15, 2026</p>
-                            <p class="card-text">Socialización del inicio de operaciones para raciones industrializadas
-                                del mes de Febrero.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <img src="https://placehold.co/800x500/F1C40F/333333?text=Comite+de+Seguimiento"
-                            class="card-img-top event-img" alt="Comité">
-                        <div class="card-body">
-                            <span class="badge bg-warning text-dark mb-2">Comité</span>
-                            <h5>Comité de Seguimiento</h5>
-                            <p class="text-muted small">Mar 01, 2026</p>
-                            <p class="card-text">Reunión mensual con rectores y padres de familia para evaluar la
-                                calidad del servicio.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100">
-                        <img src="https://placehold.co/800x500/27AE60/FFFFFF?text=Feria+Gastronomica"
-                            class="card-img-top event-img" alt="Feria">
-                        <div class="card-body">
-                            <span class="badge bg-success mb-2">Nutrición</span>
-                            <h5>Feria Gastronómica</h5>
-                            <p class="text-muted small">Mar 20, 2026</p>
-                            <p class="card-text">Muestra de alimentos autóctonos integrados a ciclos de menús.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+
+
             </div>
         </div>
     </section>
@@ -225,7 +167,7 @@
     <footer class="text-center">
         <div class="container">
             <p class="mb-2">© 2026 Programs Control - Todos los derechos reservados.</p>
-            <small>Transparencia y Eficiencia en la Alimentación Escolar</small>
+            <small>Transparencia y Eficiencia en programas de Alimentación</small>
         </div>
     </footer>
 
@@ -239,6 +181,15 @@
                 </div>
                 <div class="modal-body">
                     <form id="pqrForm">
+                        <div class="mb-3">
+                            <label class="form-label">Programa</label>
+                            <select class="form-select" id="pqrProgram" required>
+                                <option value="">Seleccione el programa...</option>
+                                <?php foreach ($programs as $prog): ?>
+                                    <option value="<?= htmlspecialchars($prog['id']) ?>"><?= htmlspecialchars($prog['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Tipo de Solicitud</label>
                             <select class="form-select" id="pqrType" required>
@@ -374,11 +325,12 @@
     <script>
         async function submitPQR() {
             // ... (keeping existing PQR logic, just showing context)
+            const programId = document.getElementById('pqrProgram').value;
             const type = document.getElementById('pqrType').value;
             const email = document.getElementById('pqrEmail').value;
             const message = document.getElementById('pqrMessage').value;
 
-            if (!type || !email || !message) {
+            if (!programId || !type || !email || !message) {
                 Swal.fire('Error', 'Por favor complete todos los campos', 'warning');
                 return;
             }
@@ -390,6 +342,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        pae_id: programId,
                         type,
                         email,
                         message
