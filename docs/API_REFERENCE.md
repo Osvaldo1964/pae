@@ -504,6 +504,93 @@ Listar traslados internos de recursos.
 
 ---
 
+20. [PQRs (Peticiones, Quejas y Reclamos)](#pqrs-peticiones-quejas-y-reclamos)
+21. [Notificaciones](#notificaciones)
+22. [Códigos de Estado](#códigos-de-estado)
+23. [Manejo de Errores](#manejo-de-errores)
+
+---
+
+## 📩 PQRs (Peticiones, Quejas y Reclamos)
+
+### POST /public/pqr
+Radicar una nueva PQR desde el landing page (público).
+
+**Request:**
+```json
+{
+  "pae_id": 1,
+  "type": "Petición",
+  "email": "ciudadano@example.com",
+  "message": "Descripción de la solicitud..."
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "PQR enviada correctamente. Su número de radicado es #000001"
+}
+```
+
+---
+
+### GET /pqrs
+Listar todas las PQRs del programa actual (Requiere Admin).
+
+**Headers:**
+```http
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": 1,
+    "type": "Petición",
+    "email": "ciudadano@example.com",
+    "message": "...",
+    "status": "Pendiente",
+    "created_at": "2026-03-26 10:00:00"
+  }
+]
+```
+
+---
+
+### PUT /pqrs/{id}
+Actualizar el estado y respuesta de una PQR.
+
+**Request:**
+```json
+{
+  "status": "Respondida",
+  "response": "Hemos procesado su solicitud..."
+}
+```
+
+---
+
+## 🔔 Notificaciones
+
+### GET /public/notifications
+Obtener el conteo de PQRs pendientes para el programa actual.
+
+**Headers:**
+```http
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "count": 5
+}
+```
+
+---
+
 ## 📊 Códigos de Estado HTTP
 
 | Código | Significado | Uso |
@@ -532,4 +619,4 @@ Todos los errores siguen el mismo formato:
 
 ---
 
-**Última Actualización:** 13 de Febrero de 2026, 18:00 PM
+**Última Actualización:** 26 de Marzo de 2026, 10:00 AM

@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 18 de Marzo 2026
-**Versión Doc:** 1.9.13 | **Versión Código:** 1.9.13 (Perfil Ampliado de Beneficiarios y Registro Público de Eventos)
+**Última actualización**: 26 de Marzo 2026
+**Versión Doc:** 1.9.14 | **Versión Código:** 1.9.14 (Módulo de Notificación y Resolución de PQRs)
 
 ---
 
@@ -15,6 +15,7 @@
 | **Base de Datos** | 🟢 Estable | 100% |
 | **Módulos Admin** | 🟢 Funcional | 100% |
 | **Módulos Operativos** | 🟢 Funcional | 100% |
+| **Módulo PQR** | 🟢 Funcional | 100% |
 | **Documentación** | 🟢 Actualizada | 100% |
 
 ---
@@ -208,7 +209,14 @@
   - [x] **Reversión Automática:** La eliminación de un traslado restaura los saldos originales en origen y destino.
   - [x] Trazabilidad e historial de justificaciones.
 
-### 17. Módulo de Reportes (Hub de Gestión) ✅
+### 17. Módulo de PQRs (Peticiones, Quejas y Reclamos) ✅ ⭐ v1.9.14
+- [x] **Backend:** `PqrController.php` con listado institucional y resolución.
+- [x] **Frontend:** `pqrs.js` con DataTable de gestión y modal de respuesta.
+- [x] **Public API:** Endpoint `/public/pqr` para radicación ciudadana desde el Landing.
+- [x] **Notificaciones:** Sistema de polling de campana con badge dinámico en el Dashboard.
+- [x] **Base de Datos:** Tabla `pqrs` con soporte multi-tenant y columna de respuesta persistente.
+
+### 18. Módulo de Reportes (Hub de Gestión) ✅
 - [x] **Arquitectura:** Hub centralizado por categorías (Financieros, Alimentación, Administrativos)
 - [x] **Reporte de Insumos:** Tabla dinámica con filtros por grupo y estado, exportable a Excel/PDF
 - [x] **Reporte de Recetario:** Vista visual de fichas técnicas con explosión de ingredientes y composición nutricional
@@ -245,6 +253,11 @@
 - [ ] Sincronización con sistemas contables
 
 ---
+
+### v1.9.14 (26 Marzo 2026 - Módulo de PQRs)
+- ✅ **Notificaciones en Dashboard:** Implementación de polling automático (60s) para mostrar trámites pendientes a los administradores.
+- ✅ **Gestión de Resoluciones:** Interfaz visual para responder y cerrar PQRs, con persistencia de notas de resolución.
+- ✅ **Integración Multi-Tenant:** Aseguramiento de que las PQRs lleguen al programa correcto seleccionado por el ciudadano.
 
 ### v1.9.13 (18 Marzo 2026 - Perfil Ampliado y Evento Adulto Mayor)
 - ✅ **Beneficiarios (Extensión):** Selección e integración de nueva data de dotación (tallas de zapato, camisa y pantalón).
