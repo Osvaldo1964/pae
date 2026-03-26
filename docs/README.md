@@ -2,7 +2,7 @@
 
 **Sistema de Gestión Integral para Programas de Alimentación Escolar**
 
-Versión: 1.9.14
+Versión: 1.9.15
 Última actualización: 26 de Marzo 2026
 
 ---

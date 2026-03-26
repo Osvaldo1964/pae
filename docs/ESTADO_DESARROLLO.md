@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 26 de Marzo 2026
-**Versión Doc:** 1.9.14 | **Versión Código:** 1.9.14 (Módulo de Notificación y Resolución de PQRs)
+**Última actualización**: 26 de Marzo 2026 (v1.9.15)
+**Versión Doc:** 1.9.15 | **Versión Código:** 1.9.15 (Mejora Configuración PAE + Tabs + Formato Miles)
 
 ---
 

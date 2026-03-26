@@ -60,4 +60,7 @@ El módulo de PQRs permite la comunicación directa entre los ciudadanos y los a
 4. **Cierre:** Escribe la respuesta, cambia el estado a "Respondida" y guarda. El contador de la campana vuelve a 0.
 
 ---
-**Documentación Generada:** 26 de Marzo de 2026
+**Documentación Actualizada:** 26 de Marzo de 2026 (v1.9.15)
+- ✅ **Resolución Directa**: Los administradores pueden responder y cerrar PQRs desde el panel administrativo.
+- ✅ **Notificaciones**: Sistema de campana con actualización automática (Polling 60s).
+- ✅ **Aislamiento**: Las PQRs están estrictamente ligadas al programa PAE correspondiente.

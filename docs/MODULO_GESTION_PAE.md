@@ -11,19 +11,23 @@
 
 **Archivo:** `/app/assets/js/views/pae-programs.js`
 
-**Características:**
-- ✅ Tabla DataTables con listado de todos los programas PAE
-- ✅ Modal para crear/editar programas
-- ✅ Upload de logos (entidad y operador)
-- ✅ Validación de campos obligatorios
-- ✅ Eliminación con confirmación
-- ✅ Muestra logos actuales al editar
-- ✅ Manejo de errores de carga de imágenes
+**Características (v1.9.15):**
+- ✅ Interfaz de **Pestañas (Tabs)**: Modal dividido en:
+  - **General**: Info básica y servicios.
+  - **Entidad**: Datos de la Entidad Territorial y logo.
+  - **Operador**: Datos del Operador y logo.
+  - **Contrato**: Nueva sección de seguimiento legal.
+  - **Acceso**: (Solo creación) Credenciales de administrador.
+- ✅ **Formato de Miles**: Campo de valor con separadores automáticos (1,000,000.00).
+- ✅ Tabla DataTables con listado de todos los programas PAE.
+- ✅ Visualización de **Número de Contrato** directamente en la tabla principal.
+- ✅ Upload de logos (entidad y operador) con previsualización.
 
 **Campos del Formulario:**
-- **Programa:** Nombre, Email
-- **Entidad:** Nombre, NIT, Departamento, Ciudad, Dirección, Logo
+- **Programa:** Nombre, Email, Servicios
+- **Entidad:** Nombre, NIT, Departamento, Ciudad, Logo
 - **Operador:** Razón Social, NIT, Dirección, Teléfono, Email, Logo
+- **Contrato:** No. Contrato, Valor (Formateado), Fecha Inicio, Fecha Fin, Periodicidad de informes
 
 ### 2. Backend: API Endpoints ✅
 

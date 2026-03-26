@@ -30,7 +30,8 @@ class TenantManagementController
                 SELECT 
                     id, name, entity_name, nit, department, city, email,
                     operator_name, operator_nit, operator_address, operator_phone, operator_email,
-                    entity_logo_path, operator_logo_path, created_at
+                    entity_logo_path, operator_logo_path, created_at,
+                    start_date, end_date, contract_number, contract_value, reporting_periodicity
                 FROM pae_programs
                 ORDER BY created_at DESC
             ");
@@ -111,7 +112,12 @@ class TenantManagementController
                     operator_phone = ?,
                     operator_email = ?,
                     entity_logo_path = ?,
-                    operator_logo_path = ?
+                    operator_logo_path = ?,
+                    start_date = ?,
+                    end_date = ?,
+                    contract_number = ?,
+                    contract_value = ?,
+                    reporting_periodicity = ?
                 WHERE id = ?
             ");
 
@@ -129,6 +135,11 @@ class TenantManagementController
                 $_POST['operator_email'] ?? null,
                 $entityLogoPath,
                 $operatorLogoPath,
+                $_POST['start_date'] ?? null,
+                $_POST['end_date'] ?? null,
+                $_POST['contract_number'] ?? null,
+                $_POST['contract_value'] ?? 0,
+                $_POST['reporting_periodicity'] ?? 'Mensual',
                 $id
             ]);
 

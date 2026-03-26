@@ -63,126 +63,196 @@ var PaeProgramsView = {
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-body">
-                            <form id="formPae" enctype="multipart/form-data">
+                        <div class="modal-body p-0">
+                            <!-- Tabs Navigation -->
+                            <ul class="nav nav-tabs px-3 pt-2 bg-light" id="paeTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#tab-general" type="button" role="tab">
+                                        <i class="fas fa-info-circle me-1"></i> General
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="entidad-tab" data-bs-toggle="tab" data-bs-target="#tab-entidad" type="button" role="tab">
+                                        <i class="fas fa-landmark me-1"></i> Entidad
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="operador-tab" data-bs-toggle="tab" data-bs-target="#tab-operador" type="button" role="tab">
+                                        <i class="fas fa-briefcase me-1"></i> Operador
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="contrato-tab" data-bs-toggle="tab" data-bs-target="#tab-contrato" type="button" role="tab">
+                                        <i class="fas fa-file-contract me-1"></i> Contrato
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation" id="acceso-tab-item">
+                                    <button class="nav-link" id="acceso-tab" data-bs-toggle="tab" data-bs-target="#tab-acceso" type="button" role="tab">
+                                        <i class="fas fa-user-shield me-1"></i> Acceso
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <form id="formPae" enctype="multipart/form-data" class="p-4">
                                 <input type="hidden" id="pae-id">
                                 
-                                <!-- Información del Programa -->
-                                <h6 class="text-primary border-bottom pb-2 mb-3">
-                                    <i class="fas fa-info-circle me-2"></i>Información del Programa
-                                </h6>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nombre del Programa *</label>
-                                        <input type="text" class="form-control" id="pae-name" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Email de Contacto</label>
-                                        <input type="email" class="form-control" id="pae-email">
-                                    </div>
-                                </div>
+                                <div class="tab-content" id="paeTabsContent">
+                                    <!-- Tab: General -->
+                                    <div class="tab-pane fade show active" id="tab-general" role="tabpanel">
+                                        <h6 class="text-primary mb-3">Información del Programa</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Nombre del Programa *</label>
+                                                <input type="text" class="form-control" id="pae-name" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email de Contacto</label>
+                                                <input type="email" class="form-control" id="pae-email">
+                                            </div>
+                                        </div>
 
-                                <!-- Servicios del Programa -->
-                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
-                                    <i class="fas fa-concierge-bell me-2"></i>Servicios del Programa
-                                </h6>
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <label class="form-label">Seleccione los servicios disponibles para este programa *</label>
-                                        <div id="services-container" class="d-flex flex-wrap gap-3 p-3 bg-light rounded border">
-                                            <!-- Services will be loaded here -->
-                                            <div class="text-muted small">Cargando servicios...</div>
+                                        <h6 class="text-primary mb-3 mt-4">Servicios del Programa</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label text-muted small">Seleccione los servicios disponibles para este programa *</label>
+                                                <div id="services-container" class="d-flex flex-wrap gap-3 p-3 bg-light rounded border">
+                                                    <div class="text-muted small">Cargando servicios...</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Datos de la Entidad -->
-                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
-                                    <i class="fas fa-landmark me-2"></i>Datos de la Entidad Territorial
-                                </h6>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nombre Entidad *</label>
-                                        <input type="text" class="form-control" id="entity-name" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">NIT Entidad *</label>
-                                        <input type="text" class="form-control" id="entity-nit" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Logo Entidad</label>
-                                        <input type="file" class="form-control" id="entity-logo" accept="image/*" onchange="PaeProgramsView.previewImage(this, 'entity-preview')">
-                                        <div id="entity-preview" class="mt-2 text-center border rounded p-1" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
-                                            <span class="text-muted small">Sin logo</span>
+                                    <!-- Tab: Entidad -->
+                                    <div class="tab-pane fade" id="tab-entidad" role="tabpanel">
+                                        <h6 class="text-primary mb-3">Datos de la Entidad Territorial</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Nombre Entidad *</label>
+                                                <input type="text" class="form-control" id="entity-name" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">NIT Entidad *</label>
+                                                <input type="text" class="form-control" id="entity-nit" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Logo Entidad</label>
+                                                <input type="file" class="form-control" id="entity-logo" accept="image/*" onchange="PaeProgramsView.previewImage(this, 'entity-preview')">
+                                                <div id="entity-preview" class="mt-2 text-center border rounded p-1" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                                    <span class="text-muted small">Sin logo</span>
+                                                </div>
+                                                <small class="text-muted" id="entity-logo-current"></small>
+                                            </div>
                                         </div>
-                                        <small class="text-muted" id="entity-logo-current"></small>
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Departamento</label>
+                                                <input type="text" class="form-control" id="entity-department">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Ciudad</label>
+                                                <input type="text" class="form-control" id="entity-city">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Dirección</label>
+                                                <input type="text" class="form-control" id="entity-address">
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Departamento</label>
-                                        <input type="text" class="form-control" id="entity-department">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Ciudad</label>
-                                        <input type="text" class="form-control" id="entity-city">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Dirección</label>
-                                        <input type="text" class="form-control" id="entity-address">
-                                    </div>
-                                </div>
 
-                                <!-- Datos del Operador -->
-                                <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
-                                    <i class="fas fa-briefcase me-2"></i>Datos del Operador
-                                </h6>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Razón Social Operador *</label>
-                                        <input type="text" class="form-control" id="operator-name" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">NIT Operador *</label>
-                                        <input type="text" class="form-control" id="operator-nit" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Logo Operador</label>
-                                        <input type="file" class="form-control" id="operator-logo" accept="image/*" onchange="PaeProgramsView.previewImage(this, 'operator-preview')">
-                                        <div id="operator-preview" class="mt-2 text-center border rounded p-1" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
-                                            <span class="text-muted small">Sin logo</span>
+                                    <!-- Tab: Operador -->
+                                    <div class="tab-pane fade" id="tab-operador" role="tabpanel">
+                                        <h6 class="text-primary mb-3">Datos del Operador</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Razón Social Operador *</label>
+                                                <input type="text" class="form-control" id="operator-name" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">NIT Operador *</label>
+                                                <input type="text" class="form-control" id="operator-nit" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Logo Operador</label>
+                                                <input type="file" class="form-control" id="operator-logo" accept="image/*" onchange="PaeProgramsView.previewImage(this, 'operator-preview')">
+                                                <div id="operator-preview" class="mt-2 text-center border rounded p-1" style="width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                                    <span class="text-muted small">Sin logo</span>
+                                                </div>
+                                                <small class="text-muted" id="operator-logo-current"></small>
+                                            </div>
                                         </div>
-                                        <small class="text-muted" id="operator-logo-current"></small>
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Dirección</label>
+                                                <input type="text" class="form-control" id="operator-address">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Teléfono</label>
+                                                <input type="text" class="form-control" id="operator-phone">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="operator-email">
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Dirección</label>
-                                        <input type="text" class="form-control" id="operator-address">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Teléfono</label>
-                                        <input type="text" class="form-control" id="operator-phone">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Email</label>
-                                        <input type="email" class="form-control" id="operator-email">
-                                    </div>
-                                </div>
 
-                                <!-- Usuario Administrador -->
-                                <div id="admin-user-section">
-                                    <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">
-                                        <i class="fas fa-user-shield me-2"></i>Usuario Administrador
-                                    </h6>
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Email Admin *</label>
-                                            <input type="email" class="form-control" id="admin-email">
+                                    <!-- Tab: Contrato -->
+                                    <div class="tab-pane fade" id="tab-contrato" role="tabpanel">
+                                        <h6 class="text-primary mb-3">Información del Contrato</h6>
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">No. Contrato / Convenio</label>
+                                                <input type="text" class="form-control" id="contract_number">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Valor del Contrato</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="text" class="form-control" id="contract_value" 
+                                                        oninput="PaeProgramsView.formatNumberInput(this)" 
+                                                        placeholder="0.00">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Periodicidad de Informes</label>
+                                                <select class="form-select" id="reporting_periodicity">
+                                                    <option value="Mensual">Mensual</option>
+                                                    <option value="Bimensual">Bimensual</option>
+                                                    <option value="Semestral">Semestral</option>
+                                                    <option value="Anual">Anual</option>
+                                                    <option value="Ejecución Total">Ejecución Total</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Contraseña *</label>
-                                            <input type="password" class="form-control" id="admin-password">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Fecha de Inicio</label>
+                                                <input type="date" class="form-control" id="start_date">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Fecha de Terminación</label>
+                                                <input type="date" class="form-control" id="end_date">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tab: Acceso -->
+                                    <div class="tab-pane fade" id="tab-acceso" role="tabpanel">
+                                        <div id="admin-user-section">
+                                            <h6 class="text-primary mb-3">Usuario Administrador</h6>
+                                            <div class="alert alert-info py-2 small">
+                                                <i class="fas fa-info-circle me-1"></i> Se creará un usuario con rol <strong>PAE_ADMIN</strong> vinculado a este programa.
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Email Admin *</label>
+                                                    <input type="email" class="form-control" id="admin-email">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Contraseña *</label>
+                                                    <input type="password" class="form-control" id="admin-password">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -313,6 +383,11 @@ var PaeProgramsView = {
                     </td>
                     <td>
                         ${pae.city || '-'}, ${pae.department || '-'}
+                        <div class="mt-1">
+                            <span class="badge bg-light text-dark border" title="No. Contrato">
+                                <i class="fas fa-file-contract me-1 text-primary"></i>${pae.contract_number || 'S/N'}
+                            </span>
+                        </div>
                     </td>
                     <td>
                         <div class="d-flex gap-2">
@@ -358,6 +433,16 @@ var PaeProgramsView = {
         // Reset services
         document.querySelectorAll('.service-checkbox').forEach(cb => cb.checked = false);
 
+        // Reset to first tab
+        const firstTab = document.querySelector('#paeTabs .nav-link:first-child');
+        if (firstTab) {
+            const tabTrigger = new bootstrap.Tab(firstTab);
+            tabTrigger.show();
+        }
+
+        // Show/Hide access tab item
+        document.getElementById('acceso-tab-item').style.display = isEdit ? 'none' : 'block';
+
         // Show/Hide admin section (only for create)
         document.getElementById('admin-user-section').style.display = isEdit ? 'none' : 'block';
         document.getElementById('admin-email').required = !isEdit;
@@ -378,6 +463,17 @@ var PaeProgramsView = {
             document.getElementById('operator-address').value = pae.operator_address || '';
             document.getElementById('operator-phone').value = pae.operator_phone || '';
             document.getElementById('operator-email').value = pae.operator_email || '';
+            
+            // Contract Fields
+            document.getElementById('start_date').value = pae.start_date || '';
+            document.getElementById('end_date').value = pae.end_date || '';
+            document.getElementById('contract_number').value = pae.contract_number || '';
+            
+            // Format contract value for display
+            const contractValueInput = document.getElementById('contract_value');
+            contractValueInput.value = pae.contract_value ? Helper.formatNumber(pae.contract_value) : '0.00';
+            
+            document.getElementById('reporting_periodicity').value = pae.reporting_periodicity || 'Mensual';
 
             if (pae.entity_logo_path) {
                 document.getElementById('entity-logo-current').textContent = `Actual: ${pae.entity_logo_path.split('/').pop()}`;
@@ -434,6 +530,17 @@ var PaeProgramsView = {
         formData.append('operator_address', document.getElementById('operator-address').value);
         formData.append('operator_phone', document.getElementById('operator-phone').value);
         formData.append('operator_email', document.getElementById('operator-email').value);
+        
+        // Contract Fields
+        formData.append('start_date', document.getElementById('start_date').value);
+        formData.append('end_date', document.getElementById('end_date').value);
+        formData.append('contract_number', document.getElementById('contract_number').value);
+        
+        // Clean contract value (remove commas) before saving
+        const contractValue = document.getElementById('contract_value').value.replace(/,/g, '');
+        formData.append('contract_value', contractValue || 0);
+        
+        formData.append('reporting_periodicity', document.getElementById('reporting_periodicity').value);
 
         // Add services
         const selectedServices = Array.from(document.querySelectorAll('.service-checkbox:checked')).map(cb => cb.value);
@@ -508,6 +615,28 @@ var PaeProgramsView = {
         } else {
             preview.innerHTML = '<span class="text-muted small">Sin logo</span>';
         }
+    },
+
+    /**
+     * Format a number input with thousands separators
+     * @param {HTMLInputElement} input 
+     */
+    formatNumberInput(input) {
+        // Remove non-numeric characters except dot
+        let value = input.value.replace(/[^0-9.]/g, '');
+        
+        // Split parts
+        const parts = value.split('.');
+        let integerPart = parts[0];
+        let decimalPart = parts[1];
+
+        // Format integer part with commas
+        if (integerPart) {
+            integerPart = parseInt(integerPart).toLocaleString('en-US');
+        }
+
+        // Rejoin
+        input.value = decimalPart !== undefined ? `${integerPart}.${decimalPart.substring(0, 2)}` : integerPart;
     }
 };
 

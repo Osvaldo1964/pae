@@ -4,7 +4,8 @@
 ### 1. **Configuración**
 - ✅ Usuarios (CRUD completo con campos de dirección y teléfono)
 - ✅ Roles y Permisos (Gestión de perfiles de acceso)
-- ✅ Programas PAE (Super Admin - Multitenancy)
+- ✅ Programas PAE (Multitenancy con control de contrato y pestañas)
+- ✅ Módulo PQR (Bandeja de entrada, notificaciones en tiempo real y resoluciones)
 - ✅ Mi Equipo (Gestión de staff del operador PAE)
 
 ### 2. **Entorno**
@@ -94,4 +95,4 @@
 
 ---
 
-**Última actualización**: 26 de Marzo 2026, 10:00 AM
+**Última actualización**: 26 de Marzo 2026, 12:00 PM (v1.9.15)

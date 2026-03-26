@@ -55,11 +55,13 @@ class TenantController
                 $sqlPae = "INSERT INTO pae_programs (
                     name, entity_name, nit, email, department, city, 
                     operator_name, operator_nit, operator_address, operator_phone, operator_email,
-                    entity_logo_path, operator_logo_path
+                    entity_logo_path, operator_logo_path,
+                    start_date, end_date, contract_number, contract_value, reporting_periodicity
                 ) VALUES (
                     :name, :entity, :nit, :email, :dept, :city, 
                     :op_name, :op_nit, :op_addr, :op_phone, :op_email,
-                    :ent_logo, :op_logo
+                    :ent_logo, :op_logo,
+                    :start_date, :end_date, :contract_num, :contract_val, :periodicity
                 )";
 
                 $stmtPae = $this->conn->prepare($sqlPae);
@@ -77,9 +79,12 @@ class TenantController
                 $stmtPae->bindParam(":op_phone", $data->operator_phone);
                 $stmtPae->bindParam(":op_email", $data->operator_email);
 
-                // Logos
-                $stmtPae->bindParam(":ent_logo", $entityLogoPath);
-                $stmtPae->bindParam(":op_logo", $operatorLogoPath);
+                // New Contract Fields
+                $stmtPae->bindParam(":start_date", $data->start_date);
+                $stmtPae->bindParam(":end_date", $data->end_date);
+                $stmtPae->bindParam(":contract_num", $data->contract_number);
+                $stmtPae->bindParam(":contract_val", $data->contract_value);
+                $stmtPae->bindParam(":periodicity", $data->reporting_periodicity);
 
                 $stmtPae->execute();
 

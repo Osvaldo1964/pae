@@ -47,10 +47,12 @@ const Helper = {
      */
     formatNumber: (number, decimals = 2) => {
         if (!number && number !== 0) return '0';
+        const num = parseFloat(number);
+        if (isNaN(num)) return number;
         return new Intl.NumberFormat('en-US', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals
-        }).format(number);
+        }).format(num);
     },
 
     /**
