@@ -2,8 +2,8 @@
 
 **Sistema de Gestión Integral para Programas de Alimentación Escolar**
 
-Versión: 1.6.2 (Hotfix)
-Última actualización: 12 de Febrero 2026
+Versión: 1.9.14
+Última actualización: 26 de Marzo 2026
 
 ---
 
@@ -29,6 +29,7 @@ Versión: 1.6.2 (Hotfix)
 | **Gestión PAE** | [MODULO_GESTION_PAE.md](MODULO_GESTION_PAE.md) | ✅ Completo |
 | **Mi Equipo** | [MODULO_MI_EQUIPO.md](MODULO_MI_EQUIPO.md) | ✅ Completo |
 | **Permisos** | [MODULO_PERMISOS.md](MODULO_PERMISOS.md) | ✅ Completo |
+| **PQRs** | [MODULO_PQRS.md](MODULO_PQRS.md) | ✅ Completo |
 
 ### 🎯 Documentación Específica
 
@@ -115,6 +116,11 @@ Versión: 1.6.2 (Hotfix)
 - **Remisiones:** Registro de entregas
 - **Integración:** Conversión a entradas de almacén
 
+### ✅ Módulo de PQRs (Ciudadanía)
+- **Radicación Pública:** Formulario en landing con selección de PAE.
+- **Notificaciones:** Badge dinámico en campana de Dashboard.
+- **Gestión Administrativa:** Bandeja de resolución con persistencia de respuestas.
+
 ---
 
 ## 🔐 Seguridad
@@ -155,7 +161,7 @@ Ver [SEGURIDAD_USUARIOS.md](SEGURIDAD_USUARIOS.md) para detalles.
 
 | Métrica | Valor |
 |---------|-------|
-| Módulos Completados | 15/16 (94%) |
+| Módulos Completados | 17/17 (100%) |
 | Endpoints API | 80+ |
 | Tablas de BD | 45+ |
 | Líneas de Código Backend | ~25,000 |

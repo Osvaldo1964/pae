@@ -61,7 +61,12 @@
 - ✅ **Navegación Circular:** Retorno automático al menú de módulo tras finalizar cargas o procesos masivos.
 - ✅ **Breadcrumbs Inteligentes:** Sistema de navegación multinivel para hubs de reportes.
 
-### 8. **Eventos y Convocatorias (Landing)** ✅ ⭐ NUEVO MÓDULO
+### 9. **Gestión de PQRs** ✅ ⭐ NUEVO MÓDULO
+- ✅ **Radicación:** Vínculo directo desde el portal público para ciudadanos.
+- ✅ **Notificaciones:** Sistema de alertas visuales en Dashboard para respuesta oportuna.
+- ✅ **Resolución:** Panel administrativo para el cierre de trámites con respuesta oficial.
+
+### 10. **Eventos y Convocatorias (Landing)** ✅ ⭐ NUEVO MÓDULO
 - ✅ **Landing Page:** Integración de portal promocional y tarjeta dinámica de eventos.
 - ✅ **Adulto Mayor:** Formulario de inscripción público multi-paso, conectando directamente al backend local.
 - ✅ **Autodiagnóstico y Filtros:** Validaciones rigurosas aplicadas a los requisitos del programa (Edad mínima, grupos de SISBEN IV).
@@ -89,4 +94,4 @@
 
 ---
 
-**Última actualización**: 18 de Marzo 2026, 13:58 PM
+**Última actualización**: 26 de Marzo 2026, 10:00 AM

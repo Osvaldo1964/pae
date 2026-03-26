@@ -921,7 +921,8 @@ const App = {
             color = 'primary';
             modules = [
                 { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' },
-                { name: 'Impresión de Carnets', route: 'reports-carnets', icon: 'fas fa-id-badge', description: 'Generación masiva de carnets con QR para beneficiarios' }
+                { name: 'Impresión de Carnets', route: 'reports-carnets', icon: 'fas fa-id-badge', description: 'Generación masiva de carnets con QR para beneficiarios' },
+                { name: 'Bandeja de PQRs', route: 'pqrs', icon: 'fas fa-envelope-open-text', description: 'Gestión y resolución de solicitudes ciudadanas' }
             ];
         } else if (category === 'reports-rh') {
             title = 'Reportes de Talento Humano';
