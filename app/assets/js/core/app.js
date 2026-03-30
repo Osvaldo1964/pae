@@ -149,6 +149,16 @@ const App = {
                         'fin-traslados': 'Traslados'
                     };
                     foundModule = { name: finNames[route] };
+                } else if (route.startsWith('entregables-')) {
+                    foundGroup = { id: 98, name: 'Entregables' };
+                    const entNames = {
+                        'entregables-medico': 'Médico',
+                        'entregables-psicologo': 'Psicólogo',
+                        'entregables-fisioterapeuta': 'Fisioterapeuta',
+                        'entregables-administrativos': 'Administrativos',
+                        'entregables-financieros': 'Financieros'
+                    };
+                    foundModule = { name: entNames[route] };
                 } else if (route === 'reports-ali') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Alimentación' };
@@ -294,6 +304,11 @@ const App = {
                     'reports-presupuesto': 'reports_presupuesto',
                     'reports-hr-positions': 'reports_hr_positions',
                     'reports-hr-employees': 'reports_hr_employees',
+                    'entregables-medico': 'entregables_medico',
+                    'entregables-psicologo': 'entregables_psicologo',
+                    'entregables-fisioterapeuta': 'entregables_fisioterapeuta',
+                    'entregables-administrativos': 'entregables_administrativos',
+                    'entregables-financieros': 'entregables_financieros',
                     'pqrs': 'pqrs'
                 };
 
@@ -704,6 +719,15 @@ const App = {
                     </a>
                 `;
                 sidebarList.appendChild(finLi);
+
+                const entregablesLi = document.createElement('li');
+                entregablesLi.className = 'nav-item mb-2';
+                entregablesLi.innerHTML = `
+                    <a href="#group/98" class="nav-link text-white">
+                        <i class="fas fa-box-open me-2"></i> Entregables
+                    </a>
+                `;
+                sidebarList.appendChild(entregablesLi);
             }
 
             const li = document.createElement('li');
@@ -740,6 +764,16 @@ const App = {
             };
         }
 
+        // Virtual group Entregables
+        if (groupId == 98) {
+            group = {
+                id: 98,
+                name: 'Entregables',
+                icon: 'fas fa-box-open',
+                modules: []
+            };
+        }
+
         if (!group) return;
 
         let cardsHtml = '';
@@ -770,6 +804,14 @@ const App = {
             modulesToRender.push({ name: 'Presupuesto', route: 'fin-presupuesto', icon: 'fas fa-calculator', description: 'Planeación Financiera', virtual: true, color: 'warning' });
             modulesToRender.push({ name: 'Movimientos', route: 'fin-movimientos', icon: 'fas fa-exchange-alt', description: 'Ingresos y Gastos', virtual: true, color: 'success' });
             modulesToRender.push({ name: 'Traslados', route: 'fin-traslados', icon: 'fas fa-reply-all', description: 'Movimientos Internos', virtual: true, color: 'info' });
+        }
+
+        if (group.id == 98 || group.name === 'Entregables') {
+            modulesToRender.push({ name: 'Médico', route: 'entregables-medico', icon: 'fas fa-user-md', description: 'Informes y soportes médicos', virtual: true, color: 'info' });
+            modulesToRender.push({ name: 'Psicólogo', route: 'entregables-psicologo', icon: 'fas fa-brain', description: 'Informes y soportes psicológicos', virtual: true, color: 'primary' });
+            modulesToRender.push({ name: 'Fisioterapeuta', route: 'entregables-fisioterapeuta', icon: 'fas fa-walking', description: 'Informes y soportes fisioterapeúticos', virtual: true, color: 'success' });
+            modulesToRender.push({ name: 'Administrativos', route: 'entregables-administrativos', icon: 'fas fa-folder-open', description: 'Informes y soportes administrativos', virtual: true, color: 'warning' });
+            modulesToRender.push({ name: 'Financieros', route: 'entregables-financieros', icon: 'fas fa-file-invoice-dollar', description: 'Informes y soportes financieros', virtual: true, color: 'danger' });
         }
 
         if (group.id == 5 || group.name === 'Reportes') {
