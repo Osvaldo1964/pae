@@ -29,12 +29,23 @@ class NeedsReportController
                 throw new Exception("Ciclo no encontrado o no autorizado");
 
             // 2. Get Active Beneficiaries and Classify them by Branch, Ration Type and AGE GROUP (by GRADE)
+            // Obtener sedes específicas del ciclo para filtrar
+            $checkBranches = $this->conn->prepare("SELECT branch_id FROM menu_cycle_branches WHERE cycle_id = ?");
+            $checkBranches->execute([$cycleId]);
+            $cycleBranches = $checkBranches->fetchAll(PDO::FETCH_COLUMN);
+
+            $branchFilter = "";
+            if (!empty($cycleBranches)) {
+                $branchList = implode(",", array_map('intval', $cycleBranches));
+                $branchFilter = " AND b.branch_id IN ($branchList) ";
+            }
+
             // SINCRONIZADO: Se usa el Grado escolar igual que en el calculador central
             // MODIFICAMOS para usar beneficiary_ration_rights
             $sqlBen = "SELECT b.id, b.branch_id, brr.ration_type_id, b.grade, b.birth_date, b.beneficiary_type 
                        FROM beneficiaries b
                        JOIN beneficiary_ration_rights brr ON b.id = brr.beneficiary_id
-                       WHERE b.status = 'ACTIVO' AND b.pae_id = :pae_id AND brr.pae_id = :pae_id_rights";
+                       WHERE b.status = 'ACTIVO' AND b.pae_id = :pae_id AND brr.pae_id = :pae_id_rights {$branchFilter}";
 
             $stmtBen = $this->conn->prepare($sqlBen);
             $stmtBen->execute([':pae_id' => $pae_id, ':pae_id_rights' => $pae_id]);
@@ -93,7 +104,7 @@ class NeedsReportController
 
             // 4. Calculate Demand
             $demand = [];
-            $branches = $this->getBranches($pae_id); // PASAR pae_id para filtrar sedes
+            $branches = $this->getBranches($pae_id, $cycleBranches); // PASAR pae_id y cycleBranches para filtrar sedes
 
             foreach ($recipeDetails as $row) {
                 $itemId = $row['item_id'];
@@ -219,13 +230,19 @@ class NeedsReportController
         return strtoupper(trim($clean));
     }
 
-    private function getBranches($pae_id)
+    private function getBranches($pae_id, $cycleBranches = [])
     {
         $sql = "SELECT sb.id, CONCAT(s.name, ' - ', sb.name) as full_name 
                 FROM school_branches sb
                 JOIN schools s ON sb.school_id = s.id
-                WHERE sb.pae_id = ? AND sb.status IN ('ACTIVO', 'active')
-                ORDER BY s.name, sb.name";
+                WHERE sb.pae_id = ? AND sb.status IN ('ACTIVO', 'active')";
+        
+        if (!empty($cycleBranches)) {
+            $branchList = implode(",", array_map('intval', $cycleBranches));
+            $sql .= " AND sb.id IN ($branchList)";
+        }
+        
+        $sql .= " ORDER BY s.name, sb.name";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$pae_id]);
         return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);

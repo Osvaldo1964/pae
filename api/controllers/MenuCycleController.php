@@ -142,6 +142,15 @@ class MenuCycleController
             $stmtCycle->execute([$pae_id, $name, $start_date, $end_date, $total_days]);
             $cycle_id = $this->conn->lastInsertId();
 
+            if (!empty($data['branch_ids']) && is_array($data['branch_ids'])) {
+                $stmtBranch = $this->conn->prepare("INSERT INTO menu_cycle_branches (cycle_id, branch_id) VALUES (?, ?)");
+                foreach ($data['branch_ids'] as $bid) {
+                    if ($bid > 0) {
+                        $stmtBranch->execute([$cycle_id, $bid]);
+                    }
+                }
+            }
+
             // 3. Crear los menús diarios (menus) y vincular recetas usando mapeo circular (módulo)
             $days_data = [];
             foreach ($templateDays as $td) {
@@ -224,6 +233,16 @@ class MenuCycleController
             $this->conn->prepare("DELETE FROM cycle_projections WHERE cycle_id = ?")->execute([$id]);
 
             // 3. Obtener población por Sede, Tipo de Ración, Grado y Fecha de Nacimiento
+            $checkBranches = $this->conn->prepare("SELECT branch_id FROM menu_cycle_branches WHERE cycle_id = ?");
+            $checkBranches->execute([$id]);
+            $cycleBranches = $checkBranches->fetchAll(PDO::FETCH_COLUMN);
+
+            $branchFilter = "";
+            if (!empty($cycleBranches)) {
+                $branchList = implode(",", array_map('intval', $cycleBranches));
+                $branchFilter = " AND b.branch_id IN ($branchList) ";
+            }
+
             // Se incluye birth_date para motor de clasificación por edad (fallback para programas no escolares)
             // UPDATED: Join with beneficiary_ration_rights to support multiple rations per beneficiary
             $stmtPop = $this->conn->prepare("SELECT 
@@ -235,7 +254,7 @@ class MenuCycleController
                                                 COUNT(*) as total 
                                             FROM beneficiaries b
                                             JOIN beneficiary_ration_rights brr ON b.id = brr.beneficiary_id
-                                            WHERE b.pae_id = ? AND b.status = 'ACTIVO' AND brr.pae_id = ?
+                                            WHERE b.pae_id = ? AND b.status = 'ACTIVO' AND brr.pae_id = ? {$branchFilter}
                                             GROUP BY b.branch_id, brr.ration_type_id, b.grade, b.birth_date, b.beneficiary_type");
             $stmtPop->execute([$pae_id, $pae_id]);
             $populations = $stmtPop->fetchAll(PDO::FETCH_ASSOC);
@@ -403,6 +422,10 @@ class MenuCycleController
             // 2. Delete menus
             $stmt2 = $this->conn->prepare("DELETE FROM menus WHERE cycle_id = ?");
             $stmt2->execute([$id]);
+
+            // 2.5 Eliminar ramas del ciclo vinculadas explícitamente
+            $stmtBranchDel = $this->conn->prepare("DELETE FROM menu_cycle_branches WHERE cycle_id = ?");
+            $stmtBranchDel->execute([$id]);
 
             // 3. Delete the cycle itself
             $stmtDel = $this->conn->prepare("DELETE FROM menu_cycles WHERE id = ?");

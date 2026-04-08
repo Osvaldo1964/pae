@@ -7,6 +7,7 @@ window.MinutasView = {
     cycles: [],
     recipes: [],
     rationTypes: [],
+    branches: [],
 
     async init() {
         console.log('Initializing Minutas Module v1.4.4...');
@@ -16,17 +17,19 @@ window.MinutasView = {
 
     async loadData() {
         try {
-            const [tempRes, cycleRes, recipeRes, rationRes] = await Promise.all([
+            const [tempRes, cycleRes, recipeRes, rationRes, branchRes] = await Promise.all([
                 Helper.fetchAPI('/cycle-templates'),
                 Helper.fetchAPI('/menu-cycles'),
                 Helper.fetchAPI('/recipes'),
-                Helper.fetchAPI('/ration-types')
+                Helper.fetchAPI('/ration-types'),
+                Helper.fetchAPI('/presupuesto/branches')
             ]);
 
             this.templates = tempRes.success ? (tempRes.data || []) : (Array.isArray(tempRes) ? tempRes : []);
             this.cycles = cycleRes.success ? (cycleRes.data || []) : (Array.isArray(cycleRes) ? cycleRes : []);
             this.recipes = recipeRes.success ? (recipeRes.data || []) : (Array.isArray(recipeRes) ? recipeRes : []);
             this.rationTypes = rationRes.success ? (rationRes.data || []) : [];
+            this.branches = branchRes.success ? (branchRes.data || []) : (Array.isArray(branchRes) ? branchRes : []);
         } catch (error) {
             console.error('Error loading minutas data:', error);
             Helper.alert('error', 'Error al cargar los datos de minutas');
@@ -743,6 +746,26 @@ window.MinutasView = {
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">CENTROS/SEDES INCLUIDOS (Opcional)</label>
+                                <div class="border rounded p-2 bg-light custom-scrollbar" style="max-height: 150px; overflow-y: auto;">
+                                    <div class="row g-2">
+                                        ${this.branches.map(b => `
+                                            <div class="col-md-6">
+                                                <div class="form-check form-check-hover p-1 bg-white border rounded shadow-sm d-flex align-items-center mb-0">
+                                                    <input class="form-check-input ms-1 branch-selector mt-0" type="checkbox" value="${b.id}" id="branch-${b.id}" style="cursor: pointer;">
+                                                    <label class="form-check-label w-100 ms-2 text-dark text-truncate" for="branch-${b.id}" style="cursor: pointer; font-size: 0.8rem; line-height: 1.2;" title="${b.school_name} - ${b.name}">
+                                                        <span class="fw-bold">${b.school_name}</span><br>
+                                                        <span class="text-muted" style="font-size: 0.7rem;">Sede: ${b.name}</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <small class="text-muted" style="font-size: 0.75rem;">Si no selecciona ninguna, el ciclo aplicará de forma global en todas las sedes.</small>
+                            </div>
+
+                            <div class="mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <label class="form-label small fw-bold text-muted mb-0">DÍAS DE ATENCIÓN</label>
                                     <div class="form-check form-switch">
@@ -856,7 +879,6 @@ window.MinutasView = {
 
         const formData = new FormData(form);
 
-        // Collect specific dates
         const specificDates = [];
         document.querySelectorAll('.date-selector:checked').forEach(cb => {
             specificDates.push(cb.value);
@@ -867,12 +889,18 @@ window.MinutasView = {
             return;
         }
 
+        const branchIds = [];
+        document.querySelectorAll('.branch-selector:checked').forEach(cb => {
+            branchIds.push(cb.value);
+        });
+
         const data = {
             name: formData.get('name'),
             start_date: formData.get('start_date'),
             end_date: formData.get('end_date'),
             template_id: formData.get('template_id'),
-            specific_dates: specificDates
+            specific_dates: specificDates,
+            branch_ids: branchIds
         };
 
         try {

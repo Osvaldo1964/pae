@@ -126,9 +126,12 @@ window.ReportsPresupuestoView = {
                             </div>
                         </div>
 
-                        <div class="text-center mt-5">
-                            <button class="btn btn-success px-4 bg-teal shadow-smt" onclick="ReportsPresupuestoView.generateReport()" style="background-color: #009688; border-color: #009688;">
-                                <i class="fas fa-file-invoice-dollar me-2"></i>Generar Reporte
+                        <div class="text-center mt-5 d-flex justify-content-center gap-3">
+                            <button class="btn btn-outline-success px-4 bg-white shadow-sm" onclick="ReportsPresupuestoView.generateReport(true)">
+                                <i class="fas fa-file-excel me-2"></i>Exportar a Excel
+                            </button>
+                            <button class="btn btn-primary px-4 bg-teal shadow-sm border-0" onclick="ReportsPresupuestoView.generateReport()" style="background-color: #009688;">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>Generar en Pantalla
                             </button>
                         </div>
                     </div>
@@ -164,7 +167,7 @@ window.ReportsPresupuestoView = {
         this.config[key] = value;
     },
 
-    generateReport() {
+    generateReport(directExcel = false) {
         if (this.items.length === 0) {
             Helper.alert('warning', 'No hay datos de presupuesto cargados para mostrar.');
             return;
@@ -182,6 +185,11 @@ window.ReportsPresupuestoView = {
         });
 
         this.renderPrintView(dataToShow);
+
+        if (directExcel) {
+            this.exportExcel();
+            this.closePrint();
+        }
     },
 
     getDescendants(parentId) {

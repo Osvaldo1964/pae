@@ -20,8 +20,11 @@ window.PresupuestoView = {
                 Helper.fetchAPI('/presupuesto/branches')
             ]);
 
+            let itemsArray = Array.isArray(items) ? items : [];
+            itemsArray.sort((a, b) => a.codigo.localeCompare(b.codigo, undefined, { numeric: true, sensitivity: 'base' }));
+            
             // Calculate totals for parents based on children
-            this.items = this.calculateSummaries(Array.isArray(items) ? items : []);
+            this.items = this.calculateSummaries(itemsArray);
             this.branches = Array.isArray(branches) ? branches : [];
         } catch (error) {
             console.error('Error loading budget data:', error);
@@ -130,10 +133,11 @@ window.PresupuestoView = {
             const isParent = item.isParent;
             const rowClass = isParent ? 'bg-light fw-bold' : '';
             const indent = (item.codigo.split('.').length - 1) * 20;
+            const orderAttr = item.codigo.split('.').map(n => n.padStart(5, '0')).join('');
 
             return `
                 <tr class="${rowClass}">
-                    <td class="ps-4 text-nowrap" style="padding-left: ${24 + indent}px !important;">
+                    <td class="ps-4 text-nowrap" style="padding-left: ${24 + indent}px !important;" data-order="${orderAttr}">
                         ${isParent ? '<i class="fas fa-folder me-2 text-warning"></i>' : '<i class="far fa-file-alt me-2 text-muted"></i>'}
                         ${item.codigo}
                     </td>
