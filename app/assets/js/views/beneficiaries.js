@@ -765,18 +765,26 @@ var BeneficiariesView = {
             `;
         });
 
-        tbody.innerHTML = htmlRows.join('');
-
-
-        // Initialize DataTable if not already or destroy and re-init
+        // Initialize DataTable or update existing
         if ($.fn.DataTable.isDataTable('#beneficiariesTable')) {
-            $('#beneficiariesTable').DataTable().destroy();
+            const table = $('#beneficiariesTable').DataTable();
+            table.clear();
+            if (this.beneficiaries.length > 0) {
+                // Create parsed nodes to safely add to DataTable
+                const fakeBody = document.createElement('tbody');
+                fakeBody.innerHTML = htmlRows.join('');
+                table.rows.add(Array.from(fakeBody.children));
+            }
+            // draw(false) retains current pagination and search filters
+            table.draw(false);
+        } else {
+            tbody.innerHTML = htmlRows.join('');
+            // Custom options: Hide default search box (we use custom filters)
+            Helper.initDataTable('#beneficiariesTable', {
+                dom: '<"row"<"col-sm-12"t>><"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                searching: true // Keep search enabled for our custom filters
+            });
         }
-        // Custom options: Hide default search box (we use custom filters)
-        Helper.initDataTable('#beneficiariesTable', {
-            dom: '<"row"<"col-sm-12"t>><"row mt-3"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-            searching: true // Keep search enabled for our custom filters
-        });
     },
 
     openModal(beneficiaryOrId = null) {

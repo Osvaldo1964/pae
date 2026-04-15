@@ -310,9 +310,10 @@ class BeneficiaryController extends BaseController
             $data['ration_type_id'] = $data['ration_rights'][0];
         }
 
+        $ration_type_val = $data['ration_type'] ?? null;
         $stmt->bindParam(":enrollment_date", $data['enrollment_date']);
         $stmt->bindParam(":modality", $data['modality']);
-        $stmt->bindParam(":ration_type", $data['ration_type']);
+        $stmt->bindParam(":ration_type", $ration_type_val);
         $stmt->bindParam(":ration_type_id", $data['ration_type_id']);
         $stmt->bindParam(":medical_restrictions", $data['medical_restrictions']);
         $stmt->bindParam(":observations", $data['observations']);
