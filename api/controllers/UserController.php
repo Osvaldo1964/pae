@@ -118,15 +118,19 @@ class UserController
                 return;
             }
 
+            // By default, map email to username if not provided, to satisfy UNIQUE constraint.
+            $email = isset($data->email) && !empty($data->email) ? $data->email : $data->username;
+
             $query = "INSERT INTO " . $this->table_name . " 
-                      (username, password_hash, full_name, address, phone, role_id, pae_id) 
-                      VALUES (:username, :password, :full_name, :address, :phone, :role_id, :pae_id)";
+                      (username, email, password_hash, full_name, address, phone, role_id, pae_id) 
+                      VALUES (:username, :email, :password, :full_name, :address, :phone, :role_id, :pae_id)";
 
             $stmt = $this->conn->prepare($query);
 
             $password_hash = password_hash($data->password, PASSWORD_BCRYPT);
 
             $stmt->bindParam(":username", $data->username);
+            $stmt->bindParam(":email", $email);
             $stmt->bindParam(":password", $password_hash);
             $stmt->bindParam(":full_name", $data->full_name);
             $stmt->bindParam(":address", $data->address);

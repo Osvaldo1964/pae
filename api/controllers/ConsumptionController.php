@@ -65,7 +65,7 @@ class ConsumptionController
 
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['beneficiary_id']) || empty($data['ration_type_id']) || empty($data['branch_id'])) {
+        if ((empty($data['beneficiary_id']) && empty($data['document_number'])) || empty($data['ration_type_id']) || empty($data['branch_id'])) {
             http_response_code(400);
             echo json_encode(["message" => "Datos incompletos (Beneficiario, Tipo Ración, Sede)."]);
             return;
@@ -74,10 +74,14 @@ class ConsumptionController
         $date = date('Y-m-d'); // Always record for TODAY by server time
 
         // 1. Verify Beneficiary exists in this PAE and Branch
-        // Note: We allow consuming in a different branch? Usually yes, PAE is the boundary.
-        // But for strict control, maybe warn? For now, just check PAE.
-        $stmtCheck = $this->conn->prepare("SELECT id, first_name, last_name1, modality_id FROM beneficiaries WHERE id = ? AND pae_id = ?");
-        $stmtCheck->execute([$data['beneficiary_id'], $auth['pae_id']]);
+        if (!empty($data['beneficiary_id'])) {
+            $stmtCheck = $this->conn->prepare("SELECT id, first_name, last_name1, modality_id FROM beneficiaries WHERE id = ? AND pae_id = ?");
+            $stmtCheck->execute([$data['beneficiary_id'], $auth['pae_id']]);
+        } else {
+            $stmtCheck = $this->conn->prepare("SELECT id, first_name, last_name1, modality_id FROM beneficiaries WHERE document_number = ? AND pae_id = ?");
+            $stmtCheck->execute([$data['document_number'], $auth['pae_id']]);
+        }
+        
         $beneficiary = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
         if (!$beneficiary) {
@@ -85,6 +89,9 @@ class ConsumptionController
             echo json_encode(["message" => "Beneficiario no encontrado en este programa."]);
             return;
         }
+        
+        // Ensure beneficiary_id is set for downstream logic
+        $data['beneficiary_id'] = $beneficiary['id'];
 
         // 1.5 Verify Ration is allowed for Beneficiary's Modality
         if (!empty($beneficiary['modality_id'])) {
@@ -202,33 +209,60 @@ class ConsumptionController
         $meal_type = $_GET['meal_type'] ?? null;
 
         $query = "SELECT 
-                    dc.id, dc.created_at as time, rt.name as meal_type,
+                    dc.id as consumption_id, dc.created_at as time, rt.name as meal_type, rt.service_time,
                     b.document_number, b.first_name, b.last_name1, b.grade, b.group_name,
-                    sb.name as branch_name
-                  FROM daily_consumptions dc
-                  JOIN beneficiaries b ON dc.beneficiary_id = b.id
-                  JOIN school_branches sb ON dc.branch_id = sb.id
-                  LEFT JOIN pae_ration_types rt ON dc.ration_type_id = rt.id
-                  WHERE dc.pae_id = ? AND dc.date = ?";
+                    sb.name as branch_name, s.name as school_name,
+                    p.name as program_name, p.entity_logo_path, p.operator_logo_path
+                  FROM beneficiaries b
+                  JOIN school_branches sb ON b.branch_id = sb.id
+                  JOIN schools s ON sb.school_id = s.id
+                  JOIN pae_programs p ON b.pae_id = p.id
+                  LEFT JOIN daily_consumptions dc ON dc.beneficiary_id = b.id AND dc.date = ?";
 
-        $params = [$auth['pae_id'], $date];
-
-        if ($branch_id) {
-            $query .= " AND dc.branch_id = ?";
-            $params[] = $branch_id;
-        }
+        $params = [$date];
 
         if ($meal_type) {
             $query .= " AND dc.ration_type_id = ?";
             $params[] = $meal_type;
         }
+        
+        $query .= " LEFT JOIN pae_ration_types rt ON dc.ration_type_id = rt.id
+                  WHERE b.pae_id = ? AND b.status = 'ACTIVO'";
 
-        $query .= " ORDER BY dc.created_at DESC";
+        $params[] = $auth['pae_id'];
+
+        if ($branch_id) {
+            $query .= " AND b.branch_id = ?";
+            $params[] = $branch_id;
+        }
+
+        $query .= " ORDER BY b.last_name1 ASC, b.first_name ASC";
 
         try {
             $stmt = $this->conn->prepare($query);
             $stmt->execute($params);
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($meal_type) {
+                $stmtRt = $this->conn->prepare("SELECT name, service_time FROM pae_ration_types WHERE id = ?");
+                $stmtRt->execute([$meal_type]);
+                $rationData = $stmtRt->fetch(PDO::FETCH_ASSOC);
+            } else {
+                $stmtRt = $this->conn->prepare("SELECT name, service_time FROM pae_ration_types WHERE pae_id = ? AND status = 'ACTIVO' ORDER BY id ASC LIMIT 1");
+                $stmtRt->execute([$auth['pae_id']]);
+                $rationData = $stmtRt->fetch(PDO::FETCH_ASSOC);
+            }
+                
+            if ($rationData) {
+                foreach ($data as &$row) {
+                    if (empty($row['meal_type'])) {
+                        $row['meal_type'] = $rationData['name'];
+                    }
+                    if (empty($row['service_time'])) {
+                        $row['service_time'] = $rationData['service_time'];
+                    }
+                }
+            }
 
             echo json_encode([
                 "success" => true,

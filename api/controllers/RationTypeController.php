@@ -56,15 +56,16 @@ class RationTypeController
             $data = json_decode(file_get_contents("php://input"), true);
             $pae_id = $this->getPaeIdFromToken();
 
-            $query = "INSERT INTO pae_ration_types (pae_id, name, description, status, population_type_id) 
-                      VALUES (:pae_id, :name, :description, :status, :population_type_id)";
+            $query = "INSERT INTO pae_ration_types (pae_id, name, description, status, population_type_id, service_time) 
+                      VALUES (:pae_id, :name, :description, :status, :population_type_id, :service_time)";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':pae_id' => $pae_id,
                 ':name' => $data['name'],
                 ':description' => $data['description'] ?? null,
                 ':status' => $data['status'] ?? 'ACTIVO',
-                ':population_type_id' => $data['population_type_id'] ?? null
+                ':population_type_id' => $data['population_type_id'] ?? null,
+                ':service_time' => !empty($data['service_time']) ? $data['service_time'] : null
             ]);
 
             echo json_encode(['success' => true, 'message' => 'Tipo de ración creado correctamente', 'id' => $this->conn->lastInsertId()]);
@@ -85,7 +86,7 @@ class RationTypeController
                 return;
             }
 
-            $query = "UPDATE pae_ration_types SET name = :name, description = :description, status = :status, population_type_id = :population_type_id WHERE id = :id AND pae_id = :pae_id";
+            $query = "UPDATE pae_ration_types SET name = :name, description = :description, status = :status, population_type_id = :population_type_id, service_time = :service_time WHERE id = :id AND pae_id = :pae_id";
             $stmt = $this->conn->prepare($query);
             $stmt->execute([
                 ':id' => $id,
@@ -93,7 +94,8 @@ class RationTypeController
                 ':name' => $data['name'],
                 ':description' => $data['description'] ?? null,
                 ':status' => $data['status'] ?? 'ACTIVO',
-                ':population_type_id' => $data['population_type_id'] ?? null
+                ':population_type_id' => $data['population_type_id'] ?? null,
+                ':service_time' => !empty($data['service_time']) ? $data['service_time'] : null
             ]);
 
             echo json_encode(['success' => true, 'message' => 'Tipo de ración actualizado']);

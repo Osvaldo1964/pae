@@ -43,6 +43,7 @@ window.RationTypesView = {
                                         <tr>
                                             <th class="ps-3">Nombre</th>
                                             <th>Población Objetivo</th>
+                                            <th>Hora</th>
                                             <th>Descripción</th>
                                             <th class="text-end pe-3">Acciones</th>
                                         </tr>
@@ -103,6 +104,10 @@ window.RationTypesView = {
                                         <option value="">-- General / Sin Especificar --</option>
                                     </select>
                                     <div class="form-text">Si se deja vacío, aplica para población general.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Hora de Servir Sugerida</label>
+                                    <input type="time" class="form-control" id="ration-service-time">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Descripción</label>
@@ -193,6 +198,7 @@ window.RationTypesView = {
                         <tr>
                             <td class="ps-3 fw-bold text-primary-custom">${rt.name}</td>
                             <td>${popBadge}</td>
+                            <td><span class="badge bg-light text-dark"><i class="fas fa-clock me-1"></i>${rt.service_time ? rt.service_time.substring(0, 5) : '-'}</span></td>
                             <td><small class="text-muted">${rt.description || '-'}</small></td>
                             <td class="text-end pe-3">
                                 <button class="btn btn-sm btn-outline-primary me-1" onclick='RationTypesView.openRationModal(${JSON.stringify(rt)})'>
@@ -220,6 +226,7 @@ window.RationTypesView = {
         document.getElementById('ration-id').value = isEdit ? rt.id : '';
         document.getElementById('ration-name').value = isEdit ? rt.name : '';
         document.getElementById('ration-description').value = isEdit ? rt.description || '' : '';
+        document.getElementById('ration-service-time').value = isEdit ? (rt.service_time ? rt.service_time.substring(0, 5) : '') : '';
 
         // Populate population select
         const select = document.getElementById('ration-population-id');
@@ -240,13 +247,15 @@ window.RationTypesView = {
         const name = document.getElementById('ration-name').value;
         const desc = document.getElementById('ration-description').value;
         const popId = document.getElementById('ration-population-id').value;
+        const serviceTime = document.getElementById('ration-service-time').value;
 
         if (!name) return Helper.alert('error', 'El nombre es obligatorio');
 
         const data = {
             name: name.toUpperCase(),
             description: desc,
-            population_type_id: popId || null
+            population_type_id: popId || null,
+            service_time: serviceTime || null
         };
 
         const method = id ? 'PUT' : 'POST';

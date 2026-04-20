@@ -55,7 +55,8 @@ class MobileApp {
         document.getElementById('app-screen').classList.remove('d-none');
 
         if (this.selectedBranch) {
-            document.getElementById('current-location').innerText = this.selectedBranch.name;
+            const locName = this.selectedBranch.school_name ? `${this.selectedBranch.school_name} - ${this.selectedBranch.name}` : this.selectedBranch.name;
+            document.getElementById('current-location').innerText = locName;
         } else {
             this.selectBranch(); // Force selection if none
         }
@@ -188,7 +189,10 @@ class MobileApp {
                 return;
             }
 
-            let options = list.map(b => `<option value='${JSON.stringify(b)}'>${b.name}</option>`).join('');
+            let options = list.map(b => {
+                const displayName = b.school_name ? `${b.school_name} - ${b.name}` : b.name;
+                return `<option value='${JSON.stringify(b)}'>${displayName}</option>`;
+            }).join('');
 
             Swal.fire({
                 title: 'Seleccionar Sede',
@@ -203,7 +207,10 @@ class MobileApp {
                 if (result.isConfirmed) {
                     this.selectedBranch = result.value;
                     localStorage.setItem('pae_branch', JSON.stringify(this.selectedBranch));
-                    document.getElementById('current-location').innerText = this.selectedBranch.name;
+                    
+                    const locName = this.selectedBranch.school_name ? `${this.selectedBranch.school_name} - ${this.selectedBranch.name}` : this.selectedBranch.name;
+                    document.getElementById('current-location').innerText = locName;
+                    
                     this.loadStats();
                 }
             });
@@ -337,11 +344,15 @@ class MobileApp {
                     timer: 2500
                 }).then(() => this.html5QrCode.resume());
             } else {
-                throw new Error(data.message || 'Error en servidor');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de servidor',
+                    text: data.message || 'Error desconocido'
+                }).then(() => this.html5QrCode.resume());
             }
 
         } catch (error) {
-            console.warn("Offline or Server Error, saving locally:", error);
+            console.warn("Offline, saving locally:", error);
             this.saveLocally(payload);
 
             Swal.fire({
@@ -434,15 +445,92 @@ class MobileApp {
     }
 
     manualEntry() {
+        if (!this.selectedBranch) {
+            Swal.fire('Atención', 'Seleccione una sede primero', 'warning').then(() => this.selectBranch());
+            return;
+        }
+
+        const rationSelect = document.getElementById('current-ration-type');
+        const rationTypeId = rationSelect.value;
+        const rationTypeName = rationSelect.options[rationSelect.selectedIndex]?.text || '';
+
+        if (!rationTypeId) {
+            Swal.fire('Atención', 'Seleccione un momento de entrega primero.', 'warning');
+            return;
+        }
+
         Swal.fire({
-            title: 'Búsqueda Manual',
+            title: 'Registro Manual',
             input: 'text',
             inputLabel: 'Documento del Estudiante',
+            inputPlaceholder: 'Ej. 1002345678',
             showCancelButton: true,
-            confirmButtonText: 'Buscar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire('Info', 'La búsqueda manual estará disponible próximamente.', 'info');
+            confirmButtonText: 'Registrar Entrega',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed && result.value) {
+                const docNumber = result.value.trim();
+                if (!docNumber) return;
+
+                const payload = {
+                    document_number: docNumber,
+                    branch_id: this.selectedBranch.id,
+                    ration_type_id: rationTypeId,
+                    meal_type: rationTypeName,
+                    at: new Date().toISOString(),
+                    beneficiary_name: 'Desconocido' // Updated by API if online
+                };
+
+                try {
+                    Swal.fire({title: 'Registrando...', didOpen: () => {Swal.showLoading()}});
+                    const response = await fetch(`${API_BASE_URL}/consumptions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.token}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Entrega Registrada!',
+                            html: `<b>${data.beneficiary_name || ''}</b><br>${rationTypeName}`,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            this.loadStats();
+                        });
+                    } else if (response.status === 409) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Ya entregado',
+                            text: data.message,
+                            timer: 2500
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de servidor',
+                            text: data.message || 'Error desconocido'
+                        });
+                    }
+                } catch (error) {
+                    console.warn("Offline, saving locally:", error);
+                    payload.beneficiary_name = `Doc: ${docNumber}`; // Distinguish offline
+                    this.saveLocally(payload);
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Guardado Local',
+                        html: `Sin conexión. La entrega del documento <b>${docNumber}</b> se sincronizará luego.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
             }
         });
     }

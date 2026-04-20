@@ -153,7 +153,7 @@ window.ReportsCarnetsView = {
 
         // Generar cards
         const cardsHtml = beneficiariesList.map(b => {
-            const token = `PAE:${b.id}:${b.document_number}`;
+            const token = `PAE:${b.id}:${b.document_number}:${b.first_name} ${b.last_name1}`;
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(token)}`;
 
             return `
