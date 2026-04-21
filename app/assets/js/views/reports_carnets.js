@@ -323,9 +323,9 @@ window.ReportsCarnetsView = {
                     
                     @media print {
                         body { background: white; }
-                        .carnet-grid { padding: 0; gap: 10px; }
+                        .carnet-grid { padding: 20px; gap: 10px; }
                         .btn-print { display: none !important; }
-                        @page { margin: 10mm; }
+                        @page { margin: 0; }
                     }
 
                     .btn-print { 

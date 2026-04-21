@@ -1079,6 +1079,7 @@ var BeneficiariesView = {
         // Token format for QR
         const token = `PAE:${b.id}:${b.document_number}`;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(token)}`;
+        const paeName = App.state.user?.pae || 'PAE';
 
         // Create a new window for printing
         const printWindow = window.open('', '_blank');
@@ -1209,9 +1210,10 @@ var BeneficiariesView = {
                     }
                     
                     @media print {
+                        @page { margin: 0; }
                         body { 
                             background: none; 
-                            padding: 0; 
+                            padding: 20px; 
                             display: block;
                         }
                         .carnet-card {
@@ -1227,7 +1229,7 @@ var BeneficiariesView = {
             <body>
                 <div class="carnet-card">
                     <div class="header">
-                        <div class="logo-text">PAE 2026</div>
+                        <div class="logo-text">${paeName}</div>
                         <div class="sub-header">Identificación del Beneficiario</div>
                     </div>
                     <div class="content">
