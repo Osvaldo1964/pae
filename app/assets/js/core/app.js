@@ -1024,11 +1024,13 @@ const App = {
         const oldScript = document.getElementById(`script-view-${viewName}`);
         if (oldScript) oldScript.remove();
 
-        // Cache busting for view scripts using global version
-        const version = Config.VERSION || new Date().getTime();
+        // Usar timestamp para evitar caché entre navegaciones de módulo.
+        // Los scripts de vista se recargan dinámicamente; el caché fijo causa
+        // re-ejecución del archivo antiguo aunque el servidor tenga uno nuevo.
+        const cacheBust = `${Config.VERSION}.${new Date().getTime()}`;
         const script = document.createElement('script');
         script.id = `script-view-${viewName}`;
-        script.src = `${Config.BASE_URL}assets/js/views/${viewName}.js?v=${version}`;
+        script.src = `${Config.BASE_URL}assets/js/views/${viewName}.js?v=${cacheBust}`;
 
         script.onerror = () => {
             appContainer.innerHTML = `

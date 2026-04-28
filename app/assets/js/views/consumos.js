@@ -1,7 +1,7 @@
 /**
  * Consumos - Registro de Asistencia QR
  */
-const ConsumosView = {
+var ConsumosView = {
     schools: [],
     branches: [],
     dataTable: null,

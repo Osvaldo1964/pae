@@ -53,7 +53,10 @@ var BeneficiariesView = {
                             <i class="fas fa-user-graduate me-2"></i>Gestión de Beneficiarios${branchText}
                          </h2>
                     </div>
-                    <div class="col-md-6 text-end">
+                    <div class="col-md-6 text-end d-flex justify-content-end gap-2">
+                         <button class="btn btn-outline-success rounded-pill px-3" onclick="PrintListView.openModal()" title="Generar planilla semanal de asistencia">
+                            <i class="fas fa-calendar-week me-2"></i>Planilla Semanal
+                         </button>
                          <button class="btn btn-primary rounded-pill px-4" onclick="BeneficiariesView.openModal()">
                             <i class="fas fa-plus me-2"></i>Nuevo Beneficiario
                          </button>

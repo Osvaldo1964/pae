@@ -100,14 +100,16 @@ class BeneficiaryController extends BaseController
         $data['guardian_name'] = mb_strtoupper($data['guardian_name'] ?? '', 'UTF-8');
 
         $query = "INSERT INTO " . $this->table_name . " 
-                  (pae_id, branch_id, document_type_id, document_number, first_name, second_name, last_name1, last_name2, 
+                  (pae_id, branch_id, beneficiary_type, population_name, document_type_id, document_number,
+                   first_name, second_name, last_name1, last_name2, 
                    birth_date, gender, ethnic_group_id, sisben_category, disability_type, is_victim, is_migrant, 
                    address, phone, email, guardian_name, guardian_phone, guardian_relationship, 
                    simat_id, shift, grade, group_name, status, enrollment_date, modality, ration_type, ration_type_id, 
                    medical_restrictions, observations, data_authorization, is_overage,
                    talla_zapato, talla_camisa, talla_pantalon) 
                   VALUES 
-                  (:pae_id, :branch_id, :document_type_id, :document_number, :first_name, :second_name, :last_name1, :last_name2, 
+                  (:pae_id, :branch_id, :btype, :popname, :document_type_id, :document_number,
+                   :first_name, :second_name, :last_name1, :last_name2, 
                    :birth_date, :gender, :ethnic_group_id, :sisben_category, :disability_type, :is_victim, :is_migrant, 
                    :address, :phone, :email, :guardian_name, :guardian_phone, :guardian_relationship, 
                    :simat_id, :shift, :grade, :group_name, :status, :enrollment_date, :modality, :ration_type, :ration_type_id, 
