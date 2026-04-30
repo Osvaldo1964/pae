@@ -342,8 +342,14 @@ class RecipeController
             $stmt->execute([':id' => $id]);
             echo json_encode(['success' => true, 'message' => 'Receta eliminada']);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            $msg = $e->getMessage();
+            if (strpos($msg, '1451') !== false || strpos($msg, '23000') !== false) {
+                http_response_code(400);
+                $msg = 'No se puede eliminar la receta porque está siendo utilizada en ciclos de menú u otras partes del sistema.';
+            } else {
+                http_response_code(500);
+            }
+            echo json_encode(['success' => false, 'message' => $msg]);
         }
     }
 }
