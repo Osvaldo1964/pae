@@ -741,8 +741,43 @@ if ($resource === 'auth') {
         http_response_code(405);
         echo json_encode(["message" => "Method Not Allowed"]);
     }
+} elseif ($resource === 'deliverables') {
+    $controller = new \Controllers\DeliverableController();
+    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if ($action === 'categories') {
+            $controller->getCategories();
+        } elseif ($action === 'folders') {
+            $controller->getFolders();
+        } elseif ($action === 'search') {
+            $controller->searchDocuments();
+        } elseif ($action === 'download' && $id_param) {
+            $controller->downloadDocument($id_param);
+        } else {
+            http_response_code(404);
+            echo json_encode(["message" => "Deliverable GET Action Not Found"]);
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($action === 'categories') {
+            $controller->createCategory();
+        } elseif ($action === 'folders') {
+            $controller->createFolder();
+        } elseif ($action === 'upload') {
+            $controller->uploadDocument();
+        } else {
+            http_response_code(404);
+            echo json_encode(["message" => "Deliverable POST Action Not Found"]);
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'DELETE' && $action) {
+        if ($action === 'folders' && $id_param) {
+            $controller->deleteFolder($id_param);
+        } else {
+            $controller->deleteDocument($action);
+        }
+    } else {
+        http_response_code(405);
+        echo json_encode(["message" => "Method Not Allowed"]);
+    }
 } else {
     http_response_code(404);
     echo json_encode(["message" => "Resource Not Found", "resource" => $resource]);
 }
-

@@ -149,16 +149,9 @@ const App = {
                         'fin-traslados': 'Traslados'
                     };
                     foundModule = { name: finNames[route] };
-                } else if (route.startsWith('entregables-')) {
-                    foundGroup = { id: 98, name: 'Entregables' };
-                    const entNames = {
-                        'entregables-medico': 'Médico',
-                        'entregables-psicologo': 'Psicólogo',
-                        'entregables-fisioterapeuta': 'Fisioterapeuta',
-                        'entregables-administrativos': 'Administrativos',
-                        'entregables-financieros': 'Financieros'
-                    };
-                    foundModule = { name: entNames[route] };
+                } else if (route === 'repositorio') {
+                    foundGroup = { id: 98, name: 'Repositorio' };
+                    foundModule = { name: 'Documentos' };
                 } else if (route === 'reports-ali') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Alimentación' };
@@ -304,11 +297,7 @@ const App = {
                     'reports-presupuesto': 'reports_presupuesto',
                     'reports-hr-positions': 'reports_hr_positions',
                     'reports-hr-employees': 'reports_hr_employees',
-                    'entregables-medico': 'entregables_medico',
-                    'entregables-psicologo': 'entregables_psicologo',
-                    'entregables-fisioterapeuta': 'entregables_fisioterapeuta',
-                    'entregables-administrativos': 'entregables_administrativos',
-                    'entregables-financieros': 'entregables_financieros',
+                    'repositorio': 'repositorio',
                     'pqrs': 'pqrs'
                 };
 
@@ -720,14 +709,14 @@ const App = {
                 `;
                 sidebarList.appendChild(finLi);
 
-                const entregablesLi = document.createElement('li');
-                entregablesLi.className = 'nav-item mb-2';
-                entregablesLi.innerHTML = `
-                    <a href="#group/98" class="nav-link text-white">
-                        <i class="fas fa-box-open me-2"></i> Entregables
+                const repoLi = document.createElement('li');
+                repoLi.className = 'nav-item mb-2';
+                repoLi.innerHTML = `
+                    <a href="#module/repositorio" class="nav-link text-white">
+                        <i class="fas fa-folder-open me-2"></i> Repositorio
                     </a>
                 `;
-                sidebarList.appendChild(entregablesLi);
+                sidebarList.appendChild(repoLi);
             }
 
             const li = document.createElement('li');
