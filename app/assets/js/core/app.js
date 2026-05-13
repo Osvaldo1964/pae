@@ -795,12 +795,8 @@ const App = {
             modulesToRender.push({ name: 'Traslados', route: 'fin-traslados', icon: 'fas fa-reply-all', description: 'Movimientos Internos', virtual: true, color: 'info' });
         }
 
-        if (group.id == 98 || group.name === 'Entregables') {
-            modulesToRender.push({ name: 'Médico', route: 'entregables-medico', icon: 'fas fa-user-md', description: 'Informes y soportes médicos', virtual: true, color: 'info' });
-            modulesToRender.push({ name: 'Psicólogo', route: 'entregables-psicologo', icon: 'fas fa-brain', description: 'Informes y soportes psicológicos', virtual: true, color: 'primary' });
-            modulesToRender.push({ name: 'Fisioterapeuta', route: 'entregables-fisioterapeuta', icon: 'fas fa-walking', description: 'Informes y soportes fisioterapeúticos', virtual: true, color: 'success' });
-            modulesToRender.push({ name: 'Administrativos', route: 'entregables-administrativos', icon: 'fas fa-folder-open', description: 'Informes y soportes administrativos', virtual: true, color: 'warning' });
-            modulesToRender.push({ name: 'Financieros', route: 'entregables-financieros', icon: 'fas fa-file-invoice-dollar', description: 'Informes y soportes financieros', virtual: true, color: 'danger' });
+        if (group.id == 98 || group.name === 'Repositorio' || group.name === 'Entregables') {
+            modulesToRender.push({ name: 'Documentos', route: 'repositorio', icon: 'fas fa-folder-open', description: 'Gestión documental y soportes', virtual: true, color: 'primary' });
         }
 
         if (group.id == 5 || group.name === 'Reportes') {
