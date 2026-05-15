@@ -185,15 +185,11 @@
                             </div>
                         </div>
                         <div class="row g-3 mt-1">
-                            <div class="col-md-4">
-                                <label class="form-label required">Talla de Zapato</label>
-                                <input type="text" class="form-control" name="talla_zapato" placeholder="Ej: 38" required>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label required">Talla de Camisa</label>
                                 <input type="text" class="form-control" name="talla_camisa" placeholder="Ej: M, L" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label required">Talla de Pantalón</label>
                                 <input type="text" class="form-control" name="talla_pantalon" placeholder="Ej: 32" required>
                             </div>
