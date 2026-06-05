@@ -161,6 +161,9 @@ const App = {
                 } else if (route === 'reports-adm') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Administrativo' };
+                } else if (route === 'reports-beneficiarios') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Listado de Beneficiarios' };
                 } else if (route === 'reports-rh') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Talento Humano' };
@@ -180,7 +183,8 @@ const App = {
                         'reports-costs': { name: 'Financiero', route: 'reports-fin' },
                         'reports-pay': { name: 'Talento Humano', route: 'reports-rh' },
                         'reports-hr-positions': { name: 'Talento Humano', route: 'reports-rh' },
-                        'reports-hr-employees': { name: 'Talento Humano', route: 'reports-rh' }
+                        'reports-hr-employees': { name: 'Talento Humano', route: 'reports-rh' },
+                        'reports-beneficiarios': { name: 'Administrativo', route: 'reports-adm' }
                     };
                     const hub = hubMap[route];
                     if (hub && route !== hub.route) {
@@ -289,6 +293,7 @@ const App = {
                     'reports-recetas': 'reports_recetas',
                     'reports-minutas': 'reports_minutas',
                     'reports-carnets': 'reports_carnets',
+                    'reports-beneficiarios': 'reports_beneficiarios',
                     'fin-terceros': 'fin_terceros',
                     'fin-presupuesto': 'fin_presupuesto',
                     'fin-movimientos': 'fin_movimientos',
@@ -949,6 +954,7 @@ const App = {
             modules = [
                 { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' },
                 { name: 'Impresión de Carnets', route: 'reports-carnets', icon: 'fas fa-id-badge', description: 'Generación masiva de carnets con QR para beneficiarios' },
+                { name: 'Listado de Beneficiarios', route: 'reports-beneficiarios', icon: 'fas fa-users', description: 'Generar listado de beneficiarios con filtros de institución y sede para Excel o PDF' },
                 { name: 'Bandeja de PQRs', route: 'pqrs', icon: 'fas fa-envelope-open-text', description: 'Gestión y resolución de solicitudes ciudadanas' }
             ];
         } else if (category === 'reports-rh') {
