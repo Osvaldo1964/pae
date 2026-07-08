@@ -8,17 +8,17 @@ require_once __DIR__ . '/config/Database.php';
 try {
     $conn = \Config\Database::getInstance()->getConnection();
 
-    $query = "SELECT e.*, p.name as position_name 
-              FROM hr_employees e
-              LEFT JOIN hr_positions p ON e.position_id = p.id
-              LIMIT 1";
-
-    echo "Executing query: $query\n";
+    echo "--- RECIPE ITEMS WITH ITEMS ---\n";
+    $query = "SELECT ri.recipe_id, r.name as recipe_name, ri.item_id, i.name as item_name, 
+                     ri.age_group, ri.quantity as recipe_qty, mu.code as item_unit, mu.conversion_factor
+              FROM recipe_items ri
+              JOIN recipes r ON ri.recipe_id = r.id
+              JOIN items i ON ri.item_id = i.id
+              JOIN measurement_units mu ON i.measurement_unit_id = mu.id
+              LIMIT 15";
     $stmt = $conn->query($query);
-    $res = $stmt->fetch(PDO::FETCH_ASSOC);
-    echo "Query executed successfully.\n";
-    print_r($res);
+    print_r($stmt->fetchAll(PDO::FETCH_ASSOC));
+
 } catch (Throwable $e) {
     echo "QUERY FAILED: " . $e->getMessage() . "\n";
-    echo "Error Code: " . $e->getCode() . "\n";
 }

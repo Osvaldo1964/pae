@@ -294,6 +294,7 @@ const App = {
                     'reports-minutas': 'reports_minutas',
                     'reports-carnets': 'reports_carnets',
                     'reports-beneficiarios': 'reports_beneficiarios',
+                    'reports-attendance': 'reports_attendance',
                     'fin-terceros': 'fin_terceros',
                     'fin-presupuesto': 'fin_presupuesto',
                     'fin-movimientos': 'fin_movimientos',
