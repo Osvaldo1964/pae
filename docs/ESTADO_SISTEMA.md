@@ -48,13 +48,21 @@
   - ✅ Nómina y Pagos (Costo total empleador).
   - ✅ Listado de Cargos (Riesgos ARL).
   - ✅ Listado de Personal (Directorio con filtros).
+- ✅ **Hub de Reportes (Financieros):**
+  - ✅ Presupuesto Inicial (Consolidado por rubro y exportable a MS Excel).
+  - ✅ Ejecución Presupuestal (Inicial, Modificaciones, Definitivo, Ejecutado, Disponible y % de avance consolidado recursivamente).
+  - ✅ Libro Auxiliar de Movimientos (Filtrado cruzado de egresos por rubro, tipo de gasto y rango de fechas con sumatoria total).
+  - ✅ **Formato Corporativo:** Encabezados automáticos de impresión que incluyen logos dinámicos (Entidad / Operador) y datos contractuales.
+  - ✅ **Estilo Compacto:** Reducción de fuentes a `0.65rem` en libro auxiliar para impresión de mayor densidad.
 - ✅ **Módulo Móvil de Entregas (PWA):** Funcional y estable.
 
 ### 6. **Finanzas** ✅ ⭐ FASE COMPLETADA
 - ✅ Terceros (Directorio de proveedores y contratistas)
-- ✅ Presupuesto (Planeación y distribución por sedes)
-- ✅ Movimientos (Registro de gastos con soportes PDF)
-- ✅ Traslados (Rebalanceo de recursos entre rubros)
+- ✅ Presupuesto (Planeación y distribución por sedes con consolidación jerárquica)
+- ✅ Movimientos (Registro de gastos con soportes PDF y categorías dinámicas)
+- ✅ Traslados (Rebalanceo de recursos entre rubros y reversión de saldos)
+- ✅ **Ajustes Presupuestales:** Adiciones y reducciones de recursos en asignaciones por sede con validación de saldos mínimos.
+- ✅ **Categorías de Gasto:** Gestión de tipos de egreso personalizables por programa para mayor control en el libro auxiliar.
 
 ### 7. **UX / Navegación**
 - ✅ **Reordenamiento Sidebar:** Recurso Humano posicionado antes de Reportes para flujo lógico.
@@ -95,4 +103,4 @@
 
 ---
 
-**Última actualización**: 26 de Marzo 2026, 12:00 PM (v1.9.15)
+**Última actualización**: 09 de Julio 2026, 11:00 AM (v1.9.16)
