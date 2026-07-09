@@ -489,6 +489,52 @@ Obtener el plan de presupuesto por rubros y centros de costo.
 
 ---
 
+### GET /presupuesto/active-program
+Obtener la configuración contractual y logotipos del programa activo actual.
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "PAE SANTA MARTA 2026",
+  "entity_name": "ALCALDÍA DE SANTA MARTA",
+  "nit": "800.123.456-7",
+  "contract_number": "LICITACION-002-2026",
+  "entity_logo_path": "assets/uploads/logos/entity_1.png",
+  "operator_logo_path": "assets/uploads/logos/operator_1.png"
+}
+```
+
+---
+
+### GET /movimientos-tipos
+Listar las categorías y tipos de egresos habilitados para el programa actual.
+
+---
+
+### POST /movimientos-tipos
+Crear un nuevo tipo de gasto personalizado.
+
+**Request:**
+```json
+{
+  "nombre": "TRANSPORTE LOGÍSTICO",
+  "descripcion": "Gastos de transporte y distribución de víveres a comedores"
+}
+```
+
+---
+
+### PUT /movimientos-tipos/{id}
+Actualizar el nombre o descripción de un tipo de movimiento.
+
+---
+
+### DELETE /movimientos-tipos/{id}
+Eliminar un tipo de movimiento (valida si existen gastos asociados).
+
+---
+
 ### GET /movimientos
 Listar egresos y ejecución presupuestal.
 
@@ -501,6 +547,32 @@ Registrar un nuevo gasto (soporta archivos vía `multipart/form-data`).
 
 ### GET /traslados
 Listar traslados internos de recursos.
+
+---
+
+### GET /ajustes
+Listar todas las modificaciones presupuestales (adiciones y reducciones).
+
+---
+
+### POST /ajustes
+Registrar un ajuste al presupuesto (Adición o Reducción).
+
+**Request:**
+```json
+{
+  "fecha": "2026-07-09",
+  "asignacion_id": 4,
+  "tipo_ajuste": "ADICION",
+  "valor": 15000000.00,
+  "justificacion": "Adición presupuestal por ampliación de cobertura"
+}
+```
+
+---
+
+### DELETE /ajustes/{id}
+Eliminar/revertir una adición o reducción (restaura el saldo previo).
 
 ---
 

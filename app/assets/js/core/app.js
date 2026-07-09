@@ -146,7 +146,9 @@ const App = {
                         'fin-terceros': 'Terceros',
                         'fin-presupuesto': 'Presupuesto',
                         'fin-movimientos': 'Movimientos',
-                        'fin-traslados': 'Traslados'
+                        'fin-traslados': 'Traslados',
+                        'fin-ajustes': 'Ajustes',
+                        'fin-movimiento-tipos': 'Tipos de Movimientos'
                     };
                     foundModule = { name: finNames[route] };
                 } else if (route === 'repositorio') {
@@ -158,6 +160,12 @@ const App = {
                 } else if (route === 'reports-fin') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Financiero' };
+                } else if (route === 'reports-ejecucion') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Ejecución Presupuestal' };
+                } else if (route === 'reports-movimientos-aux') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Auxiliar de Movimientos' };
                 } else if (route === 'reports-adm') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Administrativo' };
@@ -181,6 +189,8 @@ const App = {
                         'reports-minutas': { name: 'Alimentación', route: 'reports-ali' },
                         'reports-presupuesto': { name: 'Financiero', route: 'reports-fin' },
                         'reports-costs': { name: 'Financiero', route: 'reports-fin' },
+                        'reports-ejecucion': { name: 'Financiero', route: 'reports-fin' },
+                        'reports-movimientos-aux': { name: 'Financiero', route: 'reports-fin' },
                         'reports-pay': { name: 'Talento Humano', route: 'reports-rh' },
                         'reports-hr-positions': { name: 'Talento Humano', route: 'reports-rh' },
                         'reports-hr-employees': { name: 'Talento Humano', route: 'reports-rh' },
@@ -299,8 +309,12 @@ const App = {
                     'fin-presupuesto': 'fin_presupuesto',
                     'fin-movimientos': 'fin_movimientos',
                     'fin-traslados': 'fin_traslados',
+                    'fin-ajustes': 'fin_ajustes',
+                    'fin-movimiento-tipos': 'fin_movimiento_tipos',
                     'reports-pay': 'reports_payroll',
                     'reports-presupuesto': 'reports_presupuesto',
+                    'reports-ejecucion': 'reports_ejecucion',
+                    'reports-movimientos-aux': 'reports_movimientos_aux',
                     'reports-hr-positions': 'reports_hr_positions',
                     'reports-hr-employees': 'reports_hr_employees',
                     'repositorio': 'repositorio',
@@ -797,6 +811,8 @@ const App = {
         if (group.id == 99 || group.name === 'Financiero') {
             modulesToRender.push({ name: 'Terceros', route: 'fin-terceros', icon: 'fas fa-id-card', description: 'Proveedores y Clientes', virtual: true, color: 'primary' });
             modulesToRender.push({ name: 'Presupuesto', route: 'fin-presupuesto', icon: 'fas fa-calculator', description: 'Planeación Financiera', virtual: true, color: 'warning' });
+            modulesToRender.push({ name: 'Ajustes', route: 'fin-ajustes', icon: 'fas fa-sliders-h', description: 'Adiciones y Reducciones', virtual: true, color: 'danger' });
+            modulesToRender.push({ name: 'Tipos de Movimientos', route: 'fin-movimiento-tipos', icon: 'fas fa-tags', description: 'Categorización de Egresos', virtual: true, color: 'dark' });
             modulesToRender.push({ name: 'Movimientos', route: 'fin-movimientos', icon: 'fas fa-exchange-alt', description: 'Ingresos y Gastos', virtual: true, color: 'success' });
             modulesToRender.push({ name: 'Traslados', route: 'fin-traslados', icon: 'fas fa-reply-all', description: 'Movimientos Internos', virtual: true, color: 'info' });
         }
@@ -946,7 +962,9 @@ const App = {
             color = 'danger';
             modules = [
                 { name: 'Costos por Ciclo', route: 'reports-costs', icon: 'fas fa-dollar-sign', description: 'Análisis de inversión por período' },
-                { name: 'Presupuesto Inicial', route: 'reports-presupuesto', icon: 'fas fa-money-bill-wave', description: 'Generar reporte de presupuesto inicial' }
+                { name: 'Presupuesto Inicial', route: 'reports-presupuesto', icon: 'fas fa-money-bill-wave', description: 'Generar reporte de presupuesto inicial' },
+                { name: 'Ejecución Presupuestal', route: 'reports-ejecucion', icon: 'fas fa-chart-line', description: 'Generar reporte de ejecución presupuestal' },
+                { name: 'Auxiliar de Movimientos', route: 'reports-movimientos-aux', icon: 'fas fa-clipboard-list', description: 'Libro auxiliar de movimientos financieros' }
             ];
         } else if (category === 'reports-adm') {
             title = 'Reportes Administrativos';

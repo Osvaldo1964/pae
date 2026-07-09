@@ -80,12 +80,38 @@ class MovimientoController
                   JOIN presupuesto_items i ON a.item_id = i.id_item
                   JOIN school_branches b ON a.branch_id = b.id
                   JOIN schools s ON b.school_id = s.id
-                  WHERE m.pae_id = :pae_id 
-                  ORDER BY m.fecha DESC, m.datecreated DESC";
+                  WHERE m.pae_id = :pae_id";
+
+        $params = [":pae_id" => $pae_id];
+
+        $item_id = $_GET['item_id'] ?? null;
+        if ($item_id) {
+            $query .= " AND a.item_id = :item_id";
+            $params[":item_id"] = $item_id;
+        }
+
+        $tipo = $_GET['tipo'] ?? null;
+        if ($tipo) {
+            $query .= " AND UPPER(m.tipo_movimiento) = :tipo";
+            $params[":tipo"] = strtoupper(trim($tipo));
+        }
+
+        $start_date = $_GET['start_date'] ?? null;
+        if ($start_date) {
+            $query .= " AND m.fecha >= :start_date";
+            $params[":start_date"] = $start_date;
+        }
+
+        $end_date = $_GET['end_date'] ?? null;
+        if ($end_date) {
+            $query .= " AND m.fecha <= :end_date";
+            $params[":end_date"] = $end_date;
+        }
+
+        $query .= " ORDER BY m.fecha DESC, m.datecreated DESC";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":pae_id", $pae_id);
-        $stmt->execute();
+        $stmt->execute($params);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode($results);
@@ -106,7 +132,7 @@ class MovimientoController
                   JOIN presupuesto_items i ON a.item_id = i.id_item
                   JOIN school_branches b ON a.branch_id = b.id
                   JOIN schools s ON b.school_id = s.id
-                  WHERE a.pae_id = :pae_id AND (a.valor_inicial + a.valor_adiciones - a.valor_reducciones - a.valor_ejecutado) > 0
+                  WHERE a.pae_id = :pae_id AND i.estado = 1 AND (a.valor_inicial + a.valor_adiciones - a.valor_reducciones - a.valor_ejecutado) > 0
                   ORDER BY i.codigo, s.name, b.name";
 
         $stmt = $this->conn->prepare($query);

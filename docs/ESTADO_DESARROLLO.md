@@ -1,7 +1,7 @@
 # Estado de Desarrollo - PAE Control WebApp
 
-**Última actualización**: 26 de Marzo 2026 (v1.9.15)
-**Versión Doc:** 1.9.15 | **Versión Código:** 1.9.15 (Mejora Configuración PAE + Tabs + Formato Miles)
+**Última actualización**: 09 de Julio 2026 (v1.9.16)
+**Versión Doc:** 1.9.16 | **Versión Código:** 1.9.16 (Ajustes de Presupuesto, Categorías de Gastos y Reportes Financieros)
 
 ---
 
@@ -208,6 +208,14 @@
   - [x] Movimientos entre rubros (Débito/Crédito) para rebalanceo de recursos.
   - [x] **Reversión Automática:** La eliminación de un traslado restaura los saldos originales en origen y destino.
   - [x] Trazabilidad e historial de justificaciones.
+- [x] **Ajustes Presupuestales (Adiciones y Reducciones) [v1.9.16]:**
+  - [x] Módulo independiente para registrar adiciones y reducciones directas.
+  - [x] Reconciliación en tiempo real que suma/resta automáticamente a la asignación y al acumulado del rubro definitivo.
+  - [x] Validación para evitar reducciones que superen el saldo disponible, previniendo saldos negativos.
+- [x] **Categorías de Gastos Dinámicas [v1.9.16]:**
+  - [x] CRUD completo para que el usuario defina tipos de movimientos (ej: TRANSPORTE, ALIMENTOS, etc.).
+  - [x] Integración de categorías dinámicas en el formulario de registro de movimientos financieros.
+  - [x] Sembrado automático de categorías iniciales por defecto (`PAGO`, `COMPRA`, `NOMINA`, `SERVICIO`, `OTRO`) para todo programa activo.
 
 ### 17. Módulo de PQRs (Peticiones, Quejas y Reclamos) ✅ ⭐ v1.9.14
 - [x] **Backend:** `PqrController.php` con listado institucional y resolución.
@@ -227,6 +235,16 @@
   - **Cumplimiento:** Formato optimizado según Resolución 0003 de 2026
 - [x] **Exportación:** Motor unificado para PDF/Print y Excel en todos los reportes operativos
 - [x] **Homogenización:** Sistema de breadcrumbs centralizado que reconoce sub-hubs de categorías.
+- [x] **Reporte de Presupuesto Inicial:** Listado consolidado y detallado del plan financiero inicial por rubro/sede con exportación MS Excel.
+- [x] **Reporte de Ejecución Presupuestal [v1.9.16]:**
+  - Muestra Presupuesto Inicial, Modificaciones (Adiciones - Reducciones), Presupuesto Definitivo, Valor Ejecutado, Saldo por Ejecutar y Porcentaje de Ejecución.
+  - Consolidación matemática recursiva de valores para rubros padre.
+- [x] **Libro Auxiliar de Movimientos [v1.9.16]:**
+  - Listado de movimientos de costos/gastos con filtros cruzados por Rubro específico, Tipo de movimiento y Rango de fechas.
+  - Fila de totales sumando la ejecución acumulada.
+- [x] **Encabezados Institucionales y Logos [v1.9.16]:**
+  - Encabezados de impresión formales con el logo de la Entidad (izquierda), datos del contrato y programa activo (centro) y logo del Operador (derecha).
+  - Remoción de textos automáticos del navegador (`@page { margin: 0; }`) y optimización de tamaños de fuente en el auxiliar a `0.65rem`.
 
 ---
 
@@ -253,6 +271,14 @@
 - [ ] Sincronización con sistemas contables
 
 ---
+
+### v1.9.16 (09 Julio 2026 - Suite de Gestión Presupuestal y Reportes Corporativos)
+- ✅ **Ajustes Presupuestales:** Implementado módulo de Adiciones y Reducciones que actualiza los saldos definitivos por sede en tiempo real y valida saldos para prevenir balances negativos.
+- ✅ **Categorías de Egresos:** Creado catálogo de tipos de movimientos financieros por programa PAE, con inyección inicial de categorías base y soporte para filtrados.
+- ✅ **Reporte de Ejecución:** Diseñado informe que resume Presupuesto Inicial, Ajustes (Modificaciones), Definitivo, Ejecutado y Saldo Disponible con cálculo porcentual de avance por rubro.
+- ✅ **Libro Auxiliar:** Añadido reporte transaccional de costos con filtros cruzados por rubro, categoría de gasto y fechas.
+- ✅ **Encabezados Corporativos en Impresión:** Incorporados logotipos activos (Entidad y Operador) más datos del contrato en todos los reportes impresos.
+- ✅ **Ajuste de Márgenes y Fuentes:** Removidos encabezados por defecto del navegador y optimizado el tamaño de letra a `0.65rem` en el Auxiliar.
 
 ### v1.9.14 (26 Marzo 2026 - Módulo de PQRs)
 - ✅ **Notificaciones en Dashboard:** Implementación de polling automático (60s) para mostrar trámites pendientes a los administradores.

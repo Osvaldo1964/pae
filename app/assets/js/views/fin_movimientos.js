@@ -16,14 +16,16 @@ window.MovimientosView = {
 
     async loadData() {
         try {
-            const [movimientos, budget, terceros] = await Promise.all([
+            const [movimientos, budget, terceros, movimientoTipos] = await Promise.all([
                 Helper.fetchAPI('/movimientos'),
                 Helper.fetchAPI('/movimientos/budget'),
-                Helper.fetchAPI('/terceros')
+                Helper.fetchAPI('/terceros'),
+                Helper.fetchAPI('/movimientos-tipos')
             ]);
             this.movimientos = Array.isArray(movimientos) ? movimientos : [];
             this.budget = Array.isArray(budget) ? budget : [];
             this.terceros = Array.isArray(terceros) ? terceros : [];
+            this.movimientoTipos = Array.isArray(movimientoTipos) ? movimientoTipos : [];
         } catch (error) {
             console.error('Error loading movements data:', error);
         }
@@ -171,11 +173,10 @@ window.MovimientosView = {
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-uppercase">Tipo Movimiento</label>
                             <select id="mov-tipo" class="form-select">
-                                <option value="Pago" ${item?.tipo_movimiento == 'Pago' ? 'selected' : ''}>Pago</option>
-                                <option value="Compra" ${item?.tipo_movimiento == 'Compra' ? 'selected' : ''}>Compra</option>
-                                <option value="Nomina" ${item?.tipo_movimiento == 'Nomina' ? 'selected' : ''}>Nomina</option>
-                                <option value="Servicio" ${item?.tipo_movimiento == 'Servicio' ? 'selected' : ''}>Servicio</option>
-                                <option value="Otro" ${item?.tipo_movimiento == 'Otro' ? 'selected' : ''}>Otro</option>
+                                ${this.movimientoTipos.map(t => {
+                                    const isSelected = item?.tipo_movimiento?.toUpperCase() === t.nombre.toUpperCase();
+                                    return `<option value="${t.nombre}" ${isSelected ? 'selected' : ''}>${t.nombre}</option>`;
+                                }).join('')}
                             </select>
                         </div>
                         <div class="col-md-4">

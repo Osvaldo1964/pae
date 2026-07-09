@@ -284,4 +284,32 @@ class PresupuestoController
         $res = $stmt->execute([":id" => $id, ":pae_id" => $pae_id]);
         echo json_encode(["success" => $res]);
     }
+
+    public function getActiveProgram()
+    {
+        $pae_id = $this->getPaeIdFromToken();
+        if (!$pae_id) {
+            http_response_code(403);
+            echo json_encode(["message" => "Acceso denegado."]);
+            return;
+        }
+
+        $query = "SELECT id, name, entity_name, nit, department, city, email,
+                         operator_name, operator_nit, operator_address, operator_phone, operator_email,
+                         entity_logo_path, operator_logo_path, contract_number, contract_value, start_date, end_date
+                  FROM pae_programs 
+                  WHERE id = :pae_id LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":pae_id", $pae_id);
+        $stmt->execute();
+        $program = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($program) {
+            echo json_encode($program);
+        } else {
+            http_response_code(404);
+            echo json_encode(["message" => "Programa no encontrado."]);
+        }
+    }
 }
