@@ -17,7 +17,6 @@ var ReportsPayrollView = {
             <div class="container-fluid fade-in">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <a href="#module/reports-rh" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>
                         <h2 class="mb-1"><i class="fas fa-user-tie me-2 text-info"></i>Talento Humano</h2>
                         <p class="text-muted mb-0">Generación de soportes de pago y consolidados de nómina</p>
                     </div>

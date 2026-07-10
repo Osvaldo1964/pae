@@ -427,7 +427,6 @@ window.ReportsEjecucionView = {
             <div id="reportConfigContainer" class="container-fluid py-4 min-vh-100 bg-light d-print-none">
                 <!-- Header -->
                 <div class="d-flex align-items-center mb-4 border-bottom pb-3">
-                    <a href="#module/reports-fin" class="btn btn-outline-secondary me-3"><i class="fas fa-arrow-left"></i> Volver</a>
                     <div class="icon-circle bg-danger-light me-3" style="width: 50px; height: 50px;">
                         <i class="fas fa-file-invoice-dollar text-danger"></i>
                     </div>

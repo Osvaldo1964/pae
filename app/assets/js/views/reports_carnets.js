@@ -35,7 +35,6 @@ window.ReportsCarnetsView = {
             <div class="container-fluid fade-in">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <a href="#module/reports-adm" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>
                         <h2 class="mb-1"><i class="fas fa-id-badge me-2 text-primary"></i>Impresión Masiva de Carnets</h2>
                         <p class="text-muted mb-0">Genere carnets con códigos QR organizados por sede y grado para facilitar la entrega física.</p>
                     </div>

@@ -210,7 +210,7 @@ class ConsumptionController
 
         $query = "SELECT 
                     dc.id as consumption_id, dc.created_at as time, rt.name as meal_type, rt.service_time,
-                    b.document_number, b.first_name, b.last_name1, b.grade, b.group_name,
+                    b.document_number, b.first_name, b.second_name, b.last_name1, b.last_name2, b.grade, b.group_name,
                     sb.name as branch_name, s.name as school_name,
                     p.name as program_name, p.entity_logo_path, p.operator_logo_path
                   FROM beneficiaries b

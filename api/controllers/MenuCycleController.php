@@ -37,9 +37,10 @@ class MenuCycleController
     {
         try {
             $pae_id = $this->getPaeIdFromToken();
-            // Incluir conteo de proyecciones para saber si está congelado
+            // Incluir conteo de proyecciones para saber si está congelado y las sedes asociadas
             $query = "SELECT c.*, 
-                      (SELECT COUNT(*) FROM cycle_projections WHERE cycle_id = c.id) as projection_count
+                      (SELECT COUNT(*) FROM cycle_projections WHERE cycle_id = c.id) as projection_count,
+                      (SELECT GROUP_CONCAT(branch_id) FROM menu_cycle_branches WHERE cycle_id = c.id) as branch_ids
                       FROM menu_cycles c 
                       WHERE c.pae_id = :pae_id 
                       ORDER BY c.start_date DESC";

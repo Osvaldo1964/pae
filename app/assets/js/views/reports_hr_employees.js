@@ -44,7 +44,6 @@ window.ReportsHREmployeesView = {
             <div class="container-fluid fade-in">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <a href="#module/reports-rh" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>
                         <h2 class="mb-1"><i class="fas fa-id-card-alt me-2 text-info"></i>Reporte de Personal</h2>
                         <p class="text-muted mb-0">Directorio de empleados y fichas de contacto</p>
                     </div>

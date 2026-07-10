@@ -160,21 +160,35 @@ const App = {
                 } else if (route === 'reports-fin') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Financiero' };
-                } else if (route === 'reports-ejecucion') {
-                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
-                    foundModule = { name: 'Ejecución Presupuestal' };
-                } else if (route === 'reports-movimientos-aux') {
-                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
-                    foundModule = { name: 'Auxiliar de Movimientos' };
                 } else if (route === 'reports-adm') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Administrativo' };
-                } else if (route === 'reports-beneficiarios') {
-                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
-                    foundModule = { name: 'Listado de Beneficiarios' };
                 } else if (route === 'reports-rh') {
                     foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
                     foundModule = { name: 'Talento Humano' };
+                } else if (route === 'pqrs') {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    foundModule = { name: 'Bandeja de PQRs' };
+                } else if (route.startsWith('reports-')) {
+                    foundGroup = App.state.menu.find(g => g.id == 5) || { id: 5, name: 'Reportes' };
+                    const reportNames = {
+                        'reports-insumos': 'Impresión de Insumos',
+                        'reports-recetas': 'Impresión de Recetas',
+                        'reports-minutas': 'Minutas x Ciclo x Sede',
+                        'reports-costs': 'Costos por Ciclo',
+                        'reports-presupuesto': 'Presupuesto Inicial',
+                        'reports-ejecucion': 'Ejecución Presupuestal',
+                        'reports-movimientos-aux': 'Auxiliar de Movimientos',
+                        'reports-attendance': 'Control de Entrega de Raciones',
+                        'reports-carnets': 'Impresión de Carnets',
+                        'reports-beneficiarios': 'Listado de Beneficiarios',
+                        'reports-pay': 'Nómina y Pagos',
+                        'reports-hr-positions': 'Listado de Cargos',
+                        'reports-hr-employees': 'Listado de Personal'
+                    };
+                    if (reportNames[route]) {
+                        foundModule = { name: reportNames[route] };
+                    }
                 }
             }
 
@@ -194,7 +208,10 @@ const App = {
                         'reports-pay': { name: 'Talento Humano', route: 'reports-rh' },
                         'reports-hr-positions': { name: 'Talento Humano', route: 'reports-rh' },
                         'reports-hr-employees': { name: 'Talento Humano', route: 'reports-rh' },
-                        'reports-beneficiarios': { name: 'Administrativo', route: 'reports-adm' }
+                        'reports-beneficiarios': { name: 'Administrativo', route: 'reports-adm' },
+                        'reports-attendance': { name: 'Administrativo', route: 'reports-adm' },
+                        'reports-carnets': { name: 'Administrativo', route: 'reports-adm' },
+                        'pqrs': { name: 'Administrativo', route: 'reports-adm' }
                     };
                     const hub = hubMap[route];
                     if (hub && route !== hub.route) {
@@ -971,7 +988,7 @@ const App = {
             icon = 'fas fa-clipboard-list';
             color = 'primary';
             modules = [
-                { name: 'Control de Asistencia', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' },
+                { name: 'Control de Entrega de Raciones', route: 'reports-attendance', icon: 'fas fa-user-check', description: 'Reporte de raciones entregadas' },
                 { name: 'Impresión de Carnets', route: 'reports-carnets', icon: 'fas fa-id-badge', description: 'Generación masiva de carnets con QR para beneficiarios' },
                 { name: 'Listado de Beneficiarios', route: 'reports-beneficiarios', icon: 'fas fa-users', description: 'Generar listado de beneficiarios con filtros de institución y sede para Excel o PDF' },
                 { name: 'Bandeja de PQRs', route: 'pqrs', icon: 'fas fa-envelope-open-text', description: 'Gestión y resolución de solicitudes ciudadanas' }
@@ -1009,7 +1026,6 @@ const App = {
 
         document.getElementById('app').innerHTML = `
             <div class="d-flex align-items-center mb-4 border-bottom pb-2">
-                <a href="#group/5" class="btn btn-link text-muted me-3"><i class="fas fa-arrow-left"></i> Volver</a>
                 <div class="icon-circle bg-${color}-light me-3" style="width: 50px; height: 50px;">
                     <i class="${icon} text-${color}"></i>
                 </div>

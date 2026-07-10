@@ -41,7 +41,7 @@
 │   ├── 🥯 Alimentación (Hub)
 │   ├── 💰 Financiero (Hub)
 │   ├── 📋 Administrativos (Hub)
-│   │   ├── 👥 Control de Asistencia
+│   │   ├── 👥 Control de Entrega de Raciones
 │   │   ├── 🪪 Impresión de Carnets
 │   │   └── 📩 Bandeja de PQRs ⭐ (Nuevo)
 │   └── 👥 Talento Humano (Hub)

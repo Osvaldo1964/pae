@@ -40,7 +40,6 @@ window.ReportsInsumosView = {
             <div class="container-fluid fade-in">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <a href="#module/reports-ali" class="btn btn-link text-muted ps-0"><i class="fas fa-arrow-left"></i> Volver</a>
                         <h2 class="mb-1"><i class="fas fa-carrot me-2 text-success"></i>Reporte Maestro de Insumos</h2>
                         <p class="text-muted mb-0">Listado técnico con información nutricional y logística</p>
                     </div>
